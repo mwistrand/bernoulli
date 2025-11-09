@@ -1,0 +1,22 @@
+{
+	"name": "bernoulli",
+	"version": "0.0.0",
+	"private": true,
+	"workspaces": [
+		"api",
+		"ui"
+	],
+	"scripts": {
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"eslint": "^9.18.0",
+		"husky": "^9.1.6",
+		"lint-staged": "^15.2.10",
+		"prettier": "^3.4.2"
+	},
+	"lint-staged": {
+		"**/*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
+		"**/*.{md,json,yml,yaml,scss,css,html}": "prettier --write"
+	}
+}
