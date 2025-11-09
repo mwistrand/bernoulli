@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+    db:
+        image: postgres:15-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: bernoulli
+            POSTGRES_PASSWORD: bernoulli
+            POSTGRES_DB: bernoulli
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U bernoulli']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+
+    api:
+        build:
+            context: ./api
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        environment:
+            DB_HOST: db
+            DB_PORT: '5432'
+            DB_USER: bernoulli
+            DB_PASS: bernoulli
+            DB_NAME: bernoulli
+            PORT: '3000'
+        depends_on:
+            db:
+                condition: service_healthy
+        ports:
+            - '3000:3000'
+
+    ui:
+        build:
+            context: ./ui
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        ports:
+            - '1234:1234'
+        depends_on:
+            - api
+
+volumes:
+    db-data:
