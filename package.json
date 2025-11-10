@@ -10,10 +10,15 @@
 		"prepare": "husky"
 	},
 	"devDependencies": {
+		"@angular-eslint/eslint-plugin": "^20.6.0",
+		"@angular-eslint/eslint-plugin-template": "^20.6.0",
 		"eslint": "^9.18.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
 		"husky": "^9.1.6",
 		"lint-staged": "^15.2.10",
-		"prettier": "^3.4.2"
+		"prettier": "^3.4.2",
+		"typescript-eslint": "^8.46.3"
 	},
 	"lint-staged": {
 		"**/*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --fix",
