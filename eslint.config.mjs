@@ -7,6 +7,10 @@ import angularEslint from '@angular-eslint/eslint-plugin';
 import angularEslintTemplate from '@angular-eslint/eslint-plugin-template';
 import angularTemplateParser from '@angular-eslint/template-parser';
 import angularEslintConfig from '@angular-eslint/eslint-plugin/dist/configs/recommended.json' with { type: 'json' };
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default [
 	eslintPluginPrettierRecommended,
@@ -21,7 +25,7 @@ export default [
 			parser: tseslint.parser,
 			parserOptions: {
 				project: './api/tsconfig.json',
-				tsconfigRootDir: process.cwd(),
+				tsconfigRootDir: __dirname,
 			},
 			globals: {
 				...globals.node,
@@ -47,7 +51,7 @@ export default [
 			parser: tseslint.parser,
 			parserOptions: {
 				projectService: true,
-				tsconfigRootDir: process.cwd(),
+				tsconfigRootDir: __dirname,
 			},
 			globals: {
 				...globals.browser,

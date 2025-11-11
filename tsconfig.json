@@ -1,0 +1,35 @@
+{
+	"compilerOptions": {
+		// Common target and module settings
+		"target": "ES2022",
+		"lib": ["ES2022"],
+
+		// Decorator support (required by Angular, NestJS, TypeORM)
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+
+		// Module resolution
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+
+		// Strict type checking
+		"strict": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"strictNullChecks": true,
+
+		// Build output
+		"sourceMap": true,
+		"declaration": true,
+		"removeComments": true,
+
+		// Performance
+		"incremental": true,
+		"isolatedModules": true
+	}
+}

@@ -7,7 +7,8 @@
 		"ui"
 	],
 	"scripts": {
-		"prepare": "husky"
+		"prepare": "husky",
+		"prettier": "prettier --write ."
 	},
 	"devDependencies": {
 		"@angular-eslint/eslint-plugin": "^20.6.0",
