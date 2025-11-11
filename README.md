@@ -27,10 +27,10 @@ npm install --prefix db
 Copy the example file and edit as needed:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local` to match your PostgreSQL setup. This file is shared by both the API and database migrations to avoid duplication.
+Edit `.env` to match your PostgreSQL setup. This file is shared by both the API and database migrations to avoid duplication.
 
 ### 3. Start the API server
 
@@ -90,7 +90,7 @@ npm test --prefix ui
 - The top-level `.gitignore` covers all files that should be ignored in all subdirectories.
 - No subdirectory is a git repo; only the top-level project should be versioned.
 - The API is preconfigured for PostgreSQL via environment variables.
-- Database configuration is shared via root-level `.env.local` file (used by both `api/` and `db/`).
+- Database configuration is shared via root-level `.env` file (used by both `api/` and `db/`).
 - Database migrations are kept in `db/` directory, separate from API code for better organization.
 
 ## Running the stack (Make)

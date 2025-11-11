@@ -1,4 +1,4 @@
-.PHONY: up down restart db api ui
+.PHONY: up down restart db api ui test
 
 # Start services (detached) and rebuild images
 up:
@@ -25,3 +25,9 @@ api:
 # Rebuild and start the UI service
 ui:
 	docker compose up -d --build --no-deps ui
+
+test:
+	cd api && npm test && \
+  cd ../ui && npm run test:headless:single && \
+  cd ../
+

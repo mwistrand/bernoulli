@@ -1,0 +1,47 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Log In</h1>
+
+    @if (errorMessage()) {
+      <div class="error-message">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        />
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+          <span class="field-error">Valid email is required</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        />
+        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+          <span class="field-error">Password is required</span>
+        }
+      </div>
+
+      <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="submit-button">
+        {{ isLoading() ? 'Logging in...' : 'Log In' }}
+      </button>
+    </form>
+
+    <p class="signup-link">Don't have an account? <a routerLink="/signup">Sign up</a></p>
+  </div>
+</div>

@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 1234",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:headless": "ng test --browsers=ChromeHeadless",
+    "test:headless:single": "npm run test:headless -- --watch=false"
   },
   "prettier": {
     "printWidth": 100,

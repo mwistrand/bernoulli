@@ -11,7 +11,7 @@ This directory contains TypeORM migrations for the Bernoulli project, kept separ
     npm install
     ```
 
-2. Ensure your root `.env.local` file has the correct database credentials.
+2. Ensure your root `.env` file has the correct database credentials.
 
 ## Usage
 
@@ -49,14 +49,14 @@ npm run migration:show
 
 ## Configuration
 
-- **Environment variables**: Loaded from `../.env.local` (root level)
+- **Environment variables**: Loaded from `../.env` (root level)
 - **Entities**: References entities from `../api/src/**/*.entity.ts`
 - **Migrations**: Stored in `./migrations/`
 - **TypeORM config**: See `ormconfig.ts`
 
 ## Environment Variables
 
-The following variables are required in `../.env.local`:
+The following variables are required in `../.env`:
 
 - `DB_HOST` - Database host (default: localhost)
 - `DB_PORT` - Database port (default: 5432)

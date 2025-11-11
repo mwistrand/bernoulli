@@ -1,0 +1,63 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <h1>Sign Up</h1>
+
+    @if (errorMessage()) {
+      <div class="error-message">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          placeholder="Enter your name"
+          [class.invalid]="signupForm.get('name')?.invalid && signupForm.get('name')?.touched"
+        />
+        @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
+          <span class="field-error">Name is required</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          [class.invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
+        />
+        @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
+          <span class="field-error">Valid email is required</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          [class.invalid]="
+            signupForm.get('password')?.invalid && signupForm.get('password')?.touched
+          "
+        />
+        @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
+          <span class="field-error">Password must be at least 6 characters</span>
+        }
+      </div>
+
+      <button type="submit" [disabled]="signupForm.invalid || isLoading()" class="submit-button">
+        {{ isLoading() ? 'Creating account...' : 'Sign Up' }}
+      </button>
+    </form>
+
+    <p class="login-link">Already have an account? <a routerLink="/login">Log in</a></p>
+  </div>
+</div>

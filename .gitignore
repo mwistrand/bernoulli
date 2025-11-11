@@ -1,4 +1,5 @@
-**/private_/
+# private (local) files
+**/private_
 
 # compiled output
 **/dist
