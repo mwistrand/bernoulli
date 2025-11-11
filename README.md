@@ -4,6 +4,7 @@ This project contains:
 
 - **api/**: Nest.js backend (TypeORM, PostgreSQL)
 - **ui/**: Angular frontend
+- **db/**: TypeORM database migrations (separate from API code)
 
 ## Prerequisites
 
@@ -15,20 +16,21 @@ This project contains:
 
 ### 1. Install dependencies
 
-```
+```bash
 npm install --prefix api
 npm install --prefix ui
+npm install --prefix db
 ```
 
-### 2. Configure environment variables for API
+### 2. Configure environment variables
 
 Copy the example file and edit as needed:
 
-```
-cp api/.env.example api/.env
+```bash
+cp .env.example .env.local
 ```
 
-Edit `api/.env` to match your PostgreSQL setup.
+Edit `.env.local` to match your PostgreSQL setup. This file is shared by both the API and database migrations to avoid duplication.
 
 ### 3. Start the API server
 
@@ -41,6 +43,33 @@ npm run start --prefix api
 ```
 npm start --prefix ui
 ```
+
+## Database Migrations
+
+This project uses TypeORM migrations kept separate from the API code in the `db/` directory.
+
+### Run pending migrations
+
+```bash
+cd db
+npm run migration:run
+```
+
+### Create a new migration
+
+```bash
+cd db
+npm run migration:create migrations/YourMigrationName
+```
+
+### Generate a migration from entity changes
+
+```bash
+cd db
+npm run migration:generate migrations/YourMigrationName
+```
+
+For more details, see [db/README.md](db/README.md).
 
 ## Running Tests
 
@@ -58,9 +87,11 @@ npm test --prefix ui
 
 ## Notes
 
-- The top-level `.gitignore` covers all files that should be ignored in both `api/` and `ui/`.
+- The top-level `.gitignore` covers all files that should be ignored in all subdirectories.
 - No subdirectory is a git repo; only the top-level project should be versioned.
 - The API is preconfigured for PostgreSQL via environment variables.
+- Database configuration is shared via root-level `.env.local` file (used by both `api/` and `db/`).
+- Database migrations are kept in `db/` directory, separate from API code for better organization.
 
 ## Running the stack (Make)
 

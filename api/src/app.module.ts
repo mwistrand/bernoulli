@@ -4,9 +4,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import * as path from 'path';
+
+// Dynamically load .env file based on NODE_ENV from root directory
+const env = process.env.NODE_ENV || 'prod';
+const envFileName = `.env.${env}`;
+const envFilePath = path.join(__dirname, '../../..', envFileName);
+
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
@@ -15,7 +25,7 @@ import { AppService } from './app.service';
       password: process.env.DB_PASS || 'bernoulli',
       database: process.env.DB_NAME || 'bernoulli',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
   ],
   controllers: [AppController],
