@@ -18,9 +18,14 @@ describe('ProjectController', () => {
 		updatedAt: new Date(),
 	};
 
+	const mockRequest = {
+		user: { userId: 'user-123' },
+	} as any;
+
 	beforeEach(async () => {
 		const mockProjectService = {
 			createProject: jest.fn(),
+			findAllProjects: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -49,25 +54,31 @@ describe('ProjectController', () => {
 		it('should create a project successfully', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			const result = await controller.createProject(validCommand);
+			const result = await controller.createProject(mockRequest, validCommand);
 
 			expect(result).toEqual(mockProject);
-			expect(projectService.createProject).toHaveBeenCalledWith(validCommand);
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				...validCommand,
+				userId: 'user-123',
+			});
 		});
 
 		it('should call projectService.createProject with the command', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(validCommand);
+			await controller.createProject(mockRequest, validCommand);
 
 			expect(projectService.createProject).toHaveBeenCalledTimes(1);
-			expect(projectService.createProject).toHaveBeenCalledWith(validCommand);
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				...validCommand,
+				userId: 'user-123',
+			});
 		});
 
 		it('should return the created project object', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			const result = await controller.createProject(validCommand);
+			const result = await controller.createProject(mockRequest, validCommand);
 
 			expect(result).toHaveProperty('id');
 			expect(result).toHaveProperty('name');
@@ -80,7 +91,9 @@ describe('ProjectController', () => {
 			const error = new BadRequestException('Project must have a valid name');
 			projectService.createProject.mockRejectedValue(error);
 
-			await expect(controller.createProject(validCommand)).rejects.toThrow(error);
+			await expect(controller.createProject(mockRequest, validCommand)).rejects.toThrow(
+				error,
+			);
 		});
 
 		it('should handle missing name in command', async () => {
@@ -88,48 +101,61 @@ describe('ProjectController', () => {
 			const error = new BadRequestException('Project must have a valid name');
 			projectService.createProject.mockRejectedValue(error);
 
-			await expect(controller.createProject(invalidCommand)).rejects.toThrow(error);
+			await expect(controller.createProject(mockRequest, invalidCommand)).rejects.toThrow(
+				error,
+			);
 		});
 
 		it('should handle null command', async () => {
 			const error = new BadRequestException('Missing project request body');
 			projectService.createProject.mockRejectedValue(error);
 
-			await expect(controller.createProject(null as any)).rejects.toThrow(error);
+			await expect(controller.createProject(mockRequest, null as any)).rejects.toThrow(error);
 		});
 
 		it('should handle undefined command', async () => {
 			const error = new BadRequestException('Missing project request body');
 			projectService.createProject.mockRejectedValue(error);
 
-			await expect(controller.createProject(undefined as any)).rejects.toThrow(error);
+			await expect(controller.createProject(mockRequest, undefined as any)).rejects.toThrow(
+				error,
+			);
 		});
 
 		it('should accept project name with special characters', async () => {
 			const command = { name: 'Project #1: Test & Development' };
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(command);
+			await controller.createProject(mockRequest, command);
 
-			expect(projectService.createProject).toHaveBeenCalledWith(command);
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				...command,
+				userId: 'user-123',
+			});
 		});
 
 		it('should accept project name with unicode characters', async () => {
 			const command = { name: 'Проект Тест 项目测试' };
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(command);
+			await controller.createProject(mockRequest, command);
 
-			expect(projectService.createProject).toHaveBeenCalledWith(command);
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				...command,
+				userId: 'user-123',
+			});
 		});
 
 		it('should handle long project names', async () => {
 			const command = { name: 'A'.repeat(1000) };
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(command);
+			await controller.createProject(mockRequest, command);
 
-			expect(projectService.createProject).toHaveBeenCalledWith(command);
+			expect(projectService.createProject).toHaveBeenCalledWith({
+				...command,
+				userId: 'user-123',
+			});
 		});
 
 		it('should return different projects for different commands', async () => {
@@ -140,8 +166,8 @@ describe('ProjectController', () => {
 				.mockResolvedValueOnce(project1)
 				.mockResolvedValueOnce(project2);
 
-			const result1 = await controller.createProject({ name: 'Project 1' });
-			const result2 = await controller.createProject({ name: 'Project 2' });
+			const result1 = await controller.createProject(mockRequest, { name: 'Project 1' });
+			const result2 = await controller.createProject(mockRequest, { name: 'Project 2' });
 
 			expect(result1.id).toBe('project-1');
 			expect(result2.id).toBe('project-2');

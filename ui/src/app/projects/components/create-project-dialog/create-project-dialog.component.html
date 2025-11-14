@@ -7,7 +7,7 @@
     aria-modal="true"
     aria-labelledby="dialog-title"
   >
-    <div class="dialog-content">
+    <div class="dialog-content" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
       <div class="dialog-header">
         <h2 id="dialog-title">Create New Project</h2>
         <button
@@ -50,6 +50,7 @@
             maxlength="100"
             [class.invalid]="projectForm.get('name')?.invalid && projectForm.get('name')?.touched"
             aria-required="true"
+            cdkFocusInitial
           />
           @if (projectForm.get('name')?.invalid && projectForm.get('name')?.touched) {
             <span class="field-error" role="alert">

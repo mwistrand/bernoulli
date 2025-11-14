@@ -8,12 +8,13 @@ import {
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { A11yModule } from '@angular/cdk/a11y';
 import { ProjectsService } from '../../services/projects.service';
 
 @Component({
   selector: 'bn-create-project-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, A11yModule],
   templateUrl: './create-project-dialog.component.html',
   styleUrl: './create-project-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,10 +26,10 @@ export class CreateProjectDialogComponent {
   dialogClosed = output<void>();
   projectCreated = output<void>();
 
-  protected readonly isLoading = signal<boolean>(false);
-  protected readonly errorMessage = signal<string | null>(null);
+  readonly isLoading = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
 
-  protected readonly projectForm = new FormGroup({
+  readonly projectForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.maxLength(100)]),
     description: new FormControl('', [Validators.maxLength(500)]),
   });

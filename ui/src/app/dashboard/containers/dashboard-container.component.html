@@ -84,7 +84,7 @@
 
   <bn-create-project-dialog
     [isOpen]="isDialogOpen()"
-    (close)="closeDialog()"
+    (dialogClosed)="closeDialog()"
     (projectCreated)="onProjectCreated()"
   ></bn-create-project-dialog>
 </div>

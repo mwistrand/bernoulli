@@ -26,7 +26,14 @@ describe('PostgreSQLAuthAdapter', () => {
 	};
 
 	beforeEach(async () => {
+		const mockQueryBuilder = {
+			addSelect: jest.fn().mockReturnThis(),
+			where: jest.fn().mockReturnThis(),
+			getOne: jest.fn(),
+		};
+
 		const mockRepository = {
+			createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
 			findOneBy: jest.fn(),
 			create: jest.fn(),
 			insert: jest.fn(),
@@ -77,7 +84,8 @@ describe('PostgreSQLAuthAdapter', () => {
 
 	describe('authenticate', () => {
 		it('should authenticate a user successfully', async () => {
-			repository.findOneBy.mockResolvedValue(mockUserEntity);
+			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
+			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
 			(bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
 			const result = await adapter.authenticate('test@example.com', 'password123');
@@ -87,25 +95,32 @@ describe('PostgreSQLAuthAdapter', () => {
 				email: 'test@example.com',
 				name: 'Test User',
 			});
-			expect(repository.findOneBy).toHaveBeenCalledWith({ email: 'test@example.com' });
+			expect(repository.createQueryBuilder).toHaveBeenCalledWith('user');
+			expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('user.password');
+			expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.email = :email', {
+				email: 'test@example.com',
+			});
 			expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed-password');
 		});
 
 		it('should throw UnauthorizedException when user is not found', async () => {
-			repository.findOneBy.mockResolvedValue(null);
+			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
+			mockQueryBuilder.getOne.mockResolvedValue(null);
 
 			await expect(
 				adapter.authenticate('nonexistent@example.com', 'password123'),
 			).rejects.toThrow(new UnauthorizedException('Unrecognized username or password'));
 
-			expect(repository.findOneBy).toHaveBeenCalledWith({
+			expect(repository.createQueryBuilder).toHaveBeenCalledWith('user');
+			expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.email = :email', {
 				email: 'nonexistent@example.com',
 			});
 			expect(bcrypt.compare).not.toHaveBeenCalled();
 		});
 
 		it('should throw UnauthorizedException when password does not match', async () => {
-			repository.findOneBy.mockResolvedValue(mockUserEntity);
+			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
+			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
 			(bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
 			await expect(adapter.authenticate('test@example.com', 'wrongpassword')).rejects.toThrow(
@@ -116,12 +131,14 @@ describe('PostgreSQLAuthAdapter', () => {
 		});
 
 		it('should use the same error message for user not found and wrong password', async () => {
-			repository.findOneBy.mockResolvedValue(null);
+			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
+
+			mockQueryBuilder.getOne.mockResolvedValue(null);
 			const userNotFoundError = adapter
 				.authenticate('nonexistent@example.com', 'password')
 				.catch(e => e.message);
 
-			repository.findOneBy.mockResolvedValue(mockUserEntity);
+			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
 			(bcrypt.compare as jest.Mock).mockResolvedValue(false);
 			const wrongPasswordError = adapter
 				.authenticate('test@example.com', 'wrongpassword')
@@ -132,12 +149,15 @@ describe('PostgreSQLAuthAdapter', () => {
 		});
 
 		it('should query by email field', async () => {
-			repository.findOneBy.mockResolvedValue(mockUserEntity);
+			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
+			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
 			(bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
 			await adapter.authenticate('user@test.com', 'password');
 
-			expect(repository.findOneBy).toHaveBeenCalledWith({ email: 'user@test.com' });
+			expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.email = :email', {
+				email: 'user@test.com',
+			});
 		});
 	});
 

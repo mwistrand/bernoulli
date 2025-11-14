@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 import { DashboardContainerComponent } from './dashboard-container.component';
 
@@ -9,6 +10,7 @@ describe('DashboardContainerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardContainerComponent],
+      providers: [provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardContainerComponent);

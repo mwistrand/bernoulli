@@ -5,12 +5,20 @@ import { ConflictException } from '@nestjs/common';
 
 import { PostgreSQLProjectAdapter } from './postgresql-project.adapter';
 import { ProjectEntity } from './entity/project.entity';
+import { UserEntity } from '../auth/entities/user.entity';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';
 import { Project } from '../../../../core/models/projects/project.model';
 
 describe('PostgreSQLProjectAdapter', () => {
 	let adapter: PostgreSQLProjectAdapter;
 	let repository: jest.Mocked<Repository<ProjectEntity>>;
+	let userRepository: jest.Mocked<Repository<UserEntity>>;
+
+	const mockUser: Partial<UserEntity> = {
+		id: 'user-123',
+		name: 'Test User',
+		email: 'test@example.com',
+	};
 
 	const mockProject: Project = {
 		id: 'project-123',
@@ -37,6 +45,11 @@ describe('PostgreSQLProjectAdapter', () => {
 			insert: jest.fn(),
 			save: jest.fn(),
 			findOne: jest.fn(),
+			find: jest.fn(),
+		};
+
+		const mockUserRepository = {
+			findOne: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -46,11 +59,16 @@ describe('PostgreSQLProjectAdapter', () => {
 					provide: getRepositoryToken(ProjectEntity),
 					useValue: mockRepository,
 				},
+				{
+					provide: getRepositoryToken(UserEntity),
+					useValue: mockUserRepository,
+				},
 			],
 		}).compile();
 
 		adapter = module.get<PostgreSQLProjectAdapter>(PostgreSQLProjectAdapter);
 		repository = module.get(getRepositoryToken(ProjectEntity));
+		userRepository = module.get(getRepositoryToken(UserEntity));
 	});
 
 	afterEach(() => {
@@ -65,11 +83,13 @@ describe('PostgreSQLProjectAdapter', () => {
 		const validCommand: CreateProjectCommand = {
 			name: 'My Project',
 			description: 'My project description',
+			userId: 'user-123',
 		};
 
 		const projectId = 'new-project-id-123';
 
 		beforeEach(() => {
+			userRepository.findOne.mockResolvedValue(mockUser as UserEntity);
 			repository.create.mockReturnValue(mockProjectEntity as ProjectEntity);
 			repository.insert.mockResolvedValue(undefined as any);
 		});
@@ -89,6 +109,8 @@ describe('PostgreSQLProjectAdapter', () => {
 				id: projectId,
 				name: 'My Project',
 				description: 'My project description',
+				createdBy: mockUser,
+				lastUpdatedBy: mockUser,
 				createdAt: expect.any(Date),
 				lastUpdatedAt: expect.any(Date),
 			});
@@ -104,6 +126,7 @@ describe('PostgreSQLProjectAdapter', () => {
 		it('should handle project without description', async () => {
 			const commandWithoutDescription: CreateProjectCommand = {
 				name: 'My Project',
+				userId: 'user-123',
 			};
 
 			await adapter.createProject(projectId, commandWithoutDescription);
@@ -112,6 +135,8 @@ describe('PostgreSQLProjectAdapter', () => {
 				id: projectId,
 				name: 'My Project',
 				description: undefined,
+				createdBy: mockUser,
+				lastUpdatedBy: mockUser,
 				createdAt: expect.any(Date),
 				lastUpdatedAt: expect.any(Date),
 			});
@@ -167,7 +192,7 @@ describe('PostgreSQLProjectAdapter', () => {
 		});
 
 		it('should handle projects with empty description', async () => {
-			const command = { name: 'My Project', description: '' };
+			const command = { name: 'My Project', description: '', userId: 'user-123' };
 			await adapter.createProject(projectId, command);
 
 			expect(repository.create).toHaveBeenCalledWith(
@@ -176,7 +201,7 @@ describe('PostgreSQLProjectAdapter', () => {
 		});
 
 		it('should handle projects with long names', async () => {
-			const command = { name: 'A'.repeat(1000), description: 'Test' };
+			const command = { name: 'A'.repeat(1000), description: 'Test', userId: 'user-123' };
 			await adapter.createProject(projectId, command);
 
 			expect(repository.create).toHaveBeenCalledWith(
@@ -185,7 +210,11 @@ describe('PostgreSQLProjectAdapter', () => {
 		});
 
 		it('should handle projects with special characters in name', async () => {
-			const command = { name: 'Project #1: Test & Development', description: 'Test' };
+			const command = {
+				name: 'Project #1: Test & Development',
+				description: 'Test',
+				userId: 'user-123',
+			};
 			await adapter.createProject(projectId, command);
 
 			expect(repository.create).toHaveBeenCalledWith(
@@ -194,7 +223,11 @@ describe('PostgreSQLProjectAdapter', () => {
 		});
 
 		it('should handle projects with unicode characters', async () => {
-			const command = { name: 'Проект Тест 项目测试', description: 'Test' };
+			const command = {
+				name: 'Проект Тест 项目测试',
+				description: 'Test',
+				userId: 'user-123',
+			};
 			await adapter.createProject(projectId, command);
 
 			expect(repository.create).toHaveBeenCalledWith(
@@ -219,8 +252,14 @@ describe('PostgreSQLProjectAdapter', () => {
 				.mockReturnValueOnce(entity1 as ProjectEntity)
 				.mockReturnValueOnce(entity2 as ProjectEntity);
 
-			const result1 = await adapter.createProject('project-1', { name: 'Project 1' });
-			const result2 = await adapter.createProject('project-2', { name: 'Project 2' });
+			const result1 = await adapter.createProject('project-1', {
+				name: 'Project 1',
+				userId: 'user-123',
+			});
+			const result2 = await adapter.createProject('project-2', {
+				name: 'Project 2',
+				userId: 'user-123',
+			});
 
 			expect(result1.id).toBe('project-1');
 			expect(result2.id).toBe('project-2');
