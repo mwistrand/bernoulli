@@ -1,7 +1,8 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import * as passport from 'passport';
 import { Pool } from 'pg';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 
 const session = require('express-session');
 const pgSession = require('connect-pg-simple');
@@ -61,6 +62,9 @@ async function bootstrap() {
 			},
 		}),
 	);
+
+	app.use(passport.initialize());
+	app.use(passport.session());
 
 	app.setGlobalPrefix('api'); // All routes will be prefixed with /api
 	await app.listen(process.env['PORT'] ? Number(process.env['PORT']) : 3000);

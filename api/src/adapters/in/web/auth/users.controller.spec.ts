@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
+import { Request } from 'express';
 
 import { UsersController } from './users.controller';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import type { CreateUserCommand } from '../../../../core/commands/create-user.command';
 import type { User } from '../../../../core/models/auth/user.model';
-import type { Session } from './session.types';
 
 describe('UsersController', () => {
 	let controller: UsersController;
@@ -50,36 +50,33 @@ describe('UsersController', () => {
 			name: 'New User',
 		};
 
-		let mockSession: Session;
-
-		beforeEach(() => {
-			mockSession = {
-				userId: undefined,
-				email: undefined,
-				name: undefined,
-			} as Session;
-		});
-
-		it('should create a user successfully', async () => {
+		it('should create a user successfully and establish session', async () => {
 			authService.createUser.mockResolvedValue(mockUser);
 
-			const result = await controller.createUser(validCommand, mockSession);
+			const mockRequest = {
+				login: jest.fn((user, callback) => callback()),
+			} as unknown as Request;
+
+			const result = await controller.createUser(validCommand, mockRequest);
 
 			expect(result).toEqual(mockUser);
 			expect(authService.createUser).toHaveBeenCalledWith(validCommand);
+			expect(mockRequest.login).toHaveBeenCalledWith(mockUser, expect.any(Function));
 		});
 
 		it('should automatically log in the user after signup', async () => {
 			authService.createUser.mockResolvedValue(mockUser);
 
-			await controller.createUser(validCommand, mockSession);
+			const mockRequest = {
+				login: jest.fn((user, callback) => callback()),
+			} as unknown as Request;
 
-			expect(mockSession.userId).toBe(mockUser.id);
-			expect(mockSession.email).toBe(mockUser.email);
-			expect(mockSession.name).toBe(mockUser.name);
+			await controller.createUser(validCommand, mockRequest);
+
+			expect(mockRequest.login).toHaveBeenCalledWith(mockUser, expect.any(Function));
 		});
 
-		it('should set session properties correctly', async () => {
+		it('should call req.login with the created user', async () => {
 			const customUser: User = {
 				id: 'custom-id-456',
 				email: 'custom@example.com',
@@ -89,33 +86,42 @@ describe('UsersController', () => {
 			};
 			authService.createUser.mockResolvedValue(customUser);
 
-			await controller.createUser(validCommand, mockSession);
+			const mockRequest = {
+				login: jest.fn((user, callback) => callback()),
+			} as unknown as Request;
 
-			expect(mockSession.userId).toBe('custom-id-456');
-			expect(mockSession.email).toBe('custom@example.com');
-			expect(mockSession.name).toBe('Custom User');
+			await controller.createUser(validCommand, mockRequest);
+
+			expect(mockRequest.login).toHaveBeenCalledWith(customUser, expect.any(Function));
 		});
 
 		it('should propagate validation errors from AuthService', async () => {
 			const error = new BadRequestException('Invalid email format');
 			authService.createUser.mockRejectedValue(error);
 
-			await expect(controller.createUser(validCommand, mockSession)).rejects.toThrow(error);
+			const mockRequest = {
+				login: jest.fn(),
+			} as unknown as Request;
+
+			await expect(controller.createUser(validCommand, mockRequest)).rejects.toThrow(error);
+			expect(mockRequest.login).not.toHaveBeenCalled();
 		});
 
-		it('should not modify session if user creation fails', async () => {
+		it('should not call login if user creation fails', async () => {
 			const error = new BadRequestException('Invalid email format');
 			authService.createUser.mockRejectedValue(error);
 
-			const originalSession = { ...mockSession };
+			const mockRequest = {
+				login: jest.fn(),
+			} as unknown as Request;
 
 			try {
-				await controller.createUser(validCommand, mockSession);
+				await controller.createUser(validCommand, mockRequest);
 			} catch {
 				// Expected to throw
 			}
 
-			expect(mockSession).toEqual(originalSession);
+			expect(mockRequest.login).not.toHaveBeenCalled();
 		});
 
 		it('should handle missing email in command', async () => {
@@ -123,7 +129,11 @@ describe('UsersController', () => {
 			const error = new BadRequestException('Invalid email');
 			authService.createUser.mockRejectedValue(error);
 
-			await expect(controller.createUser(invalidCommand, mockSession)).rejects.toThrow(error);
+			const mockRequest = {
+				login: jest.fn(),
+			} as unknown as Request;
+
+			await expect(controller.createUser(invalidCommand, mockRequest)).rejects.toThrow(error);
 		});
 
 		it('should handle missing password in command', async () => {
@@ -131,7 +141,11 @@ describe('UsersController', () => {
 			const error = new BadRequestException('Invalid password');
 			authService.createUser.mockRejectedValue(error);
 
-			await expect(controller.createUser(invalidCommand, mockSession)).rejects.toThrow(error);
+			const mockRequest = {
+				login: jest.fn(),
+			} as unknown as Request;
+
+			await expect(controller.createUser(invalidCommand, mockRequest)).rejects.toThrow(error);
 		});
 
 		it('should handle missing name in command', async () => {
@@ -139,19 +153,40 @@ describe('UsersController', () => {
 			const error = new BadRequestException('Invalid name');
 			authService.createUser.mockRejectedValue(error);
 
-			await expect(controller.createUser(invalidCommand, mockSession)).rejects.toThrow(error);
+			const mockRequest = {
+				login: jest.fn(),
+			} as unknown as Request;
+
+			await expect(controller.createUser(invalidCommand, mockRequest)).rejects.toThrow(error);
 		});
 
 		it('should return the created user object', async () => {
 			authService.createUser.mockResolvedValue(mockUser);
 
-			const result = await controller.createUser(validCommand, mockSession);
+			const mockRequest = {
+				login: jest.fn((user, callback) => callback()),
+			} as unknown as Request;
+
+			const result = await controller.createUser(validCommand, mockRequest);
 
 			expect(result).toHaveProperty('id');
 			expect(result).toHaveProperty('email');
 			expect(result).toHaveProperty('name');
 			expect(result).toHaveProperty('createdAt');
 			expect(result).toHaveProperty('updatedAt');
+		});
+
+		it('should reject if login fails', async () => {
+			authService.createUser.mockResolvedValue(mockUser);
+
+			const loginError = new Error('Login failed');
+			const mockRequest = {
+				login: jest.fn((user, callback) => callback(loginError)),
+			} as unknown as Request;
+
+			await expect(controller.createUser(validCommand, mockRequest)).rejects.toThrow(
+				'Login failed',
+			);
 		});
 	});
 });
