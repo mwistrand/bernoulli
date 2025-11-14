@@ -4,7 +4,7 @@ import { Request } from 'express';
 
 import { UsersController } from './users.controller';
 import { AuthService } from '../../../../core/services/auth/auth.service';
-import type { CreateUserCommand } from '../../../../core/commands/create-user.command';
+import type { CreateUserCommand } from '../../../../core/commands/user.command';
 import type { User } from '../../../../core/models/auth/user.model';
 
 describe('UsersController', () => {

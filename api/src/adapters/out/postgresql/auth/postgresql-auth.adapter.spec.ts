@@ -6,13 +6,12 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
 import { PostgreSQLAuthAdapter, toUser } from './postgresql-auth.adapter';
 import { UserEntity } from './entities/user.entity';
-import { CreateUserCommand } from '../../../../core/commands/create-user.command';
-import { User } from '../../../../core/models/auth/user.model';
+import { CreateUserCommand } from '../../../../core/commands/user.command';
 
 // Mock bcrypt
 jest.mock('bcrypt');
 
-describe('PostgreSQLAuthAdapter', () => {
+describe(PostgreSQLAuthAdapter.name, () => {
 	let adapter: PostgreSQLAuthAdapter;
 	let repository: jest.Mocked<Repository<UserEntity>>;
 

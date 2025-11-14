@@ -1,10 +1,10 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateProjectCommand } from 'src/core/commands/project.command';
-import { PROJECT_ADAPTER, ProjectPort } from 'src/core/ports/out/auth/project.port';
+import { CreateProjectCommand } from '../../commands/project.command';
+import { PROJECT_PORT, ProjectPort } from '../../ports/out/projects/project.port';
 
 @Injectable()
 export class ProjectService {
-	constructor(@Inject(PROJECT_ADAPTER) private readonly projectPort: ProjectPort) {}
+	constructor(@Inject(PROJECT_PORT) private readonly projectPort: ProjectPort) {}
 
 	createProject(command: CreateProjectCommand) {
 		if (!command.userId?.trim()) {

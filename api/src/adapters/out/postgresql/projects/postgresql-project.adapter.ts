@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { ProjectEntity } from './entity/project.entity';
 import { UserEntity } from '../auth/entities/user.entity';
-import { ProjectPort } from '../../../../core/ports/out/auth/project.port';
+import { ProjectPort } from '../../../../core/ports/out/projects/project.port';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';
 import { Project } from '../../../../core/models/projects/project.model';
 

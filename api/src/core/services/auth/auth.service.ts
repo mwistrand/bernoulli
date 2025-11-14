@@ -1,8 +1,8 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { User } from '../../models/auth/user.model';
-import { AUTH_ADAPTER, AuthPort } from '../../ports/out/auth/auth.port';
-import { CreateUserCommand } from 'src/core/commands/create-user.command';
+import { AUTH_PORT, AuthPort } from '../../ports/out/auth/auth.port';
+import { CreateUserCommand } from '../../commands/user.command';
 
 // Email validation regex - RFC 5322 compliant
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -10,7 +10,7 @@ const MIN_PASSWORD_LENGTH = 8;
 
 @Injectable()
 export class AuthService {
-	constructor(@Inject(AUTH_ADAPTER) private readonly authPort: AuthPort) {}
+	constructor(@Inject(AUTH_PORT) private readonly authPort: AuthPort) {}
 
 	async authenticate(email?: string | null, password?: string | null): Promise<User> {
 		if (email == null || email.trim() === '') {

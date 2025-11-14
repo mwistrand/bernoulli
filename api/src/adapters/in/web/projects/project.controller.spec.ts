@@ -1,31 +1,55 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import {
+	INestApplication,
+	BadRequestException,
+	ValidationPipe,
+	ExecutionContext,
+} from '@nestjs/common';
+import request from 'supertest';
 
 import { ProjectController } from './project.controller';
 import { ProjectService } from '../../../../core/services/projects/project.service';
-import type { CreateProjectCommand } from '../../../../core/commands/project.command';
 import type { Project } from '../../../../core/models/projects/project.model';
+import { TaskService } from 'src/core/services/projects/task.service';
+import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 
-describe('ProjectController', () => {
-	let controller: ProjectController;
+describe(ProjectController.name, () => {
+	let app: INestApplication;
 	let projectService: jest.Mocked<ProjectService>;
+	let taskService: jest.Mocked<TaskService>;
 
 	const mockProject: Project = {
 		id: 'project-123',
 		name: 'Test Project',
-		userId: 'user-123',
 		createdAt: new Date(),
-		updatedAt: new Date(),
+		lastUpdatedAt: new Date(),
+		lastUpdatedBy: 'user-123',
+		createdBy: 'user-123',
 	};
 
-	const mockRequest = {
-		user: { userId: 'user-123' },
-	} as any;
+	const mockUser = {
+		userId: 'user-123',
+		email: 'test@example.com',
+	};
 
 	beforeEach(async () => {
 		const mockProjectService = {
 			createProject: jest.fn(),
 			findAllProjects: jest.fn(),
+		};
+		const mockTaskService = {
+			createTask: jest.fn(),
+			findAllTasks: jest.fn(),
+			findAllTasksByProjectId: jest.fn(),
+		};
+
+		// Mock guard to always return true and set user
+		const mockAuthGuard = {
+			canActivate: jest.fn((context: ExecutionContext) => {
+				const request = context.switchToHttp().getRequest();
+				request.user = mockUser;
+				return true;
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -35,30 +59,54 @@ describe('ProjectController', () => {
 					provide: ProjectService,
 					useValue: mockProjectService,
 				},
+				{
+					provide: TaskService,
+					useValue: mockTaskService,
+				},
 			],
-		}).compile();
+		})
+			.overrideGuard(AuthenticatedGuard)
+			.useValue(mockAuthGuard)
+			.compile();
 
-		controller = module.get<ProjectController>(ProjectController);
+		app = module.createNestApplication();
+		app.useGlobalPipes(
+			new ValidationPipe({
+				whitelist: true,
+				forbidNonWhitelisted: true,
+				transform: true,
+			}),
+		);
+		await app.init();
+
 		projectService = module.get(ProjectService);
+		taskService = module.get(TaskService);
+	});
+
+	afterEach(async () => {
+		await app.close();
 	});
 
 	it('should be defined', () => {
-		expect(controller).toBeDefined();
+		expect(app).toBeDefined();
 	});
 
-	describe('createProject', () => {
-		const validCommand: CreateProjectCommand = {
+	describe('POST /projects', () => {
+		const validDto = {
 			name: 'My Project',
 		};
 
 		it('should create a project successfully', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			const result = await controller.createProject(mockRequest, validCommand);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(validDto)
+				.expect(201);
 
-			expect(result).toEqual(mockProject);
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockProject)));
 			expect(projectService.createProject).toHaveBeenCalledWith({
-				...validCommand,
+				...validDto,
 				userId: 'user-123',
 			});
 		});
@@ -66,11 +114,11 @@ describe('ProjectController', () => {
 		it('should call projectService.createProject with the command', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(mockRequest, validCommand);
+			await request(app.getHttpServer()).post('/projects').send(validDto).expect(201);
 
 			expect(projectService.createProject).toHaveBeenCalledTimes(1);
 			expect(projectService.createProject).toHaveBeenCalledWith({
-				...validCommand,
+				...validDto,
 				userId: 'user-123',
 			});
 		});
@@ -78,84 +126,89 @@ describe('ProjectController', () => {
 		it('should return the created project object', async () => {
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			const result = await controller.createProject(mockRequest, validCommand);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(validDto)
+				.expect(201);
 
-			expect(result).toHaveProperty('id');
-			expect(result).toHaveProperty('name');
-			expect(result).toHaveProperty('userId');
-			expect(result).toHaveProperty('createdAt');
-			expect(result).toHaveProperty('updatedAt');
+			expect(response.body).toHaveProperty('id');
+			expect(response.body).toHaveProperty('name');
 		});
 
 		it('should propagate validation errors from ProjectService', async () => {
 			const error = new BadRequestException('Project must have a valid name');
 			projectService.createProject.mockRejectedValue(error);
 
-			await expect(controller.createProject(mockRequest, validCommand)).rejects.toThrow(
-				error,
-			);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(validDto)
+				.expect(400);
+
+			expect(response.body).toHaveProperty('message', 'Project must have a valid name');
 		});
 
 		it('should handle missing name in command', async () => {
-			const invalidCommand = { name: '' };
-			const error = new BadRequestException('Project must have a valid name');
-			projectService.createProject.mockRejectedValue(error);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send({ name: '' })
+				.expect(400);
 
-			await expect(controller.createProject(mockRequest, invalidCommand)).rejects.toThrow(
-				error,
-			);
+			expect(response.body).toHaveProperty('message');
+			expect(response.body.message).toContain('Project name is required');
 		});
 
 		it('should handle null command', async () => {
-			const error = new BadRequestException('Missing project request body');
-			projectService.createProject.mockRejectedValue(error);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(null)
+				.expect(400);
 
-			await expect(controller.createProject(mockRequest, null as any)).rejects.toThrow(error);
+			expect(response.body).toHaveProperty('message');
 		});
 
 		it('should handle undefined command', async () => {
-			const error = new BadRequestException('Missing project request body');
-			projectService.createProject.mockRejectedValue(error);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(undefined)
+				.expect(400);
 
-			await expect(controller.createProject(mockRequest, undefined as any)).rejects.toThrow(
-				error,
-			);
+			expect(response.body).toHaveProperty('message');
 		});
 
 		it('should accept project name with special characters', async () => {
-			const command = { name: 'Project #1: Test & Development' };
+			const dto = { name: 'Project #1: Test & Development' };
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(mockRequest, command);
+			await request(app.getHttpServer()).post('/projects').send(dto).expect(201);
 
 			expect(projectService.createProject).toHaveBeenCalledWith({
-				...command,
+				...dto,
 				userId: 'user-123',
 			});
 		});
 
 		it('should accept project name with unicode characters', async () => {
-			const command = { name: 'Проект Тест 项目测试' };
+			const dto = { name: 'Проект Тест 项目测试' };
 			projectService.createProject.mockResolvedValue(mockProject);
 
-			await controller.createProject(mockRequest, command);
+			await request(app.getHttpServer()).post('/projects').send(dto).expect(201);
 
 			expect(projectService.createProject).toHaveBeenCalledWith({
-				...command,
+				...dto,
 				userId: 'user-123',
 			});
 		});
 
-		it('should handle long project names', async () => {
-			const command = { name: 'A'.repeat(1000) };
-			projectService.createProject.mockResolvedValue(mockProject);
+		it('should reject long project names exceeding max length', async () => {
+			const dto = { name: 'A'.repeat(101) };
 
-			await controller.createProject(mockRequest, command);
+			const response = await request(app.getHttpServer())
+				.post('/projects')
+				.send(dto)
+				.expect(400);
 
-			expect(projectService.createProject).toHaveBeenCalledWith({
-				...command,
-				userId: 'user-123',
-			});
+			expect(response.body).toHaveProperty('message');
+			expect(response.body.message).toContain('Project name must not exceed 100 characters');
 		});
 
 		it('should return different projects for different commands', async () => {
@@ -166,11 +219,38 @@ describe('ProjectController', () => {
 				.mockResolvedValueOnce(project1)
 				.mockResolvedValueOnce(project2);
 
-			const result1 = await controller.createProject(mockRequest, { name: 'Project 1' });
-			const result2 = await controller.createProject(mockRequest, { name: 'Project 2' });
+			const response1 = await request(app.getHttpServer())
+				.post('/projects')
+				.send({ name: 'Project 1' })
+				.expect(201);
 
-			expect(result1.id).toBe('project-1');
-			expect(result2.id).toBe('project-2');
+			const response2 = await request(app.getHttpServer())
+				.post('/projects')
+				.send({ name: 'Project 2' })
+				.expect(201);
+
+			expect(response1.body.id).toBe('project-1');
+			expect(response2.body.id).toBe('project-2');
+		});
+	});
+
+	describe('GET /projects', () => {
+		it('should return all projects for the authenticated user', async () => {
+			const mockProjects = [mockProject, { ...mockProject, id: 'project-456' }];
+			projectService.findAllProjects.mockResolvedValue(mockProjects);
+
+			const response = await request(app.getHttpServer()).get('/projects').expect(200);
+
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockProjects)));
+			expect(projectService.findAllProjects).toHaveBeenCalledWith('user-123');
+		});
+
+		it('should return empty array when no projects exist', async () => {
+			projectService.findAllProjects.mockResolvedValue([]);
+
+			const response = await request(app.getHttpServer()).get('/projects').expect(200);
+
+			expect(response.body).toEqual([]);
 		});
 	});
 });

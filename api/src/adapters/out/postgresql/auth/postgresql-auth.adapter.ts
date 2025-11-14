@@ -5,8 +5,8 @@ import { Repository } from 'typeorm';
 
 import { User } from '../../../../core/models/auth/user.model';
 import { AuthPort } from '../../../../core/ports/out/auth/auth.port';
+import { CreateUserCommand } from '../../../../core/commands/user.command';
 import { UserEntity } from './entities/user.entity';
-import { CreateUserCommand } from 'src/core/commands/create-user.command';
 
 export function toUser({ id, name, email }: UserEntity): User {
 	return { id, name, email };

@@ -2,11 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AuthService } from './auth.service';
-import { AUTH_ADAPTER, AuthPort } from '../../ports/out/auth/auth.port';
+import { AUTH_PORT, AuthPort } from '../../ports/out/auth/auth.port';
 import { User } from '../../models/auth/user.model';
-import { CreateUserCommand } from '../../commands/create-user.command';
+import { CreateUserCommand } from '../../commands/user.command';
 
-describe('AuthService', () => {
+describe(AuthService.name, () => {
 	let service: AuthService;
 	let authPort: jest.Mocked<AuthPort>;
 
@@ -14,8 +14,6 @@ describe('AuthService', () => {
 		id: '123',
 		email: 'test@example.com',
 		name: 'Test User',
-		createdAt: new Date(),
-		updatedAt: new Date(),
 	};
 
 	beforeEach(async () => {
@@ -28,14 +26,14 @@ describe('AuthService', () => {
 			providers: [
 				AuthService,
 				{
-					provide: AUTH_ADAPTER,
+					provide: AUTH_PORT,
 					useValue: mockAuthPort,
 				},
 			],
 		}).compile();
 
 		service = module.get<AuthService>(AuthService);
-		authPort = module.get(AUTH_ADAPTER);
+		authPort = module.get(AUTH_PORT);
 	});
 
 	it('should be defined', () => {

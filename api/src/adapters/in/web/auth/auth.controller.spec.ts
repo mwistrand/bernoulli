@@ -1,96 +1,239 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ExecutionContext, INestApplication } from '@nestjs/common';
+import request from 'supertest';
 import { AuthController } from './auth.controller';
-import { Request } from 'express';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { AuthenticatedGuard } from './guards/authenticated.guard';
 
 describe('AuthController', () => {
-	let controller: AuthController;
+	let app: INestApplication;
+
+	const mockUser = {
+		userId: '1',
+		email: 'test@example.com',
+		name: 'Test User',
+	};
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [AuthController],
 		}).compile();
 
-		controller = module.get<AuthController>(AuthController);
+		app = module.createNestApplication();
+		await app.init();
 	});
 
-	describe('authenticate', () => {
+	afterEach(async () => {
+		await app.close();
+	});
+
+	describe('POST /auth/login', () => {
 		it('should establish session and return user', async () => {
-			const mockUser = {
+			// Mock the LocalAuthGuard to set req.user
+			const mockLocalAuthGuard = {
+				canActivate: jest.fn(context => {
+					const request = context.switchToHttp().getRequest();
+					request.user = {
+						id: '1',
+						email: 'test@example.com',
+						name: 'Test User',
+					};
+					request.login = jest.fn((user, callback) => callback());
+					return true;
+				}),
+			};
+
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(LocalAuthGuard)
+				.useValue(mockLocalAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			const response = await request(app.getHttpServer())
+				.post('/auth/login')
+				.send({ email: 'test@example.com', password: 'password' })
+				.expect(200);
+
+			expect(response.body).toEqual({
 				id: '1',
 				email: 'test@example.com',
 				name: 'Test User',
-			};
-
-			const mockRequest = {
-				user: mockUser,
-				login: jest.fn((user, callback) => callback()),
-			} as unknown as Request;
-
-			const result = await controller.authenticate(mockRequest);
-
-			expect(mockRequest.login).toHaveBeenCalledWith(mockUser, expect.any(Function));
-			expect(result).toEqual(mockUser);
+			});
 		});
 
 		it('should reject if session establishment fails', async () => {
-			const mockUser = {
-				id: '1',
-				email: 'test@example.com',
-				name: 'Test User',
+			const mockError = new Error('Session error');
+			const mockLocalAuthGuard = {
+				canActivate: jest.fn((context: ExecutionContext) => {
+					const request = context.switchToHttp().getRequest();
+					request.user = {
+						id: '1',
+						email: 'test@example.com',
+						name: 'Test User',
+					};
+					request.login = jest.fn((user, callback) => callback(mockError));
+					return true;
+				}),
 			};
 
-			const mockError = new Error('Session error');
-			const mockRequest = {
-				user: mockUser,
-				login: jest.fn((user, callback) => callback(mockError)),
-			} as unknown as Request;
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(LocalAuthGuard)
+				.useValue(mockLocalAuthGuard)
+				.compile();
 
-			await expect(controller.authenticate(mockRequest)).rejects.toThrow('Session error');
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer())
+				.post('/auth/login')
+				.send({ email: 'test@example.com', password: 'password' })
+				.expect(500);
+		});
+
+		it('should return 401 when credentials are invalid', async () => {
+			const mockLocalAuthGuard = {
+				canActivate: jest.fn(() => false),
+			};
+
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(LocalAuthGuard)
+				.useValue(mockLocalAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer())
+				.post('/auth/login')
+				.send({ email: 'wrong@example.com', password: 'wrongpassword' })
+				.expect(403);
 		});
 	});
 
-	describe('logout', () => {
-		it('should call request.logout and resolve', async () => {
-			const mockRequest = {
-				logout: jest.fn(callback => callback()),
-			} as unknown as Request;
+	describe('POST /auth/logout', () => {
+		it('should call logout and return 200', async () => {
+			const mockAuthGuard = {
+				canActivate: jest.fn(context => {
+					const request = context.switchToHttp().getRequest();
+					request.user = mockUser;
+					request.logout = jest.fn(callback => callback());
+					return true;
+				}),
+			};
 
-			await expect(controller.logout(mockRequest)).resolves.toBeUndefined();
-			expect(mockRequest.logout).toHaveBeenCalledWith(expect.any(Function));
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer()).post('/auth/logout').expect(200);
 		});
 
 		it('should reject if logout fails', async () => {
 			const mockError = new Error('Logout failed');
-			const mockRequest = {
-				logout: jest.fn(callback => callback(mockError)),
-			} as unknown as Request;
+			const mockAuthGuard = {
+				canActivate: jest.fn(context => {
+					const request = context.switchToHttp().getRequest();
+					request.user = mockUser;
+					request.logout = jest.fn(callback => callback(mockError));
+					return true;
+				}),
+			};
 
-			await expect(controller.logout(mockRequest)).rejects.toThrow('Logout failed');
-			expect(mockRequest.logout).toHaveBeenCalledWith(expect.any(Function));
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer()).post('/auth/logout').expect(500);
+		});
+
+		it('should return 403 when not authenticated', async () => {
+			const mockAuthGuard = {
+				canActivate: jest.fn(() => false),
+			};
+
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer()).post('/auth/logout').expect(403);
 		});
 	});
 
-	describe('getCurrentUser', () => {
+	describe('GET /auth/me', () => {
 		it('should return the current user from request', async () => {
-			const mockUser = {
-				userId: '1',
-				email: 'test@example.com',
-				name: 'Test User',
+			const mockAuthGuard = {
+				canActivate: jest.fn(context => {
+					const request = context.switchToHttp().getRequest();
+					request.user = mockUser;
+					return true;
+				}),
 			};
 
-			const mockRequest = {
-				user: mockUser,
-			} as unknown as Request;
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
 
-			const result = await controller.getCurrentUser(mockRequest);
-			expect(result).toEqual(mockUser);
+			app = module.createNestApplication();
+			await app.init();
+
+			const response = await request(app.getHttpServer()).get('/auth/me').expect(200);
+
+			expect(response.body).toEqual(mockUser);
 		});
 
-		it('should return undefined if no user in session', async () => {
-			const mockRequest = {} as Request;
+		it('should return 403 when not authenticated', async () => {
+			const mockAuthGuard = {
+				canActivate: jest.fn(() => false),
+			};
 
-			const result = await controller.getCurrentUser(mockRequest);
-			expect(result).toBeUndefined();
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer()).get('/auth/me').expect(403);
 		});
 	});
 });

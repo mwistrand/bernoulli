@@ -9,7 +9,7 @@ import { UserEntity } from '../auth/entities/user.entity';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';
 import { Project } from '../../../../core/models/projects/project.model';
 
-describe('PostgreSQLProjectAdapter', () => {
+describe(PostgreSQLProjectAdapter.name, () => {
 	let adapter: PostgreSQLProjectAdapter;
 	let repository: jest.Mocked<Repository<ProjectEntity>>;
 	let userRepository: jest.Mocked<Repository<UserEntity>>;

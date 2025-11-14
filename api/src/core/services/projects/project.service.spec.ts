@@ -2,12 +2,11 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ProjectService } from './project.service';
-import type { ProjectPort } from '../../ports/out/auth/project.port';
-import { PROJECT_ADAPTER } from '../../ports/out/auth/project.port';
+import { type ProjectPort, PROJECT_PORT } from '../../ports/out/projects/project.port';
 import type { CreateProjectCommand } from '../../commands/project.command';
 import type { Project } from '../../models/projects/project.model';
 
-describe('ProjectService', () => {
+describe(ProjectService.name, () => {
 	let service: ProjectService;
 	let projectPort: jest.Mocked<ProjectPort>;
 
@@ -31,14 +30,14 @@ describe('ProjectService', () => {
 			providers: [
 				ProjectService,
 				{
-					provide: PROJECT_ADAPTER,
+					provide: PROJECT_PORT,
 					useValue: mockProjectPort,
 				},
 			],
 		}).compile();
 
 		service = module.get<ProjectService>(ProjectService);
-		projectPort = module.get(PROJECT_ADAPTER);
+		projectPort = module.get(PROJECT_PORT);
 	});
 
 	it('should be defined', () => {

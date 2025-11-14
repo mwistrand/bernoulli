@@ -1,23 +1,31 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 import { BaseEntity } from '../../common/base.entity';
-import { Project } from '../../../../../core/models/projects/project.model';
+import { Task } from '../../../../../core/models/projects/task.model';
 
-@Entity('projects')
-export class ProjectEntity extends BaseEntity {
+@Entity('tasks')
+export class TaskEntity extends BaseEntity {
 	@PrimaryColumn()
 	id!: string;
 
 	@Column()
-	name!: string;
+	projectId!: string;
+
+	@Column()
+	title!: string;
+
+	@Column()
+	description!: string;
 
 	@Column({ nullable: true })
-	description?: string;
+	summary?: string;
 
-	toProject(): Project {
+	toTask(): Task {
 		return {
 			id: this.id,
-			name: this.name,
+			projectId: this.projectId,
+			title: this.title,
 			description: this.description,
+			summary: this.summary,
 			createdAt: this.createdAt,
 			lastUpdatedAt: this.lastUpdatedAt,
 			createdBy: this.createdBy.id,

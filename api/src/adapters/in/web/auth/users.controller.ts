@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../../../../core/services/auth/auth.service';
-import { CreateUserCommand } from '../../../../core/commands/create-user.command';
+import { CreateUserCommand } from '../../../../core/commands/user.command';
 
 @Controller('users')
 export class UsersController {
