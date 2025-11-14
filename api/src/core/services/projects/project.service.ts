@@ -7,6 +7,9 @@ export class ProjectService {
 	constructor(@Inject(PROJECT_ADAPTER) private readonly projectPort: ProjectPort) {}
 
 	createProject(command: CreateProjectCommand) {
+		if (!command) {
+			throw new BadRequestException('Missing project request body');
+		}
 		if (!command.name?.trim()) {
 			throw new BadRequestException('Project must have a valid name');
 		}
