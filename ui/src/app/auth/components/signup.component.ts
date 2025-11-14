@@ -1,13 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from './auth.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-signup',
+  standalone: true,
+  selector: 'bn-signup',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignupComponent {
   readonly #authService = inject(AuthService);
