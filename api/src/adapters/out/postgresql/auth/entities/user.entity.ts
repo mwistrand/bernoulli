@@ -1,8 +1,7 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
-import { BaseEntity } from './base.entity';
 
 @Entity('users')
-export class UserEntity extends BaseEntity {
+export class UserEntity {
 	@PrimaryColumn()
 	id!: string;
 
@@ -14,4 +13,10 @@ export class UserEntity extends BaseEntity {
 
 	@Column()
 	name!: string;
+
+	@Column()
+	createdAt!: Date;
+
+	@Column()
+	lastUpdatedAt!: Date;
 }

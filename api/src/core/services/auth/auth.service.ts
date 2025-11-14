@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { User } from '../../models/auth/user.model';
 import { AUTH_ADAPTER, AuthPort } from '../../ports/out/auth/auth.port';
