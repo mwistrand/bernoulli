@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 import { BaseEntity } from '../../common/base.entity';
 import { Project } from 'src/core/models/projects/project.model';
 
@@ -10,7 +10,7 @@ export class ProjectEntity extends BaseEntity {
 	@Column()
 	name!: string;
 
-	@Column()
+	@Column({ nullable: true })
 	description?: string;
 
 	toProject(): Project {

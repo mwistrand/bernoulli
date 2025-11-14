@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { ProjectEntity } from './entity/project.entity';
+import { UserEntity } from '../auth/entities/user.entity';
 import { ProjectPort } from '../../../../core/ports/out/auth/project.port';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';
 import { Project } from '../../../../core/models/projects/project.model';
@@ -12,6 +13,8 @@ export class PostgreSQLProjectAdapter implements ProjectPort {
 	constructor(
 		@InjectRepository(ProjectEntity)
 		private readonly projectRepository: Repository<ProjectEntity>,
+		@InjectRepository(UserEntity)
+		private readonly userRepository: Repository<UserEntity>,
 	) {}
 
 	async createProject(id: string, command: CreateProjectCommand): Promise<Project> {
@@ -19,12 +22,18 @@ export class PostgreSQLProjectAdapter implements ProjectPort {
 
 		try {
 			const createdAt = new Date();
+			const user = await this.userRepository.findOne({ where: { id: command.userId } });
+			if (!user) {
+				throw new Error('Logic error: user not found');
+			}
 			const entity = this.projectRepository.create({
 				id,
 				name,
 				description,
+				createdBy: user,
 				createdAt,
 				lastUpdatedAt: createdAt,
+				lastUpdatedBy: user,
 			});
 			await this.projectRepository.insert(entity);
 			return entity.toProject();
@@ -35,5 +44,18 @@ export class PostgreSQLProjectAdapter implements ProjectPort {
 			}
 			throw error;
 		}
+	}
+
+	async findAllProjects(userId: string): Promise<Project[]> {
+		const entities = await this.projectRepository.find({
+			where: {
+				createdBy: { id: userId },
+			},
+			relations: ['createdBy', 'lastUpdatedBy'],
+			order: {
+				createdAt: 'DESC',
+			},
+		});
+		return entities.map(entity => entity.toProject());
 	}
 }

@@ -1,4 +1,5 @@
-export interface CreateProjectCommand {
-	name: string;
+export class CreateProjectCommand {
+	name!: string;
 	description?: string;
+	userId!: string;
 }

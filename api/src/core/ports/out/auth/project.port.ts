@@ -5,4 +5,5 @@ export const PROJECT_ADAPTER = 'PROJECT_ADAPTER';
 
 export interface ProjectPort {
 	createProject(id: string, command: CreateProjectCommand): Promise<Project>;
+	findAllProjects(userId: string): Promise<Project[]>;
 }

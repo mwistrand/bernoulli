@@ -1,10 +1,49 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { CreateProjectDialogComponent } from '../../projects/components/create-project-dialog/create-project-dialog.component';
+import { ProjectsService } from '../../projects/services/projects.service';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'bn-dashboard-container',
   standalone: true,
+  imports: [CreateProjectDialogComponent, DatePipe],
   templateUrl: './dashboard-container.component.html',
   styleUrl: './dashboard-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardContainerComponent {}
+export class DashboardContainerComponent implements OnInit {
+  readonly #projectsService = inject(ProjectsService);
+
+  protected readonly projectsService = this.#projectsService;
+  protected readonly isDialogOpen = signal<boolean>(false);
+  protected readonly isLoading = signal<boolean>(false);
+
+  ngOnInit(): void {
+    this.loadProjects();
+  }
+
+  openDialog(): void {
+    this.isDialogOpen.set(true);
+  }
+
+  closeDialog(): void {
+    this.isDialogOpen.set(false);
+  }
+
+  onProjectCreated(): void {
+    // Dialog will be closed automatically, projects list is already updated via signal
+  }
+
+  private loadProjects(): void {
+    this.isLoading.set(true);
+    this.#projectsService.fetchAllProjects().subscribe({
+      next: () => {
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load projects:', error);
+        this.isLoading.set(false);
+      },
+    });
+  }
+}

@@ -19,7 +19,11 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 	) {}
 
 	async authenticate(username: string, password: string): Promise<User> {
-		const entity = await this.usersRepository.findOneBy({ email: username });
+		const entity = await this.usersRepository
+			.createQueryBuilder('user')
+			.addSelect('user.password')
+			.where('user.email = :email', { email: username })
+			.getOne();
 		if (!entity) {
 			throw new UnauthorizedException('Unrecognized username or password');
 		}

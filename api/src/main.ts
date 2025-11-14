@@ -1,8 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import * as passport from 'passport';
 import { Pool } from 'pg';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 
 const session = require('express-session');
 const pgSession = require('connect-pg-simple');
@@ -65,6 +67,28 @@ async function bootstrap() {
 
 	app.use(passport.initialize());
 	app.use(passport.session());
+
+	app.use(
+		helmet({
+			contentSecurityPolicy: {
+				directives: {
+					defaultSrc: ["'self'"],
+					scriptSrc: ["'self'"],
+					objectSrc: ["'none'"],
+					upgradeInsecureRequests: [],
+				},
+			},
+		}),
+	);
+
+	// Enable automatic validation with transformation
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true, // Strip properties that don't have decorators
+			forbidNonWhitelisted: true, // Throw error if non-whitelisted properties are present
+			transform: true, // Automatically transform payloads to DTO instances
+		}),
+	);
 
 	app.setGlobalPrefix('api'); // All routes will be prefixed with /api
 	await app.listen(process.env['PORT'] ? Number(process.env['PORT']) : 3000);

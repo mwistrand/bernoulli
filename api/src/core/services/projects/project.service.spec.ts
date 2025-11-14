@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ProjectService } from './project.service';
@@ -14,14 +14,17 @@ describe('ProjectService', () => {
 	const mockProject: Project = {
 		id: '123',
 		name: 'Test Project',
-		userId: 'user-123',
+		description: 'Test Description',
 		createdAt: new Date(),
-		updatedAt: new Date(),
+		lastUpdatedAt: new Date(),
+		createdBy: 'user-123',
+		lastUpdatedBy: 'user-123',
 	};
 
 	beforeEach(async () => {
 		const mockProjectPort: jest.Mocked<ProjectPort> = {
 			createProject: jest.fn(),
+			findAllProjects: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -45,6 +48,7 @@ describe('ProjectService', () => {
 	describe('createProject', () => {
 		const validCommand: CreateProjectCommand = {
 			name: 'My Project',
+			userId: 'user-123',
 		};
 
 		beforeEach(() => {
@@ -65,55 +69,25 @@ describe('ProjectService', () => {
 			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', validCommand);
 		});
 
-		it('should throw BadRequestException when command is null', () => {
-			expect(() => service.createProject(null as any)).toThrow(
-				new BadRequestException('Missing project request body'),
-			);
-		});
-
-		it('should throw BadRequestException when command is undefined', () => {
-			expect(() => service.createProject(undefined as any)).toThrow(
-				new BadRequestException('Missing project request body'),
-			);
-		});
-
-		it('should throw BadRequestException when name is missing', () => {
-			const command = { name: undefined as any };
+		it('should throw UnauthorizedException when userId is missing', () => {
+			const command = { name: 'My Project' } as any;
 			expect(() => service.createProject(command)).toThrow(
-				new BadRequestException('Project must have a valid name'),
+				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw BadRequestException when name is empty string', () => {
-			const command = { name: '' };
+		it('should throw UnauthorizedException when userId is empty string', () => {
+			const command = { name: 'My Project', userId: '' };
 			expect(() => service.createProject(command)).toThrow(
-				new BadRequestException('Project must have a valid name'),
+				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw BadRequestException when name is only whitespace', () => {
-			const command = { name: '   ' };
+		it('should throw UnauthorizedException when userId is only whitespace', () => {
+			const command = { name: 'My Project', userId: '   ' };
 			expect(() => service.createProject(command)).toThrow(
-				new BadRequestException('Project must have a valid name'),
+				new UnauthorizedException('User not authenticated'),
 			);
-		});
-
-		it('should accept project name with special characters', async () => {
-			projectPort.createProject.mockResolvedValue(mockProject);
-
-			const command = { name: 'Project #1: Test & Development' };
-			await service.createProject(command);
-
-			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', command);
-		});
-
-		it('should accept project name with leading/trailing spaces (not trimmed by service)', async () => {
-			projectPort.createProject.mockResolvedValue(mockProject);
-
-			const command = { name: '  My Project  ' };
-			await service.createProject(command);
-
-			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', command);
 		});
 
 		it('should generate a unique UUID for each project', async () => {
@@ -133,13 +107,58 @@ describe('ProjectService', () => {
 			expect(uuidSpy).toHaveBeenCalledTimes(2);
 		});
 
-		it('should pass through any additional properties in command', async () => {
+		it('should pass through description in command', async () => {
 			projectPort.createProject.mockResolvedValue(mockProject);
 
-			const command = { name: 'My Project', description: 'Test description' };
-			await service.createProject(command as any);
+			const command = {
+				name: 'My Project',
+				description: 'Test description',
+				userId: 'user-123',
+			};
+			await service.createProject(command);
 
 			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', command);
+		});
+	});
+
+	describe('findAllProjects', () => {
+		const userId = 'user-123';
+		const mockProjects: Project[] = [mockProject];
+
+		it('should return all projects for authenticated user', async () => {
+			projectPort.findAllProjects.mockResolvedValue(mockProjects);
+
+			const result = await service.findAllProjects(userId);
+
+			expect(result).toEqual(mockProjects);
+			expect(projectPort.findAllProjects).toHaveBeenCalledWith(userId);
+		});
+
+		it('should throw UnauthorizedException when userId is missing', () => {
+			expect(() => service.findAllProjects(undefined as any)).toThrow(
+				new UnauthorizedException('User not authenticated'),
+			);
+		});
+
+		it('should throw UnauthorizedException when userId is empty string', () => {
+			expect(() => service.findAllProjects('')).toThrow(
+				new UnauthorizedException('User not authenticated'),
+			);
+		});
+
+		it('should throw UnauthorizedException when userId is only whitespace', () => {
+			expect(() => service.findAllProjects('   ')).toThrow(
+				new UnauthorizedException('User not authenticated'),
+			);
+		});
+
+		it('should return empty array when user has no projects', async () => {
+			projectPort.findAllProjects.mockResolvedValue([]);
+
+			const result = await service.findAllProjects(userId);
+
+			expect(result).toEqual([]);
+			expect(projectPort.findAllProjects).toHaveBeenCalledWith(userId);
 		});
 	});
 });

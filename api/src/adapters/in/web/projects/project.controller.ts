@@ -1,6 +1,8 @@
-import { Body, Controller, HttpCode, Inject, Post, Req } from '@nestjs/common';
-import { CreateProjectCommand } from 'src/core/commands/project.command';
+import { Body, Controller, Get, HttpCode, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { ProjectService } from 'src/core/services/projects/project.service';
+import { CreateProjectDto } from './dto/project.dto';
+import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 
 @Controller('projects')
 export class ProjectController {
@@ -8,7 +10,18 @@ export class ProjectController {
 
 	@Post('')
 	@HttpCode(201)
-	createProject(@Body() command: CreateProjectCommand) {
-		return this.projectService.createProject(command);
+	@UseGuards(AuthenticatedGuard)
+	createProject(@Req() request: Request, @Body() dto: CreateProjectDto) {
+		return this.projectService.createProject({
+			...dto,
+			userId: (request.user! as any).userId,
+		});
+	}
+
+	@Get('')
+	@UseGuards(AuthenticatedGuard)
+	findAllProjects(@Req() request: Request) {
+		const userId = (request.user! as any).userId;
+		return this.projectService.findAllProjects(userId);
 	}
 }
