@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { AuthService, CreateUserDto, LoginDto, User } from './auth.service';
+import { AuthService, CreateUserDto, LoginDto, User, UserRole } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -12,6 +12,7 @@ describe('AuthService', () => {
     id: '1',
     email: 'test@example.com',
     name: 'Test User',
+    role: UserRole.USER,
   };
 
   beforeEach(() => {

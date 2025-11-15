@@ -2,10 +2,16 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
+  role: UserRole;
 }
 
 export interface CreateUserDto {

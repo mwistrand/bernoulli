@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
-import { AuthService, User } from '../services/auth.service';
+import { AuthService, User, UserRole } from '../services/auth.service';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -15,13 +16,14 @@ describe('LoginComponent', () => {
     id: '1',
     email: 'test@example.com',
     name: 'Test User',
+    role: UserRole.USER,
   };
 
   beforeEach(async () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['login']);
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent],
+      imports: [LoginComponent, TranslateModule.forRoot()],
       providers: [{ provide: AuthService, useValue: mockAuthService }, provideRouter([])],
     }).compileComponents();
 

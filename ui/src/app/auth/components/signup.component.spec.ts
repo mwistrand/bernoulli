@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { SignupComponent } from './signup.component';
-import { AuthService, User } from '../services/auth.service';
+import { AuthService, User, UserRole } from '../services/auth.service';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -15,6 +15,7 @@ describe('SignupComponent', () => {
     id: '1',
     email: 'test@example.com',
     name: 'Test User',
+    role: UserRole.USER,
   };
 
   beforeEach(async () => {
