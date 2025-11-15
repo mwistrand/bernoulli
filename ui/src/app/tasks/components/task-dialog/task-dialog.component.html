@@ -9,7 +9,7 @@
   >
     <div class="dialog-content" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
       <div class="dialog-header">
-        <h2 id="dialog-title">Create New Task</h2>
+        <h2 id="dialog-title">{{ dialogTitle }}</h2>
         <button
           type="button"
           class="close-button"
@@ -111,7 +111,7 @@
         <div class="dialog-actions">
           <button type="button" class="button-secondary" (click)="closeDialog()">Cancel</button>
           <button type="submit" class="button-primary" [disabled]="taskForm.invalid || isLoading()">
-            {{ isLoading() ? 'Creating...' : 'Create Task' }}
+            {{ submitButtonText }}
           </button>
         </div>
       </form>

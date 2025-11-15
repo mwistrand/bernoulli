@@ -1,10 +1,12 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
 	HttpCode,
 	Inject,
 	Param,
+	Patch,
 	Post,
 	Req,
 	UseGuards,
@@ -12,7 +14,7 @@ import {
 import { Request } from 'express';
 import { ProjectService } from 'src/core/services/projects/project.service';
 import { CreateProjectDto } from './dto/project.dto';
-import { CreateTaskDto } from './dto/task.dto';
+import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 import { TaskService } from 'src/core/services/projects/task.service';
 
@@ -67,5 +69,38 @@ export class ProjectController {
 	@UseGuards(AuthenticatedGuard)
 	findAllTasksByProjectId(@Param('id') projectId: string) {
 		return this.taskService.findAllTasksByProjectId(projectId);
+	}
+
+	@Patch(':projectId/tasks/:taskId')
+	@UseGuards(AuthenticatedGuard)
+	updateTask(
+		@Param('projectId') projectId: string,
+		@Param('taskId') taskId: string,
+		@Req() request: Request,
+		@Body() dto: UpdateTaskDto,
+	) {
+		const userId = (request.user! as any).userId;
+		return this.taskService.updateTask({
+			...dto,
+			projectId,
+			taskId,
+			userId,
+		});
+	}
+
+	@Delete(':projectId/tasks/:taskId')
+	@HttpCode(204)
+	@UseGuards(AuthenticatedGuard)
+	async deleteTask(
+		@Param('projectId') projectId: string,
+		@Param('taskId') taskId: string,
+		@Req() request: Request,
+	) {
+		const userId = (request.user! as any).userId;
+		await this.taskService.deleteTask({
+			projectId,
+			taskId,
+			userId,
+		});
 	}
 }

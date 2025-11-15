@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DatePipe } from '@angular/common';
-import { CreateTaskDialogComponent } from '../../tasks/components/create-task-dialog/create-task-dialog.component';
-import { TasksService } from '../../tasks/services/tasks.service';
+import { TaskDialogComponent } from '../../tasks/components/task-dialog/task-dialog.component';
+import { Task, TasksService } from '../../tasks/services/tasks.service';
+import { TaskCardComponent } from '../../projects/components/task-card/task-card.component';
 
 @Component({
   selector: 'bn-project-container',
   standalone: true,
-  imports: [CreateTaskDialogComponent, DatePipe],
+  imports: [TaskDialogComponent, TaskCardComponent],
   templateUrl: './project-container.component.html',
   styleUrl: './project-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,7 +18,9 @@ export class ProjectContainerComponent implements OnInit {
   readonly #tasksService = inject(TasksService);
 
   readonly isDialogOpen = signal<boolean>(false);
-  readonly isLoading = signal<boolean>(false); // can be removed, but keep for dialog
+  readonly isLoading = signal<boolean>(false);
+  readonly editingTask = signal<Task | null>(null);
+  readonly deletingTask = signal<Task | null>(null);
 
   readonly projectId = signal<string>('');
   readonly project = signal<any>(null);
@@ -41,22 +43,50 @@ export class ProjectContainerComponent implements OnInit {
   }
 
   protected openDialog(): void {
+    this.editingTask.set(null);
     this.isDialogOpen.set(true);
   }
 
   protected closeDialog(): void {
     this.isDialogOpen.set(false);
+    this.editingTask.set(null);
   }
 
-  protected onTaskCreated(): void {
+  protected onTaskSaved(task: Task): void {
     const id = this.#route.snapshot.paramMap.get('id');
     if (!id?.trim) {
       return;
     }
 
-    // Reload all tasks so those added by others since loading the page will be included.
+    // Reload all tasks to ensure consistency
     this.#tasksService.fetchTasksByProjectId(id).subscribe((tasks) => {
       this.tasks.set(tasks);
+    });
+  }
+
+  protected onEditTask(task: Task): void {
+    this.editingTask.set(task);
+    this.isDialogOpen.set(true);
+  }
+
+  protected onDeleteTask(task: Task): void {
+    if (
+      !confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`)
+    ) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.#tasksService.deleteTask(this.projectId(), task.id).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        // Update local task list
+        this.tasks.update((tasks) => tasks.filter((t) => t.id !== task.id));
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        alert(`Failed to delete task: ${error.message}`);
+      },
     });
   }
 

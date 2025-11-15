@@ -1,0 +1,119 @@
+.task-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .task-content {
+    flex: 1;
+  }
+
+  .task-header {
+    margin-bottom: 12px;
+
+    h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #111827;
+    }
+  }
+
+  .task-summary {
+    margin: 0 0 12px;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .task-description {
+    margin: 0 0 16px;
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .task-meta {
+    display: flex;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #6b7280;
+      font-size: 0.75rem;
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid #e5e7eb;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+      }
+
+      &:focus {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+
+    .edit-button {
+      color: #3b82f6;
+
+      &:hover {
+        background: #eff6ff;
+        border-color: #3b82f6;
+      }
+    }
+
+    .delete-button {
+      color: #dc2626;
+
+      &:hover {
+        background: #fef2f2;
+        border-color: #dc2626;
+      }
+    }
+  }
+}

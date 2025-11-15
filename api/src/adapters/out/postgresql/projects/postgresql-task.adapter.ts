@@ -5,7 +5,11 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../auth/entities/user.entity';
 import { TaskPort } from '../../../../core/ports/out/projects/task.port';
 import { TaskEntity } from './entity/task.entity';
-import { CreateTaskCommand } from 'src/core/commands/task.command';
+import {
+	CreateTaskCommand,
+	UpdateTaskCommand,
+	DeleteTaskCommand,
+} from 'src/core/commands/task.command';
 import { Task } from 'src/core/models/projects/task.model';
 
 @Injectable()
@@ -49,5 +53,53 @@ export class PostgreSQLTaskAdapter implements TaskPort {
 			},
 		});
 		return entities.map(entity => entity.toTask());
+	}
+
+	async findTaskById(taskId: string, projectId: string): Promise<Task | null> {
+		const entity = await this.taskRepository.findOne({
+			where: { id: taskId, projectId },
+			relations: ['createdBy', 'lastUpdatedBy'],
+		});
+		return entity ? entity.toTask() : null;
+	}
+
+	async updateTask(command: UpdateTaskCommand): Promise<Task> {
+		const { taskId, projectId, userId, title, description, summary } = command;
+
+		const user = await this.userRepository.findOne({ where: { id: userId } });
+		if (!user) {
+			throw new Error('Logic error: user not found');
+		}
+
+		const entity = await this.taskRepository.findOne({
+			where: { id: taskId, projectId },
+			relations: ['createdBy', 'lastUpdatedBy'],
+		});
+
+		if (!entity) {
+			throw new Error('Logic error: task not found');
+		}
+
+		// Only update fields that are explicitly provided (not undefined)
+		if (title !== undefined) {
+			entity.title = title;
+		}
+		if (description !== undefined) {
+			entity.description = description;
+		}
+		if (summary !== undefined) {
+			entity.summary = summary ?? null;
+		}
+
+		entity.lastUpdatedAt = new Date();
+		entity.lastUpdatedBy = user;
+
+		await this.taskRepository.save(entity);
+		return entity.toTask();
+	}
+
+	async deleteTask(command: DeleteTaskCommand): Promise<void> {
+		const { taskId, projectId } = command;
+		await this.taskRepository.delete({ id: taskId, projectId });
 	}
 }

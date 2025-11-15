@@ -6,7 +6,7 @@ import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ProjectContainerComponent } from './project-container.component';
 import { TasksService } from '../../tasks/services/tasks.service';
-import { CreateTaskDialogComponent } from '../../tasks/components/create-task-dialog/create-task-dialog.component';
+import { TaskDialogComponent } from '../../tasks/components/task-dialog/task-dialog.component';
 import { of } from 'rxjs';
 
 // Redefine Project and Task interfaces for test
@@ -171,16 +171,16 @@ describe(ProjectContainerComponent.name, () => {
 
       // Get the dialog component and emit dialogClosed event
       const dialogDebugElement: DebugElement = fixture.debugElement.query(
-        By.directive(CreateTaskDialogComponent),
+        By.directive(TaskDialogComponent),
       );
-      const dialogComponent: CreateTaskDialogComponent = dialogDebugElement.componentInstance;
+      const dialogComponent: TaskDialogComponent = dialogDebugElement.componentInstance;
       dialogComponent.dialogClosed.emit();
       fixture.detectChanges();
 
       expect(component.isDialogOpen()).toBe(false);
     });
 
-    it('should reload tasks when taskCreated event is emitted', () => {
+    it('should reload tasks when taskSaved event is emitted', () => {
       const mockTasks = [createMockTask({ id: '1' }), createMockTask({ id: '2' })];
       mockTaskService.fetchTasksByProjectId.and.returnValue(of(mockTasks));
 
@@ -189,12 +189,12 @@ describe(ProjectContainerComponent.name, () => {
       newTaskButton.click();
       fixture.detectChanges();
 
-      // Get the dialog component and emit taskCreated event
+      // Get the dialog component and emit taskSaved event
       const dialogDebugElement: DebugElement = fixture.debugElement.query(
-        By.directive(CreateTaskDialogComponent),
+        By.directive(TaskDialogComponent),
       );
-      const dialogComponent: CreateTaskDialogComponent = dialogDebugElement.componentInstance;
-      dialogComponent.taskCreated.emit();
+      const dialogComponent: TaskDialogComponent = dialogDebugElement.componentInstance;
+      dialogComponent.taskSaved.emit(mockTasks[0]);
       fixture.detectChanges();
 
       // Verify that the task service was called with the correct project ID

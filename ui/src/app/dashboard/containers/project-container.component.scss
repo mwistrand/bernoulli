@@ -179,64 +179,11 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
+  list-style: none;
+  padding: 0;
+  margin: 0;
 
-.task-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: #d1d5db;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-
-  .task-header {
-    margin-bottom: 12px;
-
-    h3 {
-      margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #111827;
-    }
-  }
-
-  .task-summary {
-    margin: 0 0 12px;
-    color: #374151;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.5;
-  }
-
-  .task-description {
-    margin: 0 0 16px;
-    color: #6b7280;
-    font-size: 0.875rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  .task-meta {
-    display: flex;
-    gap: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #f3f4f6;
-
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #6b7280;
-      font-size: 0.75rem;
-
-      svg {
-        flex-shrink: 0;
-      }
-    }
+  li {
+    display: block;
   }
 }

@@ -17,7 +17,7 @@ export class TaskEntity extends BaseEntity {
 	description!: string;
 
 	@Column({ nullable: true })
-	summary?: string;
+	summary?: string | null;
 
 	toTask(): Task {
 		return {
@@ -25,7 +25,7 @@ export class TaskEntity extends BaseEntity {
 			projectId: this.projectId,
 			title: this.title,
 			description: this.description,
-			summary: this.summary,
+			summary: this.summary ?? undefined,
 			createdAt: this.createdAt,
 			lastUpdatedAt: this.lastUpdatedAt,
 			createdBy: this.createdBy.id,

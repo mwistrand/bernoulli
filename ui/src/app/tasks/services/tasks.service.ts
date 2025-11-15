@@ -20,6 +20,12 @@ export interface CreateTaskRequest {
   description: string;
 }
 
+export interface UpdateTaskRequest {
+  title?: string;
+  summary?: string | null;
+  description?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -59,6 +65,44 @@ export class TasksService {
           ...currentTasks,
           [projectId]: tasks,
         }));
+      }),
+      catchError(this.handleError),
+    );
+  }
+
+  updateTask(projectId: string, taskId: string, request: UpdateTaskRequest): Observable<Task> {
+    return this.#http
+      .patch<Task>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}`, request)
+      .pipe(
+        tap((updatedTask) => {
+          // Update the task in the project's task list
+          this.#tasksSignal.update((tasks) => {
+            const projectTasks = tasks[projectId] || [];
+            const updatedTasks = projectTasks.map((task) =>
+              task.id === taskId ? updatedTask : task,
+            );
+            return {
+              ...tasks,
+              [projectId]: updatedTasks,
+            };
+          });
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  deleteTask(projectId: string, taskId: string): Observable<void> {
+    return this.#http.delete<void>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}`).pipe(
+      tap(() => {
+        // Remove the task from the project's task list
+        this.#tasksSignal.update((tasks) => {
+          const projectTasks = tasks[projectId] || [];
+          const filteredTasks = projectTasks.filter((task) => task.id !== taskId);
+          return {
+            ...tasks,
+            [projectId]: filteredTasks,
+          };
+        });
       }),
       catchError(this.handleError),
     );

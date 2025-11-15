@@ -41,6 +41,8 @@ describe(ProjectController.name, () => {
 			createTask: jest.fn(),
 			findAllTasks: jest.fn(),
 			findAllTasksByProjectId: jest.fn(),
+			updateTask: jest.fn(),
+			deleteTask: jest.fn(),
 		};
 
 		// Mock guard to always return true and set user
@@ -251,6 +253,213 @@ describe(ProjectController.name, () => {
 			const response = await request(app.getHttpServer()).get('/projects').expect(200);
 
 			expect(response.body).toEqual([]);
+		});
+	});
+
+	describe('PATCH /projects/:projectId/tasks/:taskId', () => {
+		const mockTask = {
+			id: 'task-123',
+			projectId: 'project-123',
+			title: 'Updated Task',
+			description: 'Updated Description',
+			summary: 'Updated Summary',
+			createdAt: new Date(),
+			createdBy: 'user-123',
+			lastUpdatedAt: new Date(),
+			lastUpdatedBy: 'user-123',
+		};
+
+		it('should update a task successfully', async () => {
+			const updateDto = {
+				title: 'Updated Task',
+				description: 'Updated Description',
+			};
+			taskService.updateTask.mockResolvedValue(mockTask);
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(200);
+
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockTask)));
+			expect(taskService.updateTask).toHaveBeenCalledWith({
+				...updateDto,
+				projectId: 'project-123',
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should allow partial updates with only title', async () => {
+			const updateDto = { title: 'New Title' };
+			taskService.updateTask.mockResolvedValue(mockTask);
+
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(200);
+
+			expect(taskService.updateTask).toHaveBeenCalledWith({
+				title: 'New Title',
+				projectId: 'project-123',
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should allow partial updates with only description', async () => {
+			const updateDto = { description: 'New Description' };
+			taskService.updateTask.mockResolvedValue(mockTask);
+
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(200);
+
+			expect(taskService.updateTask).toHaveBeenCalledWith({
+				description: 'New Description',
+				projectId: 'project-123',
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should allow setting summary to null', async () => {
+			const updateDto = { summary: null };
+			taskService.updateTask.mockResolvedValue({ ...mockTask, summary: undefined });
+
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(200);
+
+			expect(taskService.updateTask).toHaveBeenCalledWith({
+				summary: null,
+				projectId: 'project-123',
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should reject empty title', async () => {
+			const updateDto = { title: '' };
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(400);
+
+			expect(response.body).toHaveProperty('message');
+			expect(taskService.updateTask).not.toHaveBeenCalled();
+		});
+
+		it('should reject title exceeding max length', async () => {
+			const updateDto = { title: 'A'.repeat(301) };
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(400);
+
+			expect(response.body).toHaveProperty('message');
+			const message = Array.isArray(response.body.message)
+				? response.body.message.join(', ')
+				: response.body.message;
+			expect(message).toContain('300 characters');
+		});
+
+		it('should reject description exceeding max length', async () => {
+			const updateDto = { description: 'A'.repeat(5001) };
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(400);
+
+			expect(response.body).toHaveProperty('message');
+			const message = Array.isArray(response.body.message)
+				? response.body.message.join(', ')
+				: response.body.message;
+			expect(message).toContain('5000 characters');
+		});
+
+		it('should reject summary exceeding max length', async () => {
+			const updateDto = { summary: 'A'.repeat(501) };
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123')
+				.send(updateDto)
+				.expect(400);
+
+			expect(response.body).toHaveProperty('message');
+			const message = Array.isArray(response.body.message)
+				? response.body.message.join(', ')
+				: response.body.message;
+			expect(message).toContain('500 characters');
+		});
+
+		it('should handle task not found error', async () => {
+			const updateDto = { title: 'Updated Title' };
+			taskService.updateTask.mockRejectedValue({
+				statusCode: 404,
+				message: 'Task not found',
+			});
+
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-999')
+				.send(updateDto)
+				.expect(404);
+		});
+	});
+
+	describe('DELETE /projects/:projectId/tasks/:taskId', () => {
+		it('should delete a task successfully', async () => {
+			taskService.deleteTask.mockResolvedValue(undefined);
+
+			await request(app.getHttpServer())
+				.delete('/projects/project-123/tasks/task-123')
+				.expect(204);
+
+			expect(taskService.deleteTask).toHaveBeenCalledWith({
+				projectId: 'project-123',
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should return 204 with no content', async () => {
+			taskService.deleteTask.mockResolvedValue(undefined);
+
+			const response = await request(app.getHttpServer())
+				.delete('/projects/project-123/tasks/task-123')
+				.expect(204);
+
+			expect(response.body).toEqual({});
+		});
+
+		it('should handle task not found error', async () => {
+			taskService.deleteTask.mockRejectedValue({
+				statusCode: 404,
+				message: 'Task not found',
+			});
+
+			await request(app.getHttpServer())
+				.delete('/projects/project-123/tasks/task-999')
+				.expect(404);
+		});
+
+		it('should call deleteTask with correct parameters', async () => {
+			taskService.deleteTask.mockResolvedValue(undefined);
+
+			await request(app.getHttpServer())
+				.delete('/projects/project-456/tasks/task-789')
+				.expect(204);
+
+			expect(taskService.deleteTask).toHaveBeenCalledWith({
+				projectId: 'project-456',
+				taskId: 'task-789',
+				userId: 'user-123',
+			});
 		});
 	});
 });
