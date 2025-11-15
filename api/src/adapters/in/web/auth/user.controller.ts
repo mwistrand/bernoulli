@@ -32,7 +32,7 @@ export class UserController {
 	@Get('me')
 	@UseGuards(AuthenticatedGuard)
 	getCurrentUser(@Req() req: Request) {
-		const userId = (req.user! as any).userId as string;
+		const userId = (req.user! as any).id as string;
 		return this.authService.findById(userId);
 	}
 }

@@ -15,21 +15,22 @@ describe('SessionSerializer', () => {
 
 	describe('serializeUser', () => {
 		it('should serialize user to minimal session data', done => {
-			const mockUser: User = {
+			const mockUser = {
 				id: '123',
 				email: 'test@example.com',
 				name: 'Test User',
-				//
+				role: 'USER',
 				createdAt: new Date(),
 				updatedAt: new Date(),
-			};
+			} as any;
 
 			serializer.serializeUser(mockUser, (err, sessionData) => {
 				expect(err).toBeNull();
 				expect(sessionData).toEqual({
-					userId: '123',
+					id: '123',
 					email: 'test@example.com',
 					name: 'Test User',
+					role: 'USER',
 				});
 				// Ensure sensitive data is not stored in session
 				expect(sessionData).not.toHaveProperty('passwordHash');
@@ -40,18 +41,20 @@ describe('SessionSerializer', () => {
 		});
 
 		it('should handle user with missing optional fields', done => {
-			const mockUser: Partial<User> = {
+			const mockUser = {
 				id: '123',
 				email: 'test@example.com',
 				name: 'Test User',
-			};
+				role: 'USER',
+			} as any;
 
 			serializer.serializeUser(mockUser as User, (err, sessionData) => {
 				expect(err).toBeNull();
 				expect(sessionData).toEqual({
-					userId: '123',
+					id: '123',
 					email: 'test@example.com',
 					name: 'Test User',
+					role: 'USER',
 				});
 				done();
 			});
@@ -61,7 +64,7 @@ describe('SessionSerializer', () => {
 	describe('deserializeUser', () => {
 		it('should deserialize session data back to user payload', done => {
 			const sessionPayload = {
-				userId: '123',
+				id: '123',
 				email: 'test@example.com',
 				name: 'Test User',
 			};
@@ -75,7 +78,7 @@ describe('SessionSerializer', () => {
 
 		it('should handle minimal session payload', done => {
 			const sessionPayload = {
-				userId: '123',
+				id: '123',
 			};
 
 			serializer.deserializeUser(sessionPayload, (err, user) => {
@@ -87,7 +90,7 @@ describe('SessionSerializer', () => {
 
 		it('should pass through the payload without modification', done => {
 			const sessionPayload = {
-				userId: '456',
+				id: '456',
 				email: 'another@example.com',
 				name: 'Another User',
 				customField: 'custom value',

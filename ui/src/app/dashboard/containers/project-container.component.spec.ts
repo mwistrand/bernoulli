@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProjectContainerComponent } from './project-container.component';
 import { TasksService } from '../../tasks/services/tasks.service';
 import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
@@ -80,7 +81,7 @@ describe(ProjectContainerComponent.name, () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [ProjectContainerComponent],
+      imports: [ProjectContainerComponent, TranslateModule.forRoot()],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),

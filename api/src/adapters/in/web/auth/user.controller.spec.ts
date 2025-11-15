@@ -5,7 +5,7 @@ import { Request } from 'express';
 import { UserController } from './user.controller';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import type { CreateUserCommand } from '../../../../core/commands/user.command';
-import type { User } from '../../../../core/models/auth/user.model';
+import { UserRole, type User } from '../../../../core/models/auth/user.model';
 
 describe('UserController', () => {
 	let controller: UserController;
@@ -15,6 +15,7 @@ describe('UserController', () => {
 		id: 'user-123',
 		email: 'test@example.com',
 		name: 'Test User',
+		role: UserRole.ADMIN,
 	};
 
 	beforeEach(async () => {
@@ -79,6 +80,7 @@ describe('UserController', () => {
 				id: 'custom-id-456',
 				email: 'custom@example.com',
 				name: 'Custom User',
+				role: UserRole.USER,
 			};
 			authService.createUser.mockResolvedValue(customUser);
 

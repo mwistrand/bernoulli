@@ -255,12 +255,59 @@ _Project Members:_
 - Entities auto-loaded from API code
 - Migration files stored in `db/migrations/`
 
-## Testing Notes
+## Testing Requirements
 
-- API tests use Jest
-- UI tests use Jasmine/Karma
-- E2E test configuration in `api/test/jest-e2e.json`
-- Puppeteer available for UI E2E testing
+**IMPORTANT: All code changes must include corresponding tests.**
+
+### Test Coverage Expectations
+
+When making any changes to the codebase, you must add or update tests to cover:
+
+- New components, services, resolvers, guards, pipes, and directives
+- New business logic in API services and adapters
+- Modified functionality (update existing tests to reflect changes)
+- Edge cases and error handling scenarios
+- Permission checks and authorization logic
+
+### API Testing (NestJS)
+
+- **Unit tests**: Test individual services, controllers, and adapters in isolation
+- **Integration tests**: Test module interactions and database operations
+- **E2E tests**: Test complete API workflows from HTTP request to response
+- Minimum coverage expectations: 80% for new code
+- Use Jest for all API testing
+
+### UI Testing (Angular)
+
+- **Component tests**: Test component logic, data binding, and user interactions
+- **Service tests**: Test HTTP services, state management, and business logic
+- **Resolver tests**: Test route resolvers including success, error, and edge cases
+- **Guard tests**: Test authentication and authorization guards
+- Minimum coverage expectations: 80% for new code
+- Use Jasmine/Karma for unit tests
+- Puppeteer available for E2E testing
+
+### Test File Naming
+
+- API: `*.spec.ts` for unit tests, `*.e2e-spec.ts` for E2E tests
+- UI: `*.spec.ts` for all tests
+- Place test files adjacent to the code they test
+
+### Running Tests
+
+See "Common Commands > Testing" section for test commands.
+
+### Before Committing
+
+Always run tests before committing code:
+
+```bash
+# API tests
+npm test --prefix api
+
+# UI tests
+npm run test:headless:single --prefix ui
+```
 
 ## Docker Configuration
 

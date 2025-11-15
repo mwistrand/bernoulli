@@ -43,7 +43,7 @@ export class PermissionsService {
   canUpdateMemberRole(
     currentMember: ProjectMember | null | undefined,
     targetMember: ProjectMember,
-    projectCreatorId: string,
+    projectCreatorId: string | undefined,
   ): boolean {
     // Must be project admin
     if (!this.isProjectAdmin(currentMember)) {
@@ -51,7 +51,7 @@ export class PermissionsService {
     }
 
     // Cannot change the project creator's role
-    if (targetMember.userId === projectCreatorId) {
+    if (projectCreatorId && targetMember.userId === projectCreatorId) {
       return false;
     }
 
@@ -64,7 +64,7 @@ export class PermissionsService {
   canRemoveMember(
     currentMember: ProjectMember | null | undefined,
     targetMember: ProjectMember,
-    projectCreatorId: string,
+    projectCreatorId: string | undefined,
   ): boolean {
     // Must be project admin
     if (!this.isProjectAdmin(currentMember)) {
@@ -72,7 +72,7 @@ export class PermissionsService {
     }
 
     // Cannot remove the project creator
-    if (targetMember.userId === projectCreatorId) {
+    if (projectCreatorId && targetMember.userId === projectCreatorId) {
       return false;
     }
 

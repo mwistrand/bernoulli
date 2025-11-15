@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CreateProjectDialogComponent } from '../../projects/components/create-project-dialog.component';
 import { ProjectsService } from '../../projects/services/projects.service';
@@ -12,17 +12,12 @@ import { DatePipe } from '@angular/common';
   styleUrl: './dashboard-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardContainerComponent implements OnInit {
+export class DashboardContainerComponent {
   readonly #projectsService = inject(ProjectsService);
   readonly #router = inject(Router);
 
   protected readonly projectsService = this.#projectsService;
   protected readonly isDialogOpen = signal<boolean>(false);
-  protected readonly isLoading = signal<boolean>(false);
-
-  ngOnInit(): void {
-    this.loadProjects();
-  }
 
   openDialog(): void {
     this.isDialogOpen.set(true);
@@ -38,18 +33,5 @@ export class DashboardContainerComponent implements OnInit {
 
   navigateToProject(projectId: string): void {
     this.#router.navigate(['/dashboard/projects', projectId]);
-  }
-
-  private loadProjects(): void {
-    this.isLoading.set(true);
-    this.#projectsService.fetchAllProjects().subscribe({
-      next: () => {
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        console.error('Failed to load projects:', error);
-        this.isLoading.set(false);
-      },
-    });
   }
 }

@@ -50,6 +50,41 @@
   }
 }
 
+.members-link-section {
+  margin-bottom: 32px;
+
+  .view-members-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #3b82f6;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    &:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
 .tasks-section {
   .tasks-header {
     display: flex;

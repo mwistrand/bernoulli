@@ -20,7 +20,7 @@ describe(ProjectMemberController.name, () => {
 
 	const mockRequest = {
 		user: {
-			userId: 'user-123',
+			id: 'user-123',
 		},
 	} as any;
 

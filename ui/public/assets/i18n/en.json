@@ -56,6 +56,26 @@
       "errors": {
         "nameRequired": "Project name is required"
       }
+    },
+    "members": {
+      "title": "Team Members",
+      "addMember": "Add Member",
+      "noMembers": "No team members yet",
+      "memberActions": "Member actions",
+      "changeRole": "Change Role",
+      "removeMember": "Remove Member"
+    },
+    "addMember": {
+      "title": "Add Team Member",
+      "selectUser": "Select User",
+      "role": "Role",
+      "userRequired": "Please select a user",
+      "roleRequired": "Please select a role",
+      "add": "Add Member"
+    },
+    "roles": {
+      "admin": "Admin",
+      "user": "Member"
     }
   },
   "tasks": {

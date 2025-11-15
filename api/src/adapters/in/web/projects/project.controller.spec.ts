@@ -28,7 +28,7 @@ describe(ProjectController.name, () => {
 	};
 
 	const mockUser = {
-		userId: 'user-123',
+		id: 'user-123',
 		email: 'test@example.com',
 	};
 

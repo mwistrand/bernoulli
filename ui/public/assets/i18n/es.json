@@ -56,6 +56,26 @@
       "errors": {
         "nameRequired": "Se requiere el nombre del proyecto"
       }
+    },
+    "members": {
+      "title": "Miembros del Equipo",
+      "addMember": "Agregar Miembro",
+      "noMembers": "Aún no hay miembros del equipo",
+      "memberActions": "Acciones de miembro",
+      "changeRole": "Cambiar Rol",
+      "removeMember": "Eliminar Miembro"
+    },
+    "addMember": {
+      "title": "Agregar Miembro del Equipo",
+      "selectUser": "Seleccionar Usuario",
+      "role": "Rol",
+      "userRequired": "Por favor seleccione un usuario",
+      "roleRequired": "Por favor seleccione un rol",
+      "add": "Agregar Miembro"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "user": "Miembro"
     }
   },
   "tasks": {

@@ -29,6 +29,7 @@ export class ProjectContainerComponent implements OnInit {
   ngOnInit(): void {
     const id = this.#route.snapshot.paramMap.get('id');
     const resolvedProject = this.#route.snapshot.data['project'];
+
     if (id) {
       this.projectId.set(id);
       if (resolvedProject) {
@@ -92,5 +93,9 @@ export class ProjectContainerComponent implements OnInit {
 
   protected goBack(): void {
     this.#router.navigate(['/dashboard']);
+  }
+
+  protected navigateToMembers(): void {
+    this.#router.navigate(['/dashboard/projects', this.projectId(), 'members']);
   }
 }

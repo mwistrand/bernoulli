@@ -1,0 +1,70 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <h2>{{ 'projects.addMember.title' | translate }}</h2>
+    <button class="close-button" (click)="onCancel()" [disabled]="isSubmitting()">×</button>
+  </div>
+
+  <div class="dialog-content">
+    @if (isLoadingUsers()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'common.loading' | translate }}</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    } @else {
+      <form [formGroup]="addMemberForm">
+        <div class="form-field">
+          <label for="userId">{{ 'projects.addMember.selectUser' | translate }}</label>
+          <select id="userId" formControlName="userId" required>
+            <option value="">{{ 'projects.addMember.selectUser' | translate }}</option>
+            @for (user of availableUsers(); track user.id) {
+              <option [value]="user.id">{{ user.name }} ({{ user.email }})</option>
+            }
+          </select>
+          @if (
+            addMemberForm.get('userId')?.hasError('required') &&
+            addMemberForm.get('userId')?.touched
+          ) {
+            <span class="field-error">{{ 'projects.addMember.userRequired' | translate }}</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="role">{{ 'projects.addMember.role' | translate }}</label>
+          <select id="role" formControlName="role" required>
+            <option [value]="ProjectRole.ADMIN">
+              {{ 'projects.roles.admin' | translate }}
+            </option>
+            <option [value]="ProjectRole.USER">{{ 'projects.roles.user' | translate }}</option>
+          </select>
+          @if (
+            addMemberForm.get('role')?.hasError('required') && addMemberForm.get('role')?.touched
+          ) {
+            <span class="field-error">{{ 'projects.addMember.roleRequired' | translate }}</span>
+          }
+        </div>
+
+        @if (submitError()) {
+          <div class="error-message">{{ submitError() }}</div>
+        }
+      </form>
+    }
+  </div>
+
+  <div class="dialog-actions">
+    <button class="button button-secondary" (click)="onCancel()" [disabled]="isSubmitting()">
+      {{ 'common.cancel' | translate }}
+    </button>
+    <button
+      class="button button-primary"
+      (click)="onSubmit()"
+      [disabled]="addMemberForm.invalid || isSubmitting() || isLoadingUsers()"
+    >
+      @if (isSubmitting()) {
+        <span class="spinner-small"></span>
+      }
+      {{ 'projects.addMember.add' | translate }}
+    </button>
+  </div>
+</div>

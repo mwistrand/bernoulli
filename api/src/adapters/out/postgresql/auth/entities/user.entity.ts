@@ -1,9 +1,5 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
-
-export enum UserRole {
-	ADMIN = 'ADMIN',
-	USER = 'USER',
-}
+import { UserRole } from '../../../../../core/models/auth/user.model';
 
 @Entity('users')
 export class UserEntity {

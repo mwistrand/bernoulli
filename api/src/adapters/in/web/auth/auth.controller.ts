@@ -31,8 +31,15 @@ export class AuthController {
 	async logout(@Req() request: Request): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			request.logout(err => {
-				if (err) reject(err);
-				else resolve();
+				if (err) {
+					reject(err);
+					return;
+				}
+				// Destroy the session completely to prevent stale session issues
+				request.session.destroy(sessionErr => {
+					if (sessionErr) reject(sessionErr);
+					else resolve();
+				});
 			});
 		});
 	}

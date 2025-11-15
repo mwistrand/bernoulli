@@ -6,7 +6,8 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 
 import { PostgreSQLAuthAdapter, toUser } from './postgresql-auth.adapter';
-import { UserEntity, UserRole } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
+import { UserRole } from '../../../../core/models/auth/user.model';
 import { CreateUserCommand } from '../../../../core/commands/user.command';
 
 // Mock bcrypt

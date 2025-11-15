@@ -1,0 +1,88 @@
+<div class="members-container">
+  <div class="members-header">
+    <button class="back-button" (click)="goBack()" aria-label="Go back to project">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Project
+    </button>
+
+    @if (project()) {
+      <div class="project-info">
+        <h1>{{ project().name }} - Members</h1>
+      </div>
+    }
+  </div>
+
+  <div class="members-content">
+    @if (canManageMembers()) {
+      <div class="actions-bar">
+        <button class="button-primary" (click)="onAddMember()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          {{ 'projects.members.addMember' | translate }}
+        </button>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    }
+
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ 'common.loading' | translate }}</p>
+      </div>
+    } @else if (members().length === 0) {
+      <div class="empty-state">
+        <h3>{{ 'projects.members.noMembers' | translate }}</h3>
+        <p>This project has no members yet.</p>
+      </div>
+    } @else {
+      <div class="members-list">
+        @for (member of members(); track member.id) {
+          <div class="member-card">
+            <div class="member-info">
+              <h3>{{ member.userName }}</h3>
+              <p class="member-email">{{ member.userEmail }}</p>
+            </div>
+            <div class="member-actions">
+              <span class="role-badge" [class.role-admin]="member.role === ProjectRole.ADMIN">
+                {{ getRoleLabel(member.role) | translate }}
+              </span>
+              @if (canRemove(member)) {
+                <button class="button-danger" (click)="onRemoveMember(member)">
+                  {{ 'projects.members.removeMember' | translate }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

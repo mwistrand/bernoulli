@@ -26,7 +26,7 @@ export class ProjectMemberController {
 
 	@Get('')
 	getMembers(@Param('projectId') projectId: string, @Req() request: Request) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.projectMemberService.getProjectMembers(projectId, userId);
 	}
 
@@ -37,7 +37,7 @@ export class ProjectMemberController {
 		@Body() dto: AddMemberDto,
 		@Req() request: Request,
 	) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.projectMemberService.addMember(projectId, userId, dto.userId, dto.role);
 	}
 
@@ -48,7 +48,7 @@ export class ProjectMemberController {
 		@Param('userId') targetUserId: string,
 		@Req() request: Request,
 	) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		await this.projectMemberService.removeMember(projectId, userId, targetUserId);
 	}
 
@@ -59,7 +59,7 @@ export class ProjectMemberController {
 		@Body() dto: UpdateRoleDto,
 		@Req() request: Request,
 	) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.projectMemberService.updateMemberRole(
 			projectId,
 			userId,

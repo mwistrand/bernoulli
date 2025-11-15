@@ -1,0 +1,70 @@
+<div class="members-card">
+  <div class="card-header">
+    <h3>{{ 'projects.members.title' | translate }}</h3>
+    @if (canManageMembers()) {
+      <button class="button button-primary" (click)="onAddMember()">
+        <span class="icon">+</span>
+        {{ 'projects.members.addMember' | translate }}
+      </button>
+    }
+  </div>
+
+  <div class="card-content">
+    @if (isLoading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'common.loading' | translate }}</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="error-message">{{ errorMessage() }}</div>
+    } @else if (members().length === 0) {
+      <div class="empty-state">{{ 'projects.members.noMembers' | translate }}</div>
+    } @else {
+      <div class="members-list">
+        @for (member of members(); track member.id) {
+          <div class="member-item">
+            <div class="member-info">
+              <div class="member-name">{{ member.userName }}</div>
+              <div class="member-email">{{ member.userEmail }}</div>
+            </div>
+
+            <div class="member-actions">
+              <span class="role-badge" [class.role-admin]="member.role === ProjectRole.ADMIN">
+                {{ getRoleLabel(member.role) | translate }}
+              </span>
+
+              @if (canManageThisMember(member)) {
+                <div class="menu-container">
+                  <button
+                    class="menu-button"
+                    (click)="toggleMenu(member.id)"
+                    [attr.aria-label]="'projects.members.memberActions' | translate"
+                  >
+                    ⋮
+                  </button>
+
+                  @if (openMenuId() === member.id) {
+                    <div class="menu-dropdown" (clickOutside)="closeMenu()">
+                      @if (canUpdateRole(member)) {
+                        <button class="menu-item" (click)="onChangeRole(member)">
+                          <span class="menu-icon">↔</span>
+                          <span>{{ 'projects.members.changeRole' | translate }}</span>
+                        </button>
+                      }
+                      @if (canRemove(member)) {
+                        <button class="menu-item danger" (click)="onRemoveMember(member)">
+                          <span class="menu-icon">×</span>
+                          <span>{{ 'projects.members.removeMember' | translate }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

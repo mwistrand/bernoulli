@@ -128,6 +128,9 @@ describe('AuthController', () => {
 					const request = context.switchToHttp().getRequest();
 					request.user = mockUser;
 					request.logout = jest.fn(callback => callback());
+					request.session = {
+						destroy: jest.fn(callback => callback()),
+					};
 					return true;
 				}),
 			};
@@ -153,6 +156,37 @@ describe('AuthController', () => {
 					const request = context.switchToHttp().getRequest();
 					request.user = mockUser;
 					request.logout = jest.fn(callback => callback(mockError));
+					request.session = {
+						destroy: jest.fn(callback => callback()),
+					};
+					return true;
+				}),
+			};
+
+			await app.close();
+			const module = await Test.createTestingModule({
+				controllers: [AuthController],
+			})
+				.overrideGuard(AuthenticatedGuard)
+				.useValue(mockAuthGuard)
+				.compile();
+
+			app = module.createNestApplication();
+			await app.init();
+
+			await request(app.getHttpServer()).post('/auth/logout').expect(500);
+		});
+
+		it('should reject if session destroy fails', async () => {
+			const mockError = new Error('Session destroy failed');
+			const mockAuthGuard = {
+				canActivate: jest.fn(context => {
+					const request = context.switchToHttp().getRequest();
+					request.user = mockUser;
+					request.logout = jest.fn(callback => callback());
+					request.session = {
+						destroy: jest.fn(callback => callback(mockError)),
+					};
 					return true;
 				}),
 			};

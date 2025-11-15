@@ -31,21 +31,21 @@ export class ProjectController {
 	createProject(@Req() request: Request, @Body() dto: CreateProjectDto) {
 		return this.projectService.createProject({
 			...dto,
-			userId: (request.user! as any).userId,
+			userId: (request.user! as any).id,
 		});
 	}
 
 	@Get('')
 	@UseGuards(AuthenticatedGuard)
 	findAllProjects(@Req() request: Request) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.projectService.findAllProjects(userId);
 	}
 
 	@Get(':id')
 	@UseGuards(AuthenticatedGuard)
 	findProjectById(@Param('id') id: string, @Req() request: Request) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.projectService.findById(id, userId);
 	}
 
@@ -57,7 +57,7 @@ export class ProjectController {
 		@Req() request: Request,
 		@Body() dto: CreateTaskDto,
 	) {
-		const userId = (request.user! as any).userId;
+		const userId = (request.user! as any).id;
 		return this.taskService.createTask({
 			...dto,
 			projectId,
@@ -68,7 +68,7 @@ export class ProjectController {
 	@Get(':id/tasks')
 	@UseGuards(AuthenticatedGuard)
 	findAllTasksByProjectId(@Param('id') projectId: string, @Req() request: Request) {
-		const userId = (request.user! as any).userId as string;
+		const userId = (request.user! as any).id as string;
 		return this.taskService.findAllTasksByProjectId(projectId, userId);
 	}
 
@@ -80,7 +80,7 @@ export class ProjectController {
 		@Req() request: Request,
 		@Body() dto: UpdateTaskDto,
 	) {
-		const userId = (request.user! as any).userId;
+		const userId = (request.user! as any).id;
 		return this.taskService.updateTask({
 			...dto,
 			projectId,
@@ -97,7 +97,7 @@ export class ProjectController {
 		@Param('taskId') taskId: string,
 		@Req() request: Request,
 	) {
-		const userId = (request.user! as any).userId;
+		const userId = (request.user! as any).id;
 		await this.taskService.deleteTask({
 			projectId,
 			taskId,

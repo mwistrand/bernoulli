@@ -7,7 +7,7 @@ export class SessionSerializer extends PassportSerializer {
 	serializeUser(user: User, done: (err: Error | null, user: any) => void): void {
 		// Store only minimal data in session
 		done(null, {
-			userId: user.id,
+			id: user.id,
 			email: user.email,
 			name: user.name,
 			role: user.role,
