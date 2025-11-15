@@ -46,6 +46,14 @@ export class PostgreSQLProjectAdapter implements ProjectPort {
 		}
 	}
 
+	async findById(id: string): Promise<Project | undefined> {
+		const entity = await this.projectRepository.findOne({
+			where: { id },
+			relations: ['createdBy', 'lastUpdatedBy'],
+		});
+		return entity?.toProject();
+	}
+
 	async findAllProjects(userId: string): Promise<Project[]> {
 		const entities = await this.projectRepository.find({
 			where: {

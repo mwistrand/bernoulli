@@ -1,4 +1,4 @@
-<div class="project-detail-container">
+<div class="project-container-container">
   <div class="project-header">
     <button class="back-button" (click)="goBack()" aria-label="Go back to dashboard">
       <svg
@@ -55,7 +55,7 @@
         <div class="spinner"></div>
         <p>Loading tasks...</p>
       </div>
-    } @else if (tasksService.getTasksByProjectId(projectId()).length === 0) {
+    } @else if (tasks().length === 0) {
       <div class="empty-state">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +77,7 @@
       </div>
     } @else {
       <div class="tasks-list">
-        @for (task of tasksService.getTasksByProjectId(projectId()); track task.id) {
+        @for (task of tasks(); track task.id) {
           <div class="task-card">
             <div class="task-header">
               <h3>{{ task.title }}</h3>

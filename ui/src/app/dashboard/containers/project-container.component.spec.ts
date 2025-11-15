@@ -1,10 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { signal } from '@angular/core';
-import { of, throwError } from 'rxjs';
-import { ProjectDetailComponent } from './project-detail.component';
-import { ProjectsService, Project } from '../../../projects/services/projects.service';
-import { TasksService, Task } from '../../../tasks/services/tasks.service';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { ProjectContainerComponent } from './project-container.component';
+
+// Redefine Project and Task interfaces for test
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  createdBy: string;
+  lastUpdatedAt: Date;
+  lastUpdatedBy: string;
+}
+
+interface Task {
+  id: string;
+  projectId: string;
+  title: string;
+  summary?: string;
+  description: string;
+  createdAt: Date;
+  createdBy: string;
+  lastUpdatedAt: Date;
+  lastUpdatedBy: string;
+}
 
 const createMockProject = (overrides?: Partial<Project>): Project => ({
   id: 'project-1',
@@ -30,30 +51,13 @@ const createMockTask = (overrides?: Partial<Task>): Task => ({
   ...overrides,
 });
 
-describe('ProjectDetailComponent', () => {
-  let component: ProjectDetailComponent;
-  let fixture: ComponentFixture<ProjectDetailComponent>;
-  let mockProjectsService: jasmine.SpyObj<ProjectsService>;
-  let mockTasksService: jasmine.SpyObj<TasksService>;
+describe('ProjectContainerComponent', () => {
+  let component: ProjectContainerComponent;
+  let fixture: ComponentFixture<ProjectContainerComponent>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockActivatedRoute: any;
 
   beforeEach(async () => {
-    const projectsSignal = signal<Project[]>([createMockProject()]);
-    mockProjectsService = jasmine.createSpyObj('ProjectsService', ['fetchAllProjects'], {
-      projects: projectsSignal.asReadonly(),
-    });
-
-    mockTasksService = jasmine.createSpyObj(
-      'TasksService',
-      ['fetchTasksByProjectId', 'getTasksByProjectId'],
-      {
-        tasks: signal<Record<string, Task[]>>({}),
-      },
-    );
-    // Default return value for getTasksByProjectId
-    mockTasksService.getTasksByProjectId.and.returnValue([]);
-
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     mockActivatedRoute = {
@@ -61,20 +65,24 @@ describe('ProjectDetailComponent', () => {
         paramMap: {
           get: jasmine.createSpy('get').and.returnValue('project-1'),
         },
+        data: {
+          project: createMockProject(),
+          tasks: [createMockTask()],
+        },
       },
     };
 
     await TestBed.configureTestingModule({
-      imports: [ProjectDetailComponent],
+      imports: [ProjectContainerComponent],
       providers: [
-        { provide: ProjectsService, useValue: mockProjectsService },
-        { provide: TasksService, useValue: mockTasksService },
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProjectDetailComponent);
+    fixture = TestBed.createComponent(ProjectContainerComponent);
     component = fixture.componentInstance;
   });
 
@@ -83,36 +91,28 @@ describe('ProjectDetailComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should load project and tasks on init', () => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([createMockTask()]));
-
+    it('should load project and tasks from route data on init', () => {
       fixture.detectChanges(); // This triggers ngOnInit
 
       expect(mockActivatedRoute.snapshot.paramMap.get).toHaveBeenCalledWith('id');
       expect(component.projectId()).toBe('project-1');
-      expect(mockTasksService.fetchTasksByProjectId).toHaveBeenCalledWith('project-1');
-    });
-
-    it('should set project from projects service', () => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([createMockTask()]));
-
-      fixture.detectChanges();
 
       const project = component.project();
-      expect(project).toBeTruthy();
       expect(project.id).toBe('project-1');
       expect(project.name).toBe('Test Project');
       expect(project.description).toBe('Test Description');
+
+      const tasks = component.tasks();
+      expect(tasks.length).toBe(1);
+      expect(tasks[0].id).toBe('1');
+      expect(tasks[0].title).toBe('Test Task');
     });
 
     it('should redirect to dashboard if project not found', () => {
-      // Set projects signal to empty array
-      const emptyProjectsSignal = signal<Project[]>([]);
-      Object.defineProperty(mockProjectsService, 'projects', {
-        get: () => emptyProjectsSignal.asReadonly(),
-      });
-
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([]));
+      mockActivatedRoute.snapshot.data = {
+        project: null,
+        tasks: [],
+      };
 
       fixture.detectChanges();
 
@@ -125,58 +125,22 @@ describe('ProjectDetailComponent', () => {
       fixture.detectChanges();
 
       expect(component.projectId()).toBe('');
-      expect(mockTasksService.fetchTasksByProjectId).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Task loading', () => {
-    beforeEach(() => {
-      mockTasksService.getTasksByProjectId.and.returnValue([]);
     });
 
-    it('should set loading state while fetching tasks', () => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([createMockTask()]));
-
-      expect(component.isLoading()).toBe(false);
+    it('should set empty tasks array if tasks not provided in route data', () => {
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject(),
+        tasks: null,
+      };
 
       fixture.detectChanges();
 
-      // Loading state is set synchronously, then cleared after observable completes
-      expect(mockTasksService.fetchTasksByProjectId).toHaveBeenCalled();
-    });
-
-    it('should update tasks signal on successful fetch', (done) => {
-      const tasks = [createMockTask(), createMockTask({ id: '2', title: 'Task 2' })];
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of(tasks));
-
-      fixture.detectChanges();
-
-      setTimeout(() => {
-        expect(component.tasks()).toEqual(tasks);
-        expect(component.isLoading()).toBe(false);
-        done();
-      }, 100);
-    });
-
-    it('should handle errors when fetching tasks', (done) => {
-      spyOn(console, 'error');
-      mockTasksService.fetchTasksByProjectId.and.returnValue(
-        throwError(() => new Error('Failed to load tasks')),
-      );
-
-      fixture.detectChanges();
-
-      setTimeout(() => {
-        expect(console.error).toHaveBeenCalledWith('Failed to load tasks:', jasmine.any(Error));
-        expect(component.isLoading()).toBe(false);
-        done();
-      }, 100);
+      expect(component.tasks()).toEqual([]);
     });
   });
 
   describe('Dialog management', () => {
     beforeEach(() => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([]));
       fixture.detectChanges();
     });
 
@@ -207,7 +171,6 @@ describe('ProjectDetailComponent', () => {
 
   describe('Navigation', () => {
     beforeEach(() => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([]));
       fixture.detectChanges();
     });
 
@@ -219,11 +182,6 @@ describe('ProjectDetailComponent', () => {
   });
 
   describe('Template rendering', () => {
-    beforeEach(() => {
-      mockTasksService.fetchTasksByProjectId.and.returnValue(of([]));
-      mockTasksService.getTasksByProjectId.and.returnValue([]);
-    });
-
     it('should display project name and description', () => {
       fixture.detectChanges();
 
@@ -235,10 +193,10 @@ describe('ProjectDetailComponent', () => {
     });
 
     it('should not display description when project has no description', () => {
-      const projectsSignal = signal<Project[]>([createMockProject({ description: undefined })]);
-      Object.defineProperty(mockProjectsService, 'projects', {
-        get: () => projectsSignal.asReadonly(),
-      });
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject({ description: undefined }),
+        tasks: [],
+      };
 
       fixture.detectChanges();
 
@@ -246,11 +204,10 @@ describe('ProjectDetailComponent', () => {
       expect(projectDescription).toBeNull();
     });
 
-    it('should display loading state when fetching tasks', () => {
-      // First, detectChanges to initialize the component
+    it('should display loading state when set to true', () => {
       fixture.detectChanges();
 
-      // Then set loading state and detect changes again
+      // Set loading state and detect changes again
       component.isLoading.set(true);
       fixture.detectChanges();
 
@@ -260,6 +217,11 @@ describe('ProjectDetailComponent', () => {
     });
 
     it('should display empty state when no tasks exist', () => {
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject(),
+        tasks: [],
+      };
+
       fixture.detectChanges();
 
       const emptyState = fixture.nativeElement.querySelector('.empty-state');
@@ -272,7 +234,10 @@ describe('ProjectDetailComponent', () => {
         createMockTask({ id: '1', title: 'Task 1' }),
         createMockTask({ id: '2', title: 'Task 2' }),
       ];
-      mockTasksService.getTasksByProjectId.and.returnValue(tasks);
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject(),
+        tasks: tasks,
+      };
 
       fixture.detectChanges();
 
@@ -286,7 +251,10 @@ describe('ProjectDetailComponent', () => {
         summary: 'Test Summary',
         description: 'Test Description',
       });
-      mockTasksService.getTasksByProjectId.and.returnValue([task]);
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject(),
+        tasks: [task],
+      };
 
       fixture.detectChanges();
 
@@ -302,7 +270,10 @@ describe('ProjectDetailComponent', () => {
 
     it('should not display summary when task has no summary', () => {
       const task = createMockTask({ summary: undefined });
-      mockTasksService.getTasksByProjectId.and.returnValue([task]);
+      mockActivatedRoute.snapshot.data = {
+        project: createMockProject(),
+        tasks: [task],
+      };
 
       fixture.detectChanges();
 

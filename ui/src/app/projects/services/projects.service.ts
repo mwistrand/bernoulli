@@ -48,6 +48,12 @@ export class ProjectsService {
     );
   }
 
+  getProjectById(id: string): Observable<Project> {
+    return this.#http
+      .get<Project>(`${this.#apiUrl}/projects/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unexpected error occurred';
 

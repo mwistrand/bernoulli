@@ -36,8 +36,15 @@ export class ProjectController {
 	@Get('')
 	@UseGuards(AuthenticatedGuard)
 	findAllProjects(@Req() request: Request) {
-		const userId = (request.user! as any).userId;
+		const userId = (request.user! as any).userId as string;
 		return this.projectService.findAllProjects(userId);
+	}
+
+	@Get(':id')
+	@UseGuards(AuthenticatedGuard)
+	findProjectById(@Param('id') id: string, @Req() request: Request) {
+		const userId = (request.user! as any).userId as string;
+		return this.projectService.findById(id, userId);
 	}
 
 	@Post(':id/tasks')

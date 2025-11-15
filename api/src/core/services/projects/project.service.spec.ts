@@ -68,23 +68,23 @@ describe(ProjectService.name, () => {
 			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', validCommand);
 		});
 
-		it('should throw UnauthorizedException when userId is missing', () => {
+		it('should throw UnauthorizedException when userId is missing', async () => {
 			const command = { name: 'My Project' } as any;
-			expect(() => service.createProject(command)).toThrow(
+			await expect(() => service.createProject(command)).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw UnauthorizedException when userId is empty string', () => {
+		it('should throw UnauthorizedException when userId is empty string', async () => {
 			const command = { name: 'My Project', userId: '' };
-			expect(() => service.createProject(command)).toThrow(
+			await expect(() => service.createProject(command)).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw UnauthorizedException when userId is only whitespace', () => {
+		it('should throw UnauthorizedException when userId is only whitespace', async () => {
 			const command = { name: 'My Project', userId: '   ' };
-			expect(() => service.createProject(command)).toThrow(
+			await expect(() => service.createProject(command)).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
@@ -133,20 +133,20 @@ describe(ProjectService.name, () => {
 			expect(projectPort.findAllProjects).toHaveBeenCalledWith(userId);
 		});
 
-		it('should throw UnauthorizedException when userId is missing', () => {
-			expect(() => service.findAllProjects(undefined as any)).toThrow(
+		it('should throw UnauthorizedException when userId is missing', async () => {
+			await expect(() => service.findAllProjects(undefined as any)).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw UnauthorizedException when userId is empty string', () => {
-			expect(() => service.findAllProjects('')).toThrow(
+		it('should throw UnauthorizedException when userId is empty string', async () => {
+			await expect(() => service.findAllProjects('')).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw UnauthorizedException when userId is only whitespace', () => {
-			expect(() => service.findAllProjects('   ')).toThrow(
+		it('should throw UnauthorizedException when userId is only whitespace', async () => {
+			await expect(() => service.findAllProjects('   ')).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
