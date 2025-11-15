@@ -1,0 +1,120 @@
+@if (isOpen()) {
+  <div
+    class="dialog-backdrop"
+    (click)="onBackdropClick($event)"
+    (keydown)="onKeyDown($event)"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dialog-title"
+  >
+    <div class="dialog-content" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+      <div class="dialog-header">
+        <h2 id="dialog-title">Create New Task</h2>
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeDialog()"
+          aria-label="Close dialog"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+        @if (errorMessage()) {
+          <div class="error-banner" role="alert">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="task-title" class="required">Title</label>
+          <input
+            type="text"
+            id="task-title"
+            formControlName="title"
+            placeholder="Enter task title"
+            maxlength="300"
+            [class.invalid]="taskForm.get('title')?.invalid && taskForm.get('title')?.touched"
+            aria-required="true"
+            cdkFocusInitial
+          />
+          @if (taskForm.get('title')?.invalid && taskForm.get('title')?.touched) {
+            <span class="field-error" role="alert">
+              @if (taskForm.get('title')?.errors?.['required']) {
+                Task title is required
+              }
+              @if (taskForm.get('title')?.errors?.['maxlength']) {
+                Task title must not exceed 300 characters
+              }
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="task-summary">Summary</label>
+          <input
+            type="text"
+            id="task-summary"
+            formControlName="summary"
+            placeholder="Enter task summary (optional)"
+            maxlength="500"
+            [class.invalid]="taskForm.get('summary')?.invalid && taskForm.get('summary')?.touched"
+          />
+          @if (taskForm.get('summary')?.invalid && taskForm.get('summary')?.touched) {
+            <span class="field-error" role="alert">
+              @if (taskForm.get('summary')?.errors?.['maxlength']) {
+                Task summary must not exceed 500 characters
+              }
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="task-description" class="required">Description</label>
+          <textarea
+            id="task-description"
+            formControlName="description"
+            placeholder="Enter task description"
+            maxlength="5000"
+            rows="6"
+            [class.invalid]="
+              taskForm.get('description')?.invalid && taskForm.get('description')?.touched
+            "
+            aria-required="true"
+          ></textarea>
+          @if (taskForm.get('description')?.invalid && taskForm.get('description')?.touched) {
+            <span class="field-error" role="alert">
+              @if (taskForm.get('description')?.errors?.['required']) {
+                Task description is required
+              }
+              @if (taskForm.get('description')?.errors?.['maxlength']) {
+                Task description must not exceed 5000 characters
+              }
+            </span>
+          }
+        </div>
+
+        <div class="dialog-actions">
+          <button type="button" class="button-secondary" (click)="closeDialog()">Cancel</button>
+          <button type="submit" class="button-primary" [disabled]="taskForm.invalid || isLoading()">
+            {{ isLoading() ? 'Creating...' : 'Create Task' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -49,7 +49,13 @@
   } @else {
     <div class="projects-grid">
       @for (project of projectsService.projects(); track project.id) {
-        <div class="project-card">
+        <div
+          class="project-card"
+          (click)="navigateToProject(project.id)"
+          (keydown.enter)="navigateToProject(project.id)"
+          tabindex="0"
+          role="button"
+        >
           <div class="project-card-header">
             <h3>{{ project.name }}</h3>
           </div>

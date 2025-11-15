@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CreateProjectDialogComponent } from '../../projects/components/create-project-dialog/create-project-dialog.component';
 import { ProjectsService } from '../../projects/services/projects.service';
 import { DatePipe } from '@angular/common';
@@ -13,6 +14,7 @@ import { DatePipe } from '@angular/common';
 })
 export class DashboardContainerComponent implements OnInit {
   readonly #projectsService = inject(ProjectsService);
+  readonly #router = inject(Router);
 
   protected readonly projectsService = this.#projectsService;
   protected readonly isDialogOpen = signal<boolean>(false);
@@ -32,6 +34,10 @@ export class DashboardContainerComponent implements OnInit {
 
   onProjectCreated(): void {
     // Dialog will be closed automatically, projects list is already updated via signal
+  }
+
+  navigateToProject(projectId: string): void {
+    this.#router.navigate(['/dashboard/projects', projectId]);
   }
 
   private loadProjects(): void {
