@@ -7,4 +7,5 @@ export interface ProjectPort {
 	createProject(id: string, command: CreateProjectCommand): Promise<Project>;
 	findById(id: string): Promise<Project | undefined>;
 	findAllProjects(userId: string): Promise<Project[]>;
+	findAllProjectsByMembership(userId: string): Promise<Project[]>;
 }

@@ -9,8 +9,8 @@ import { AuthPort } from '../../../../core/ports/out/auth/auth.port';
 import { CreateUserCommand } from '../../../../core/commands/user.command';
 import { UserEntity } from './entities/user.entity';
 
-export function toUser({ id, name, email }: UserEntity): User {
-	return { id, name, email };
+export function toUser({ id, name, email, role }: UserEntity): User {
+	return { id, name, email, role };
 }
 
 @Injectable()
@@ -62,7 +62,7 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 				lastUpdatedAt: createdAt,
 			});
 			await this.usersRepository.insert(entity);
-			return { id, name, email };
+			return toUser(entity);
 		} catch (error: any) {
 			// Check for unique constraint violation (Postgres error code '23505')
 			if (error.code === '23505') {
@@ -74,5 +74,20 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 			}
 			throw error;
 		}
+	}
+
+	async findById(id: string): Promise<User> {
+		const entity = await this.usersRepository.findOne({ where: { id } });
+		if (!entity) {
+			throw new UnauthorizedException('User not found');
+		}
+		return toUser(entity);
+	}
+
+	async findAllUsers(): Promise<User[]> {
+		const entities = await this.usersRepository.find({
+			order: { name: 'ASC' },
+		});
+		return entities.map(toUser);
 	}
 }

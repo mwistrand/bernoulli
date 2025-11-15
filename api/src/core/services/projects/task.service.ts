@@ -11,10 +11,18 @@ import {
 	DeleteTaskCommand,
 } from 'src/core/commands/task.command';
 import { TASK_PORT, TaskPort } from 'src/core/ports/out/projects/task.port';
+import {
+	PROJECT_MEMBER_PORT,
+	ProjectMemberPort,
+} from 'src/core/ports/out/projects/project-member.port';
 
 @Injectable()
 export class TaskService {
-	constructor(@Inject(TASK_PORT) private readonly taskPort: TaskPort) {}
+	constructor(
+		@Inject(TASK_PORT) private readonly taskPort: TaskPort,
+		@Inject(PROJECT_MEMBER_PORT)
+		private readonly projectMemberPort: ProjectMemberPort,
+	) {}
 
 	async createTask(command: CreateTaskCommand) {
 		if (!command.userId?.trim()) {
@@ -23,13 +31,21 @@ export class TaskService {
 		if (!command.projectId?.trim()) {
 			throw new NotFoundException('Project not found');
 		}
+
+		// Verify user is project member
+		await this.requireProjectMember(command.projectId, command.userId);
+
 		return this.taskPort.createTask(crypto.randomUUID(), command);
 	}
 
-	async findAllTasksByProjectId(projectId: string) {
+	async findAllTasksByProjectId(projectId: string, userId: string) {
 		if (!projectId?.trim()) {
 			throw new NotFoundException('Project not found');
 		}
+
+		// Verify user is project member
+		await this.requireProjectMember(projectId, userId);
+
 		return this.taskPort.findAllTasksByProjectId(projectId);
 	}
 
@@ -43,6 +59,9 @@ export class TaskService {
 		if (!command.taskId?.trim()) {
 			throw new NotFoundException('Task not found');
 		}
+
+		// Verify user is project member
+		await this.requireProjectMember(command.projectId, command.userId);
 
 		// Verify task exists and belongs to the project
 		const existingTask = await this.taskPort.findTaskById(command.taskId, command.projectId);
@@ -64,6 +83,9 @@ export class TaskService {
 			throw new NotFoundException('Task not found');
 		}
 
+		// Verify user is project member
+		await this.requireProjectMember(command.projectId, command.userId);
+
 		// Verify task exists and belongs to the project
 		const existingTask = await this.taskPort.findTaskById(command.taskId, command.projectId);
 		if (!existingTask) {
@@ -71,5 +93,13 @@ export class TaskService {
 		}
 
 		return this.taskPort.deleteTask(command);
+	}
+
+	private async requireProjectMember(projectId: string, userId: string) {
+		const member = await this.projectMemberPort.findByProjectAndUser(projectId, userId);
+		if (!member) {
+			throw new ForbiddenException('User is not a project member');
+		}
+		return member;
 	}
 }

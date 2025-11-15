@@ -10,13 +10,23 @@ import { TaskService } from './core/services/projects/task.service';
 import { TASK_PORT } from './core/ports/out/projects/task.port';
 import { TaskEntity } from './adapters/out/postgresql/projects/entities/task.entity';
 import { PostgreSQLTaskAdapter } from './adapters/out/postgresql/projects/postgresql-task.adapter';
+import { ProjectMemberService } from './core/services/projects/project-member.service';
+import { ProjectMemberController } from './adapters/in/web/projects/project-member.controller';
+import { PROJECT_MEMBER_PORT } from './core/ports/out/projects/project-member.port';
+import { PostgreSQLProjectMemberAdapter } from './adapters/out/postgresql/projects/postgresql-project-member.adapter';
+import { ProjectMemberEntity } from './adapters/out/postgresql/projects/entities/project-member.entity';
+import { AuthModule } from './auth.module';
 
 @Module({
-	controllers: [ProjectController],
-	imports: [TypeOrmModule.forFeature([ProjectEntity, TaskEntity, UserEntity])],
+	controllers: [ProjectController, ProjectMemberController],
+	imports: [
+		TypeOrmModule.forFeature([ProjectEntity, TaskEntity, ProjectMemberEntity, UserEntity]),
+		AuthModule,
+	],
 	providers: [
 		ProjectService,
 		TaskService,
+		ProjectMemberService,
 		{
 			provide: PROJECT_PORT,
 			useClass: PostgreSQLProjectAdapter,
@@ -25,7 +35,11 @@ import { PostgreSQLTaskAdapter } from './adapters/out/postgresql/projects/postgr
 			provide: TASK_PORT,
 			useClass: PostgreSQLTaskAdapter,
 		},
+		{
+			provide: PROJECT_MEMBER_PORT,
+			useClass: PostgreSQLProjectMemberAdapter,
+		},
 	],
-	exports: [PROJECT_PORT, TASK_PORT], // <-- Add this line
+	exports: [PROJECT_PORT, TASK_PORT, PROJECT_MEMBER_PORT],
 })
 export class ProjectsModule {}

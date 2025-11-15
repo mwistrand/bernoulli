@@ -53,4 +53,12 @@ export class AuthService {
 
 		return this.authPort.createUser(crypto.randomUUID(), normalizedCommand);
 	}
+
+	async findById(id: string): Promise<User> {
+		return this.authPort.findById(id);
+	}
+
+	async findAllUsers(): Promise<User[]> {
+		return this.authPort.findAllUsers();
+	}
 }

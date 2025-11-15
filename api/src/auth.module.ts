@@ -23,5 +23,6 @@ import { SessionSerializer } from './adapters/in/web/auth/serializers/session.se
 			useClass: PostgreSQLAuthAdapter,
 		},
 	],
+	exports: [AUTH_PORT],
 })
 export class AuthModule {}

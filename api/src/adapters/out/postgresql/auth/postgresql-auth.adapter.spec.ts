@@ -3,9 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 
 import { PostgreSQLAuthAdapter, toUser } from './postgresql-auth.adapter';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity, UserRole } from './entities/user.entity';
 import { CreateUserCommand } from '../../../../core/commands/user.command';
 
 // Mock bcrypt
@@ -14,12 +15,14 @@ jest.mock('bcrypt');
 describe(PostgreSQLAuthAdapter.name, () => {
 	let adapter: PostgreSQLAuthAdapter;
 	let repository: jest.Mocked<Repository<UserEntity>>;
+	let i18nService: jest.Mocked<I18nService>;
 
 	const mockUserEntity: UserEntity = {
 		id: 'user-123',
 		email: 'test@example.com',
 		name: 'Test User',
 		password: 'hashed-password',
+		role: UserRole.USER,
 		createdAt: new Date('2024-01-01'),
 		lastUpdatedAt: new Date('2024-01-01'),
 	};
@@ -34,9 +37,21 @@ describe(PostgreSQLAuthAdapter.name, () => {
 		const mockRepository = {
 			createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
 			findOneBy: jest.fn(),
+			find: jest.fn(),
+			findOne: jest.fn(),
 			create: jest.fn(),
 			insert: jest.fn(),
 			save: jest.fn(),
+		};
+
+		const mockI18nService = {
+			t: jest.fn((key: string) => {
+				const translations: Record<string, string> = {
+					'auth.errors.unrecognized_credentials': 'Unrecognized username or password',
+					'auth.errors.email_exists': 'Email already exists',
+				};
+				return translations[key] || key;
+			}),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -46,11 +61,16 @@ describe(PostgreSQLAuthAdapter.name, () => {
 					provide: getRepositoryToken(UserEntity),
 					useValue: mockRepository,
 				},
+				{
+					provide: I18nService,
+					useValue: mockI18nService,
+				},
 			],
 		}).compile();
 
 		adapter = module.get<PostgreSQLAuthAdapter>(PostgreSQLAuthAdapter);
 		repository = module.get(getRepositoryToken(UserEntity));
+		i18nService = module.get(I18nService);
 	});
 
 	afterEach(() => {
@@ -69,7 +89,15 @@ describe(PostgreSQLAuthAdapter.name, () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				name: 'Test User',
+				role: UserRole.USER,
 			});
+		});
+
+		it('should include role field', () => {
+			const result = toUser(mockUserEntity);
+
+			expect(result).toHaveProperty('role');
+			expect(result.role).toBe(UserRole.USER);
 		});
 
 		it('should exclude password and timestamps', () => {
@@ -93,6 +121,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 				id: 'user-123',
 				email: 'test@example.com',
 				name: 'Test User',
+				role: UserRole.USER,
 			});
 			expect(repository.createQueryBuilder).toHaveBeenCalledWith('user');
 			expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('user.password');
@@ -171,7 +200,13 @@ describe(PostgreSQLAuthAdapter.name, () => {
 
 		beforeEach(() => {
 			(bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password-123');
-			repository.create.mockReturnValue(mockUserEntity);
+			repository.create.mockImplementation(
+				data =>
+					({
+						...data,
+						role: data.role || UserRole.USER,
+					}) as any,
+			);
 			repository.insert.mockResolvedValue(undefined as any);
 		});
 
@@ -182,6 +217,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 				id: userId,
 				email: validCommand.email,
 				name: validCommand.name,
+				role: UserRole.USER,
 			});
 			expect(bcrypt.hash).toHaveBeenCalledWith(validCommand.password, 12);
 		});
@@ -213,11 +249,15 @@ describe(PostgreSQLAuthAdapter.name, () => {
 		});
 
 		it('should insert user entity into repository', async () => {
-			repository.create.mockReturnValue(mockUserEntity);
-
 			await adapter.createUser(userId, validCommand);
 
-			expect(repository.insert).toHaveBeenCalledWith(mockUserEntity);
+			expect(repository.insert).toHaveBeenCalledWith(
+				expect.objectContaining({
+					id: userId,
+					email: validCommand.email,
+					name: validCommand.name,
+				}),
+			);
 		});
 
 		it('should return user without password', async () => {
@@ -227,6 +267,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 			expect(result).toHaveProperty('id');
 			expect(result).toHaveProperty('email');
 			expect(result).toHaveProperty('name');
+			expect(result).toHaveProperty('role');
 		});
 
 		it('should throw ConflictException on duplicate email', async () => {

@@ -16,7 +16,7 @@ export class TaskEntity extends BaseEntity {
 	@Column()
 	description!: string;
 
-	@Column({ nullable: true })
+	@Column({ type: 'varchar', nullable: true })
 	summary?: string | null;
 
 	toTask(): Task {

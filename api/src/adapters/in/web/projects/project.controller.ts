@@ -67,8 +67,9 @@ export class ProjectController {
 
 	@Get(':id/tasks')
 	@UseGuards(AuthenticatedGuard)
-	findAllTasksByProjectId(@Param('id') projectId: string) {
-		return this.taskService.findAllTasksByProjectId(projectId);
+	findAllTasksByProjectId(@Param('id') projectId: string, @Req() request: Request) {
+		const userId = (request.user! as any).userId as string;
+		return this.taskService.findAllTasksByProjectId(projectId, userId);
 	}
 
 	@Patch(':projectId/tasks/:taskId')

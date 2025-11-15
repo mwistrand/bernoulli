@@ -1,5 +1,10 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
+export enum UserRole {
+	ADMIN = 'ADMIN',
+	USER = 'USER',
+}
+
 @Entity('users')
 export class UserEntity {
 	@PrimaryColumn()
@@ -13,6 +18,13 @@ export class UserEntity {
 
 	@Column()
 	name!: string;
+
+	@Column({
+		type: 'enum',
+		enum: UserRole,
+		default: UserRole.USER,
+	})
+	role!: UserRole;
 
 	@Column()
 	createdAt!: Date;

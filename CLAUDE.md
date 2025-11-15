@@ -133,6 +133,38 @@ npm run build --prefix ui     # Build Angular UI
 - Passport.js with local strategy
 - Sessions stored in database (table created automatically)
 - CORS enabled for `http://localhost:1234` with credentials
+- User role included in session data
+
+**Authorization & RBAC:**
+
+The application implements Role-Based Access Control (RBAC) with two levels:
+
+**User Roles** (system-level):
+
+- `ADMIN`: Can create/delete projects, manage all project members
+- `USER`: Can manage tasks within projects they're assigned to (default for new users)
+
+**Project Roles** (project-level):
+
+- `ADMIN`: Can add/remove members, change member roles, manage project settings
+- `USER`: Can create/edit/delete tasks within the project
+
+**Access Control Rules:**
+
+- Projects are visible only to members (membership-based access)
+- Tasks inherit access control from parent project
+- Project creators automatically become project ADMIN members
+- First user account in system is granted ADMIN role
+- Project creators cannot be removed or demoted from ADMIN role
+
+**Implementation:**
+
+- `UserEntity` has `role` enum field (ADMIN, USER)
+- `ProjectMemberEntity` tracks project membership with project-level roles
+- Unique constraint on (projectId, userId) prevents duplicate memberships
+- Services validate both user role and project membership before operations
+- `ProjectMemberService` handles member management with authorization checks
+- `ProjectService` and `TaskService` require membership validation
 
 **Security:**
 
@@ -141,19 +173,57 @@ npm run build --prefix ui     # Build Angular UI
 - httpOnly cookies, sameSite: 'lax'
 - secure cookies in production
 - bcrypt for password hashing
+- All project/task operations require membership verification
+- Role-based authorization enforced at service layer
 
 **Module Structure:**
 
 - Feature modules register their own TypeORM entities
-- Providers use dependency injection tokens for ports (e.g., PROJECT_PORT, TASK_PORT)
+- Providers use dependency injection tokens for ports (e.g., PROJECT_PORT, TASK_PORT, PROJECT_MEMBER_PORT)
 - All routes prefixed with `/api`
+- AuthModule exports AUTH_PORT for use by other modules
+
+**API Endpoints:**
+
+_Authentication:_
+
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/me` - Get authenticated user session
+
+_Users:_
+
+- `POST /api/users` - Create new user (auto-login after signup)
+- `GET /api/users` - Get all users (authenticated)
+- `GET /api/users/me` - Get current user details
+
+_Projects:_
+
+- `POST /api/projects` - Create project (ADMIN role required)
+- `GET /api/projects` - Get all projects (membership-based)
+- `GET /api/projects/:id` - Get project details (requires membership)
+
+_Tasks:_
+
+- `POST /api/projects/:id/tasks` - Create task (requires membership)
+- `GET /api/projects/:id/tasks` - Get project tasks (requires membership)
+- `PATCH /api/projects/:projectId/tasks/:taskId` - Update task (requires membership)
+- `DELETE /api/projects/:projectId/tasks/:taskId` - Delete task (requires membership)
+
+_Project Members:_
+
+- `GET /api/projects/:projectId/members` - Get project members (requires membership)
+- `POST /api/projects/:projectId/members` - Add member (project ADMIN only)
+- `DELETE /api/projects/:projectId/members/:userId` - Remove member (project ADMIN only)
+- `PATCH /api/projects/:projectId/members/:userId/role` - Update member role (project ADMIN only)
 
 **Key Entities:**
 
-- UserEntity: User accounts
-- ProjectEntity: Projects with owner relationships
-- TaskEntity: Tasks associated with projects
-- BaseEntity: Shared fields (id, createdAt, updatedAt, deletedAt)
+- UserEntity: User accounts with role field (ADMIN/USER)
+- ProjectEntity: Projects with creator tracking (extends BaseEntity)
+- TaskEntity: Tasks associated with projects (extends BaseEntity)
+- ProjectMemberEntity: Project membership with project-level roles (ADMIN/USER)
+- BaseEntity: Shared fields (createdBy, lastUpdatedBy, createdAt, lastUpdatedAt)
 
 ### Frontend (Angular)
 

@@ -66,4 +66,18 @@ export class PostgreSQLProjectAdapter implements ProjectPort {
 		});
 		return entities.map(entity => entity.toProject());
 	}
+
+	async findAllProjectsByMembership(userId: string): Promise<Project[]> {
+		// Find all projects where user is a member
+		const entities = await this.projectRepository
+			.createQueryBuilder('project')
+			.innerJoin('project_members', 'pm', 'pm.projectId = project.id')
+			.where('pm.userId = :userId', { userId })
+			.leftJoinAndSelect('project.createdBy', 'createdBy')
+			.leftJoinAndSelect('project.lastUpdatedBy', 'lastUpdatedBy')
+			.orderBy('project.createdAt', 'DESC')
+			.getMany();
+
+		return entities.map(entity => entity.toProject());
+	}
 }
