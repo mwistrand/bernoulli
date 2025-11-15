@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { CreateTaskDialogComponent } from '../../tasks/components/create-task-dialog/create-task-dialog.component';
+import { TasksService } from '../../tasks/services/tasks.service';
 
 @Component({
   selector: 'bn-project-container',
@@ -14,6 +15,7 @@ import { CreateTaskDialogComponent } from '../../tasks/components/create-task-di
 export class ProjectContainerComponent implements OnInit {
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
+  readonly #tasksService = inject(TasksService);
 
   readonly isDialogOpen = signal<boolean>(false);
   readonly isLoading = signal<boolean>(false); // can be removed, but keep for dialog
@@ -38,19 +40,27 @@ export class ProjectContainerComponent implements OnInit {
     }
   }
 
-  openDialog(): void {
+  protected openDialog(): void {
     this.isDialogOpen.set(true);
   }
 
-  closeDialog(): void {
+  protected closeDialog(): void {
     this.isDialogOpen.set(false);
   }
 
-  onTaskCreated(): void {
-    // Dialog will be closed automatically, tasks list is already updated via signal
+  protected onTaskCreated(): void {
+    const id = this.#route.snapshot.paramMap.get('id');
+    if (!id?.trim) {
+      return;
+    }
+
+    // Reload all tasks so those added by others since loading the page will be included.
+    this.#tasksService.fetchTasksByProjectId(id).subscribe((tasks) => {
+      this.tasks.set(tasks);
+    });
   }
 
-  goBack(): void {
+  protected goBack(): void {
     this.#router.navigate(['/dashboard']);
   }
 }

@@ -2,7 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { DebugElement } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { ProjectContainerComponent } from './project-container.component';
+import { TasksService } from '../../tasks/services/tasks.service';
+import { CreateTaskDialogComponent } from '../../tasks/components/create-task-dialog/create-task-dialog.component';
+import { of } from 'rxjs';
 
 // Redefine Project and Task interfaces for test
 interface Project {
@@ -51,14 +56,16 @@ const createMockTask = (overrides?: Partial<Task>): Task => ({
   ...overrides,
 });
 
-describe('ProjectContainerComponent', () => {
+describe(ProjectContainerComponent.name, () => {
   let component: ProjectContainerComponent;
   let fixture: ComponentFixture<ProjectContainerComponent>;
   let mockRouter: jasmine.SpyObj<Router>;
   let mockActivatedRoute: any;
+  let mockTaskService: jasmine.SpyObj<TasksService>;
 
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+    mockTaskService = jasmine.createSpyObj('TaskService', ['fetchTasksByProjectId']);
 
     mockActivatedRoute = {
       snapshot: {
@@ -79,6 +86,7 @@ describe('ProjectContainerComponent', () => {
         provideHttpClientTesting(),
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: TasksService, useValue: mockTaskService },
       ],
     }).compileComponents();
 
@@ -139,33 +147,59 @@ describe('ProjectContainerComponent', () => {
     });
   });
 
-  describe('Dialog management', () => {
+  describe('Create task dialog', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
 
-    it('should open dialog when openDialog is called', () => {
+    it('should open dialog when New Task button is clicked', () => {
       expect(component.isDialogOpen()).toBe(false);
 
-      component.openDialog();
+      const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
+      newTaskButton.click();
+      fixture.detectChanges();
 
       expect(component.isDialogOpen()).toBe(true);
     });
 
-    it('should close dialog when closeDialog is called', () => {
-      component.openDialog();
+    it('should close dialog when dialogClosed event is emitted', () => {
+      // Open the dialog first
+      const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
+      newTaskButton.click();
+      fixture.detectChanges();
       expect(component.isDialogOpen()).toBe(true);
 
-      component.closeDialog();
+      // Get the dialog component and emit dialogClosed event
+      const dialogDebugElement: DebugElement = fixture.debugElement.query(
+        By.directive(CreateTaskDialogComponent),
+      );
+      const dialogComponent: CreateTaskDialogComponent = dialogDebugElement.componentInstance;
+      dialogComponent.dialogClosed.emit();
+      fixture.detectChanges();
 
       expect(component.isDialogOpen()).toBe(false);
     });
 
-    it('should handle task created event', () => {
-      component.onTaskCreated();
+    it('should reload tasks when taskCreated event is emitted', () => {
+      const mockTasks = [createMockTask({ id: '1' }), createMockTask({ id: '2' })];
+      mockTaskService.fetchTasksByProjectId.and.returnValue(of(mockTasks));
 
-      // Should not throw any errors
-      expect(component).toBeTruthy();
+      // Open the dialog first
+      const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
+      newTaskButton.click();
+      fixture.detectChanges();
+
+      // Get the dialog component and emit taskCreated event
+      const dialogDebugElement: DebugElement = fixture.debugElement.query(
+        By.directive(CreateTaskDialogComponent),
+      );
+      const dialogComponent: CreateTaskDialogComponent = dialogDebugElement.componentInstance;
+      dialogComponent.taskCreated.emit();
+      fixture.detectChanges();
+
+      // Verify that the task service was called with the correct project ID
+      expect(mockTaskService.fetchTasksByProjectId).toHaveBeenCalledWith('project-1');
+      expect(component.tasks()).toEqual(mockTasks);
     });
   });
 
@@ -174,8 +208,10 @@ describe('ProjectContainerComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should navigate back to dashboard when goBack is called', () => {
-      component.goBack();
+    it('should navigate back to dashboard when Back button is clicked', () => {
+      const backButton = fixture.nativeElement.querySelector('.back-button');
+      backButton.click();
+      fixture.detectChanges();
 
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
