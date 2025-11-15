@@ -1,0 +1,106 @@
+{
+  "auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "emailPlaceholder": "Ingrese su correo electrónico",
+      "passwordPlaceholder": "Ingrese su contraseña",
+      "submit": "Iniciar Sesión",
+      "submitting": "Iniciando sesión...",
+      "signupPrompt": "¿No tienes una cuenta?",
+      "signupLink": "Regístrate",
+      "errors": {
+        "emailRequired": "Se requiere un correo electrónico válido",
+        "passwordRequired": "Se requiere contraseña"
+      }
+    },
+    "signup": {
+      "title": "Registrarse",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "namePlaceholder": "Ingrese su nombre",
+      "emailPlaceholder": "Ingrese su correo electrónico",
+      "passwordPlaceholder": "Ingrese su contraseña",
+      "submit": "Registrarse",
+      "submitting": "Creando cuenta...",
+      "loginPrompt": "¿Ya tienes una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "errors": {
+        "nameRequired": "Se requiere nombre",
+        "emailRequired": "Se requiere un correo electrónico válido",
+        "passwordRequired": "Se requiere contraseña",
+        "passwordMinLength": "La contraseña debe tener al menos 8 caracteres"
+      }
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "newProject": "Nuevo Proyecto",
+    "createProject": "Crear Proyecto",
+    "loading": "Cargando proyectos...",
+    "empty": {
+      "title": "Aún no hay proyectos",
+      "message": "Comienza creando tu primer proyecto"
+    },
+    "dialog": {
+      "createTitle": "Crear Nuevo Proyecto",
+      "name": "Nombre del Proyecto",
+      "description": "Descripción",
+      "namePlaceholder": "Ingrese el nombre del proyecto",
+      "descriptionPlaceholder": "Ingrese la descripción del proyecto (opcional)",
+      "submit": "Crear",
+      "cancel": "Cancelar",
+      "creating": "Creando...",
+      "errors": {
+        "nameRequired": "Se requiere el nombre del proyecto"
+      }
+    }
+  },
+  "tasks": {
+    "newTask": "Nueva Tarea",
+    "createTask": "Crear Tarea",
+    "editTask": "Editar Tarea",
+    "deleteTask": "Eliminar Tarea",
+    "loading": "Cargando tareas...",
+    "empty": {
+      "title": "Aún no hay tareas",
+      "message": "Crea tu primera tarea para comenzar"
+    },
+    "dialog": {
+      "createTitle": "Crear Nueva Tarea",
+      "editTitle": "Editar Tarea",
+      "title": "Título",
+      "summary": "Resumen",
+      "description": "Descripción",
+      "titlePlaceholder": "Ingrese el título de la tarea",
+      "summaryPlaceholder": "Ingrese el resumen de la tarea (opcional)",
+      "descriptionPlaceholder": "Ingrese la descripción de la tarea",
+      "submit": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "errors": {
+        "titleRequired": "Se requiere el título de la tarea",
+        "descriptionRequired": "Se requiere la descripción de la tarea"
+      }
+    },
+    "confirmDelete": "¿Estás seguro de que deseas eliminar \"{title}\"? Esta acción no se puede deshacer."
+  },
+  "common": {
+    "back": "Atrás",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "success": "Éxito"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "projects": "Proyectos",
+    "logout": "Cerrar Sesión"
+  }
+}

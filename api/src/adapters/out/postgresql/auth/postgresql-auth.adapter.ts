@@ -2,6 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { User } from '../../../../core/models/auth/user.model';
 import { AuthPort } from '../../../../core/ports/out/auth/auth.port';
@@ -16,6 +17,7 @@ export function toUser({ id, name, email }: UserEntity): User {
 export class PostgreSQLAuthAdapter implements AuthPort {
 	constructor(
 		@InjectRepository(UserEntity) private readonly usersRepository: Repository<UserEntity>,
+		private readonly i18n: I18nService,
 	) {}
 
 	async authenticate(username: string, password: string): Promise<User> {
@@ -25,12 +27,20 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 			.where('user.email = :email', { email: username })
 			.getOne();
 		if (!entity) {
-			throw new UnauthorizedException('Unrecognized username or password');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.unrecognized_credentials', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		const isMatch = await bcrypt.compare(password, entity?.password);
 		if (!isMatch) {
-			throw new UnauthorizedException('Unrecognized username or password');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.unrecognized_credentials', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		return toUser(entity);
@@ -56,7 +66,11 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 		} catch (error: any) {
 			// Check for unique constraint violation (Postgres error code '23505')
 			if (error.code === '23505') {
-				throw new ConflictException('Email already exists');
+				throw new ConflictException(
+					this.i18n.t('auth.errors.email_exists', {
+						lang: I18nContext.current()?.lang,
+					}),
+				);
 			}
 			throw error;
 		}

@@ -6,7 +6,7 @@
 	"private": true,
 	"license": "UNLICENSED",
 	"scripts": {
-		"build": "nest build",
+		"build": "nest build && npm run copy-i18n",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
@@ -17,8 +17,10 @@
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-		"test:e2e": "jest --config ./test/jest-e2e.json"
+		"test:e2e": "jest --config ./test/jest-e2e.json",
+		"copy-i18n": "cp -R src/i18n dist/i18n"
 	},
+	"copy-i18n": "cp -R src/i18n dist/i18n",
 	"dependencies": {
 		"@nestjs/common": "^11.0.1",
 		"@nestjs/config": "^4.0.2",
@@ -32,6 +34,7 @@
 		"connect-pg-simple": "~10.0.0",
 		"express-session": "~1.18.2",
 		"helmet": "~8.1.0",
+		"nestjs-i18n": "^10.5.1",
 		"passport": "^0.7.0",
 		"passport-local": "^1.0.0",
 		"pg": "^8.16.3",

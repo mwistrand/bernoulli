@@ -1,0 +1,7 @@
+{
+	"errors": {
+		"not_found": "Proyecto no encontrado",
+		"not_found_with_id": "No existe ningún proyecto con ID {id}",
+		"name_exists": "El nombre ya existe"
+	}
+}

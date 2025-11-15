@@ -1,0 +1,106 @@
+{
+  "auth": {
+    "login": {
+      "title": "Log In",
+      "email": "Email",
+      "password": "Password",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Log In",
+      "submitting": "Logging in...",
+      "signupPrompt": "Don't have an account?",
+      "signupLink": "Sign up",
+      "errors": {
+        "emailRequired": "Valid email is required",
+        "passwordRequired": "Password is required"
+      }
+    },
+    "signup": {
+      "title": "Sign Up",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "namePlaceholder": "Enter your name",
+      "emailPlaceholder": "Enter your email",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign Up",
+      "submitting": "Creating account...",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Log in",
+      "errors": {
+        "nameRequired": "Name is required",
+        "emailRequired": "Valid email is required",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters"
+      }
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "newProject": "New Project",
+    "createProject": "Create Project",
+    "loading": "Loading projects...",
+    "empty": {
+      "title": "No projects yet",
+      "message": "Get started by creating your first project"
+    },
+    "dialog": {
+      "createTitle": "Create New Project",
+      "name": "Project Name",
+      "description": "Description",
+      "namePlaceholder": "Enter project name",
+      "descriptionPlaceholder": "Enter project description (optional)",
+      "submit": "Create",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "errors": {
+        "nameRequired": "Project name is required"
+      }
+    }
+  },
+  "tasks": {
+    "newTask": "New Task",
+    "createTask": "Create Task",
+    "editTask": "Edit Task",
+    "deleteTask": "Delete Task",
+    "loading": "Loading tasks...",
+    "empty": {
+      "title": "No tasks yet",
+      "message": "Create your first task to get started"
+    },
+    "dialog": {
+      "createTitle": "Create New Task",
+      "editTitle": "Edit Task",
+      "title": "Title",
+      "summary": "Summary",
+      "description": "Description",
+      "titlePlaceholder": "Enter task title",
+      "summaryPlaceholder": "Enter task summary (optional)",
+      "descriptionPlaceholder": "Enter task description",
+      "submit": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "errors": {
+        "titleRequired": "Task title is required",
+        "descriptionRequired": "Task description is required"
+      }
+    },
+    "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+  },
+  "common": {
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "logout": "Log Out"
+  }
+}
