@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { NavbarComponent } from './navbar.component';
-import { AuthService, User } from '../../../auth/services/auth.service';
+import { AuthService, User } from '../../auth/services/auth.service';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;

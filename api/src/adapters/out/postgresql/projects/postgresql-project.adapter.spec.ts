@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { ConflictException } from '@nestjs/common';
 
 import { PostgreSQLProjectAdapter } from './postgresql-project.adapter';
-import { ProjectEntity } from './entity/project.entity';
+import { ProjectEntity } from './entities/project.entity';
 import { UserEntity } from '../auth/entities/user.entity';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';
 import { Project } from '../../../../core/models/projects/project.model';

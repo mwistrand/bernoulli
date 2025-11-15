@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { ProjectEntity } from './entity/project.entity';
+import { ProjectEntity } from './entities/project.entity';
 import { UserEntity } from '../auth/entities/user.entity';
 import { ProjectPort } from '../../../../core/ports/out/projects/project.port';
 import { CreateProjectCommand } from '../../../../core/commands/project.command';

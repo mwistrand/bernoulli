@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TaskCardComponent } from './task-card.component';
-import { Task } from '../../../tasks/services/tasks.service';
+import { Task } from '../../tasks/services/tasks.service';
 
 const createMockTask = (overrides?: Partial<Task>): Task => ({
   id: '1',

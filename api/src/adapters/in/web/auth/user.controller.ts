@@ -4,7 +4,7 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
 import { CreateUserCommand } from '../../../../core/commands/user.command';
 
 @Controller('users')
-export class UsersController {
+export class UserController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Post()

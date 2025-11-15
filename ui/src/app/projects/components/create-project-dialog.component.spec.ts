@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateProjectDialogComponent } from './create-project-dialog.component';
-import { Project, ProjectsService } from '../../services/projects.service';
+import { Project, ProjectsService } from '../services/projects.service';
 import { of, throwError, delay } from 'rxjs';
 import { A11yModule } from '@angular/cdk/a11y';
 

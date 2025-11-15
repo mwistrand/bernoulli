@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { CreateProjectDialogComponent } from '../../projects/components/create-project-dialog/create-project-dialog.component';
+import { CreateProjectDialogComponent } from '../../projects/components/create-project-dialog.component';
 import { ProjectsService } from '../../projects/services/projects.service';
 import { DatePipe } from '@angular/common';
 

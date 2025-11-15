@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
-import { Task, TasksService } from '../../services/tasks.service';
+import { Task, TasksService } from '../services/tasks.service';
 
 @Component({
   selector: 'bn-task-dialog',

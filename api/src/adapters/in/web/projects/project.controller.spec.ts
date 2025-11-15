@@ -10,7 +10,7 @@ import request from 'supertest';
 import { ProjectController } from './project.controller';
 import { ProjectService } from '../../../../core/services/projects/project.service';
 import type { Project } from '../../../../core/models/projects/project.model';
-import { TaskService } from 'src/core/services/projects/task.service';
+import { TaskService } from '../../../../core/services/projects/task.service';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 
 describe(ProjectController.name, () => {

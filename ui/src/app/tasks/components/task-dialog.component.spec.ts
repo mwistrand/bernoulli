@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TaskDialogComponent } from './task-dialog.component';
-import { Task, TasksService } from '../../services/tasks.service';
+import { Task, TasksService } from '../services/tasks.service';
 import { of, throwError, delay } from 'rxjs';
 import { A11yModule } from '@angular/cdk/a11y';
 

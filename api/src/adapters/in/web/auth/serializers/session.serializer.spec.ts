@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionSerializer } from './session.serializer';
-import { User } from '../../../../../core/models/auth/user.model';
+import { User } from '../../../../../../core/models/auth/user.model';
 
 describe('SessionSerializer', () => {
 	let serializer: SessionSerializer;
@@ -19,7 +19,7 @@ describe('SessionSerializer', () => {
 				id: '123',
 				email: 'test@example.com',
 				name: 'Test User',
-				passwordHash: 'hashed_password',
+				//
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};

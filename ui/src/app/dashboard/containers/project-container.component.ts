@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TaskDialogComponent } from '../../tasks/components/task-dialog/task-dialog.component';
+import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { Task, TasksService } from '../../tasks/services/tasks.service';
-import { TaskCardComponent } from '../../projects/components/task-card/task-card.component';
+import { TaskCardComponent } from '../../projects/components/task-card.component';
 
 @Component({
   selector: 'bn-project-container',

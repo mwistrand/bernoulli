@@ -4,11 +4,11 @@ import { ProjectService } from './core/services/projects/project.service';
 import { ProjectController } from './adapters/in/web/projects/project.controller';
 import { PROJECT_PORT } from './core/ports/out/projects/project.port';
 import { PostgreSQLProjectAdapter } from './adapters/out/postgresql/projects/postgresql-project.adapter';
-import { ProjectEntity } from './adapters/out/postgresql/projects/entity/project.entity';
+import { ProjectEntity } from './adapters/out/postgresql/projects/entities/project.entity';
 import { UserEntity } from './adapters/out/postgresql/auth/entities/user.entity';
 import { TaskService } from './core/services/projects/task.service';
 import { TASK_PORT } from './core/ports/out/projects/task.port';
-import { TaskEntity } from './adapters/out/postgresql/projects/entity/task.entity';
+import { TaskEntity } from './adapters/out/postgresql/projects/entities/task.entity';
 import { PostgreSQLTaskAdapter } from './adapters/out/postgresql/projects/postgresql-task.adapter';
 
 @Module({

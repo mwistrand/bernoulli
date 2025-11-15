@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Task } from '../../../tasks/services/tasks.service';
+import { Task } from '../../tasks/services/tasks.service';
 
 @Component({
   selector: 'bn-task-card',

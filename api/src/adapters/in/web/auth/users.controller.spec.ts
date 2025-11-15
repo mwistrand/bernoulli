@@ -2,21 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { Request } from 'express';
 
-import { UsersController } from './users.controller';
+import { UserController } from './user.controller';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import type { CreateUserCommand } from '../../../../core/commands/user.command';
 import type { User } from '../../../../core/models/auth/user.model';
 
-describe('UsersController', () => {
-	let controller: UsersController;
+describe('UserController', () => {
+	let controller: UserController;
 	let authService: jest.Mocked<AuthService>;
 
 	const mockUser: User = {
 		id: 'user-123',
 		email: 'test@example.com',
 		name: 'Test User',
-		createdAt: new Date(),
-		updatedAt: new Date(),
 	};
 
 	beforeEach(async () => {
@@ -26,7 +24,7 @@ describe('UsersController', () => {
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
-			controllers: [UsersController],
+			controllers: [UserController],
 			providers: [
 				{
 					provide: AuthService,
@@ -35,7 +33,7 @@ describe('UsersController', () => {
 			],
 		}).compile();
 
-		controller = module.get<UsersController>(UsersController);
+		controller = module.get<UserController>(UserController);
 		authService = module.get(AuthService);
 	});
 
@@ -81,8 +79,6 @@ describe('UsersController', () => {
 				id: 'custom-id-456',
 				email: 'custom@example.com',
 				name: 'Custom User',
-				createdAt: new Date(),
-				updatedAt: new Date(),
 			};
 			authService.createUser.mockResolvedValue(customUser);
 
@@ -172,8 +168,6 @@ describe('UsersController', () => {
 			expect(result).toHaveProperty('id');
 			expect(result).toHaveProperty('email');
 			expect(result).toHaveProperty('name');
-			expect(result).toHaveProperty('createdAt');
-			expect(result).toHaveProperty('updatedAt');
 		});
 
 		it('should reject if login fails', async () => {

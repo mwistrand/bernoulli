@@ -6,7 +6,7 @@ import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ProjectContainerComponent } from './project-container.component';
 import { TasksService } from '../../tasks/services/tasks.service';
-import { TaskDialogComponent } from '../../tasks/components/task-dialog/task-dialog.component';
+import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { of } from 'rxjs';
 
 // Redefine Project and Task interfaces for test

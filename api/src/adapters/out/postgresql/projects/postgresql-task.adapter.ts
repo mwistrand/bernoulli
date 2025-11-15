@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { UserEntity } from '../auth/entities/user.entity';
 import { TaskPort } from '../../../../core/ports/out/projects/task.port';
-import { TaskEntity } from './entity/task.entity';
+import { TaskEntity } from './entities/task.entity';
 import {
 	CreateTaskCommand,
 	UpdateTaskCommand,

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
-import { ProjectsService } from '../../services/projects.service';
+import { ProjectsService } from '../services/projects.service';
 
 @Component({
   selector: 'bn-create-project-dialog',
