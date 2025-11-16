@@ -1,7 +1,12 @@
 <div class="project-container-container">
   <div class="project-header">
     <button class="back-button" (click)="goBack()" aria-label="Go back to dashboard">
-      <lucide-icon [img]="ArrowLeftIcon" size="20" class="icon"></lucide-icon>
+      <lucide-icon
+        [attr.aria-hidden]="true"
+        [img]="ArrowLeftIcon"
+        size="20"
+        class="icon"
+      ></lucide-icon>
       Back
     </button>
 
@@ -18,7 +23,12 @@
   @if (project()) {
     <div class="members-link-section">
       <button class="view-members-button" (click)="navigateToMembers()">
-        <lucide-icon [img]="UsersIcon" size="20" class="icon"></lucide-icon>
+        <lucide-icon
+          [attr.aria-hidden]="true"
+          [img]="UsersIcon"
+          size="20"
+          class="icon"
+        ></lucide-icon>
         View Project Members
       </button>
     </div>
@@ -28,7 +38,12 @@
     <div class="tasks-header">
       <h2>Tasks</h2>
       <button class="button-primary" (click)="openDialog()">
-        <lucide-icon [img]="PlusIcon" size="20" class="icon"></lucide-icon>
+        <lucide-icon
+          [attr.aria-hidden]="true"
+          [img]="PlusIcon"
+          size="20"
+          class="icon"
+        ></lucide-icon>
         New Task
       </button>
     </div>
@@ -40,7 +55,12 @@
       </div>
     } @else if (tasks().length === 0) {
       <div class="empty-state">
-        <lucide-icon [img]="CheckSquareIcon" size="64" class="icon"></lucide-icon>
+        <lucide-icon
+          [attr.aria-hidden]="true"
+          [img]="CheckSquareIcon"
+          size="64"
+          class="icon"
+        ></lucide-icon>
         <h3>No tasks yet</h3>
         <p>Get started by creating your first task</p>
         <button class="button-primary" (click)="openDialog()">Create Task</button>

@@ -1,7 +1,12 @@
 <div class="members-container">
   <div class="members-header">
     <button class="back-button" (click)="goBack()" aria-label="Go back to project">
-      <lucide-icon [img]="ArrowLeftIcon" size="20" class="icon"></lucide-icon>
+      <lucide-icon
+        [attr.aria-hidden]="true"
+        [img]="ArrowLeftIcon"
+        size="20"
+        class="icon"
+      ></lucide-icon>
       Back to Project
     </button>
 
@@ -16,7 +21,12 @@
     @if (canManageMembers()) {
       <div class="actions-bar">
         <button class="button-primary" (click)="onAddMember()">
-          <lucide-icon [img]="PlusIcon" size="20" class="icon"></lucide-icon>
+          <lucide-icon
+            [attr.aria-hidden]="true"
+            [img]="PlusIcon"
+            size="20"
+            class="icon"
+          ></lucide-icon>
           {{ 'projects.members.addMember' | translate }}
         </button>
       </div>

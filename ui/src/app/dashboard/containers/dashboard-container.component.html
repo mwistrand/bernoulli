@@ -2,7 +2,7 @@
   <div class="dashboard-header">
     <h1>Projects</h1>
     <button class="button-primary" (click)="openDialog()">
-      <lucide-icon [img]="PlusIcon" size="20" class="icon"></lucide-icon>
+      <lucide-icon [attr.aria-hidden]="true" [img]="PlusIcon" size="20" class="icon"></lucide-icon>
       New Project
     </button>
   </div>
@@ -32,7 +32,12 @@
           }
           <div class="project-meta">
             <span class="meta-item">
-              <lucide-icon [img]="CalendarIcon" size="14" class="icon"></lucide-icon>
+              <lucide-icon
+                [attr.aria-hidden]="true"
+                [img]="CalendarIcon"
+                size="14"
+                class="icon"
+              ></lucide-icon>
               {{ project.createdAt | date: 'MMM d, yyyy' }}
             </span>
           </div>

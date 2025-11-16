@@ -9,7 +9,12 @@
     <p class="task-description">{{ task().description }}</p>
     <div class="task-meta">
       <span class="meta-item">
-        <lucide-icon [img]="CalendarIcon" size="14" aria-hidden="true"></lucide-icon>
+        <lucide-icon
+          [attr.aria-hidden]="true"
+          [img]="CalendarIcon"
+          size="14"
+          aria-hidden="true"
+        ></lucide-icon>
         Created {{ task().createdAt | date: 'MMM d, yyyy' }}
       </span>
     </div>
@@ -23,7 +28,12 @@
       aria-label="Edit {{ task().title }}"
       title="Edit task"
     >
-      <lucide-icon [img]="EditIcon" size="18" aria-hidden="true"></lucide-icon>
+      <lucide-icon
+        [attr.aria-hidden]="true"
+        [img]="EditIcon"
+        size="18"
+        aria-hidden="true"
+      ></lucide-icon>
       Edit
     </button>
     <button
@@ -33,7 +43,12 @@
       aria-label="Delete {{ task().title }}"
       title="Delete task"
     >
-      <lucide-icon [img]="Trash2Icon" size="18" aria-hidden="true"></lucide-icon>
+      <lucide-icon
+        [attr.aria-hidden]="true"
+        [img]="Trash2Icon"
+        size="18"
+        aria-hidden="true"
+      ></lucide-icon>
       Delete
     </button>
   </div>

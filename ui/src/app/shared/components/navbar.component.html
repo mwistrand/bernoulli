@@ -7,12 +7,12 @@
 
       <div class="navbar-actions">
         <div class="user-info">
-          <lucide-icon [img]="UserIcon" size="20"></lucide-icon>
+          <lucide-icon [attr.aria-hidden]="true" [img]="UserIcon" size="20"></lucide-icon>
           <span class="user-name">{{ currentUser()!.name }}</span>
         </div>
 
         <button type="button" class="sign-out-button" (click)="onSignOut()">
-          <lucide-icon [img]="LogOutIcon" size="18"></lucide-icon>
+          <lucide-icon [attr.aria-hidden]="true" [img]="LogOutIcon" size="18"></lucide-icon>
           Sign Out
         </button>
       </div>

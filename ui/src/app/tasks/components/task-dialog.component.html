@@ -16,7 +16,8 @@
           (click)="closeDialog()"
           aria-label="Close dialog"
         >
-          <lucide-icon [img]="XIcon" size="24"></lucide-icon>
+          <lucide-icon [attr.aria-hidden]="true" [img]="XIcon" size="24"></lucide-icon>
+          <span class="aria-hidden">Close Dialog</span>
         </button>
       </div>
 
