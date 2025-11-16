@@ -1,5 +1,9 @@
 # Bernoulli Monorepo
 
+## Overview
+
+Bernoulli is a demo project management application. It is not intended to be production-ready, but is rather a learning tool I'm using to reinforce my Angular knowledge and learn the NestJs API framework.
+
 This project contains:
 
 - **api/**: Nest.js backend (TypeORM, PostgreSQL)
