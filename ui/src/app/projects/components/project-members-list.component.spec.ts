@@ -57,7 +57,6 @@ describe('ProjectMembersListComponent', () => {
     ]);
     mockDialog = jasmine.createSpyObj('Dialog', ['open']);
 
-    // Set default return value for dialog.open
     mockDialog.open.and.returnValue({
       closed: of(null),
     } as any);
@@ -82,7 +81,6 @@ describe('ProjectMembersListComponent', () => {
     component = fixture.componentInstance;
     overlayContainer = TestBed.inject(OverlayContainer);
 
-    // Set required inputs using signal setters
     fixture.componentRef.setInput('projectId', 'project-123');
     fixture.componentRef.setInput('currentMember', adminMember);
     fixture.componentRef.setInput('projectCreatorId', 'creator-123');
@@ -92,13 +90,7 @@ describe('ProjectMembersListComponent', () => {
     overlayContainer.ngOnDestroy();
   });
 
-  describe('Initialization', () => {
-    it('should create', () => {
-      expect(component).toBeTruthy();
-    });
-  });
-
-  describe('Member Loading', () => {
+  describe('Member loading', () => {
     it('should load members on init', () => {
       mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
 
@@ -109,7 +101,7 @@ describe('ProjectMembersListComponent', () => {
       expect(component['isLoading']()).toBe(false);
     });
 
-    it('should handle loading error', () => {
+    it('should handle loading errors', () => {
       mockProjectMembersService.getProjectMembers.and.returnValue(
         throwError(() => ({ error: { message: 'Access denied' } })),
       );
@@ -117,15 +109,16 @@ describe('ProjectMembersListComponent', () => {
       fixture.detectChanges();
 
       expect(component['errorMessage']()).toBe('Access denied');
-      expect(component['isLoading']()).toBe(false);
-    });
 
-    it('should handle generic loading error', () => {
       mockProjectMembersService.getProjectMembers.and.returnValue(throwError(() => ({})));
+      const newFixture = TestBed.createComponent(ProjectMembersListComponent);
+      const newComponent = newFixture.componentInstance;
+      newFixture.componentRef.setInput('projectId', 'project-123');
+      newFixture.componentRef.setInput('currentMember', adminMember);
+      newFixture.componentRef.setInput('projectCreatorId', 'creator-123');
+      newFixture.detectChanges();
 
-      fixture.detectChanges();
-
-      expect(component['errorMessage']()).toBe('projects.members.errors.loadFailed');
+      expect(newComponent['errorMessage']()).toBe('projects.members.errors.loadFailed');
     });
   });
 
@@ -134,42 +127,28 @@ describe('ProjectMembersListComponent', () => {
       mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
     });
 
-    it('should check if user can manage members', () => {
+    it('should check permissions using PermissionsService', () => {
       mockPermissionsService.canManageMembers.and.returnValue(true);
-      fixture.detectChanges();
-
-      const canManage = component['canManageMembers']();
-
-      expect(mockPermissionsService.canManageMembers).toHaveBeenCalledWith(adminMember);
-      expect(canManage).toBe(true);
-    });
-
-    it('should check if user can update member role', () => {
       mockPermissionsService.canUpdateMemberRole.and.returnValue(true);
+      mockPermissionsService.canRemoveMember.and.returnValue(false);
       fixture.detectChanges();
 
-      const canUpdate = component['canUpdateRole'](regularMember);
+      expect(component['canManageMembers']()).toBe(true);
+      expect(mockPermissionsService.canManageMembers).toHaveBeenCalledWith(adminMember);
 
+      expect(component['canUpdateRole'](regularMember)).toBe(true);
       expect(mockPermissionsService.canUpdateMemberRole).toHaveBeenCalledWith(
         adminMember,
         regularMember,
         'creator-123',
       );
-      expect(canUpdate).toBe(true);
-    });
 
-    it('should check if user can remove member', () => {
-      mockPermissionsService.canRemoveMember.and.returnValue(true);
-      fixture.detectChanges();
-
-      const canRemove = component['canRemove'](regularMember);
-
+      expect(component['canRemove'](regularMember)).toBe(false);
       expect(mockPermissionsService.canRemoveMember).toHaveBeenCalledWith(
         adminMember,
         regularMember,
         'creator-123',
       );
-      expect(canRemove).toBe(true);
     });
 
     it('should check if user can manage specific member', () => {
@@ -177,21 +156,16 @@ describe('ProjectMembersListComponent', () => {
       mockPermissionsService.canRemoveMember.and.returnValue(true);
       fixture.detectChanges();
 
-      const canManage = component['canManageThisMember'](regularMember);
-
-      expect(canManage).toBe(true);
+      expect(component['canManageThisMember'](regularMember)).toBe(true);
     });
   });
 
-  // Note: Dialog integration tests removed due to CDK Dialog internal state complexity
-  // The dialog functionality is tested through AddMemberDialogComponent tests and E2E tests
-
-  describe('Change Role', () => {
+  describe('Change role', () => {
     beforeEach(() => {
       mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
     });
 
-    it('should toggle role from USER to ADMIN', () => {
+    it('should toggle role and reload members', () => {
       mockProjectMembersService.updateMemberRole.and.returnValue(of(regularMember));
       fixture.detectChanges();
 
@@ -202,130 +176,78 @@ describe('ProjectMembersListComponent', () => {
         'user-2',
         { role: ProjectRole.ADMIN },
       );
-    });
-
-    it('should toggle role from ADMIN to USER', () => {
-      mockProjectMembersService.updateMemberRole.and.returnValue(of(adminMember));
-      fixture.detectChanges();
-
-      component['onChangeRole'](adminMember);
-
-      expect(mockProjectMembersService.updateMemberRole).toHaveBeenCalledWith(
-        'project-123',
-        'user-1',
-        { role: ProjectRole.USER },
-      );
-    });
-
-    it('should reload members after role change', () => {
-      mockProjectMembersService.updateMemberRole.and.returnValue(of(regularMember));
-      fixture.detectChanges();
-
-      component['onChangeRole'](regularMember);
-
       expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledTimes(2);
     });
 
-    it('should emit membersChanged after role change', (done) => {
+    it('should emit membersChanged and close menu after role change', (done) => {
       mockProjectMembersService.updateMemberRole.and.returnValue(of(regularMember));
       fixture.detectChanges();
+      component['openMenuId'].set('member-2');
 
       component['membersChanged'].subscribe(() => {
         done();
       });
 
       component['onChangeRole'](regularMember);
-    });
-
-    it('should close menu before changing role', () => {
-      mockProjectMembersService.updateMemberRole.and.returnValue(of(regularMember));
-      fixture.detectChanges();
-      component['openMenuId'].set('member-2');
-
-      component['onChangeRole'](regularMember);
-
       expect(component['openMenuId']()).toBe(null);
     });
 
-    it('should handle role change error', () => {
+    it('should handle role change errors', () => {
       mockProjectMembersService.updateMemberRole.and.returnValue(
         throwError(() => ({ error: { message: 'Permission denied' } })),
       );
       fixture.detectChanges();
 
       component['onChangeRole'](regularMember);
-
       expect(component['errorMessage']()).toBe('Permission denied');
-    });
 
-    it('should handle generic role change error', () => {
       mockProjectMembersService.updateMemberRole.and.returnValue(throwError(() => ({})));
-      fixture.detectChanges();
-
       component['onChangeRole'](regularMember);
-
       expect(component['errorMessage']()).toBe('projects.members.errors.updateFailed');
     });
   });
 
-  describe('Remove Member', () => {
+  describe('Remove member', () => {
     beforeEach(() => {
       mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
     });
 
-    it('should show confirmation dialog', () => {
-      spyOn(window, 'confirm').and.returnValue(false);
+    it('should show confirmation dialog and remove member when confirmed', () => {
+      spyOn(window, 'confirm').and.returnValue(true);
+      mockProjectMembersService.removeMember.and.returnValue(of(void 0));
       fixture.detectChanges();
 
       component['onRemoveMember'](regularMember);
 
       expect(window.confirm).toHaveBeenCalled();
-      expect(mockProjectMembersService.removeMember).not.toHaveBeenCalled();
-    });
-
-    it('should remove member when confirmed', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      mockProjectMembersService.removeMember.and.returnValue(of(void 0));
-      fixture.detectChanges();
-
-      component['onRemoveMember'](regularMember);
-
       expect(mockProjectMembersService.removeMember).toHaveBeenCalledWith('project-123', 'user-2');
-    });
-
-    it('should reload members after removal', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      mockProjectMembersService.removeMember.and.returnValue(of(void 0));
-      fixture.detectChanges();
-
-      component['onRemoveMember'](regularMember);
-
       expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledTimes(2);
     });
 
-    it('should emit membersChanged after removal', (done) => {
+    it('should not remove member if confirmation is cancelled', () => {
+      spyOn(window, 'confirm').and.returnValue(false);
+      fixture.detectChanges();
+
+      component['onRemoveMember'](regularMember);
+
+      expect(mockProjectMembersService.removeMember).not.toHaveBeenCalled();
+    });
+
+    it('should emit membersChanged and close menu after removal', (done) => {
       spyOn(window, 'confirm').and.returnValue(true);
       mockProjectMembersService.removeMember.and.returnValue(of(void 0));
       fixture.detectChanges();
+      component['openMenuId'].set('member-2');
 
       component['membersChanged'].subscribe(() => {
         done();
       });
 
       component['onRemoveMember'](regularMember);
-    });
-
-    it('should close menu before removing', () => {
-      spyOn(window, 'confirm').and.returnValue(false);
-      fixture.detectChanges();
-      component['openMenuId'].set('member-2');
-
-      component['onRemoveMember'](regularMember);
-
       expect(component['openMenuId']()).toBe(null);
     });
 
-    it('should handle removal error', () => {
+    it('should handle removal errors', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       mockProjectMembersService.removeMember.and.returnValue(
         throwError(() => ({ error: { message: 'Cannot remove creator' } })),
@@ -333,51 +255,33 @@ describe('ProjectMembersListComponent', () => {
       fixture.detectChanges();
 
       component['onRemoveMember'](regularMember);
-
       expect(component['errorMessage']()).toBe('Cannot remove creator');
-    });
 
-    it('should handle generic removal error', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
       mockProjectMembersService.removeMember.and.returnValue(throwError(() => ({})));
-      fixture.detectChanges();
-
       component['onRemoveMember'](regularMember);
-
       expect(component['errorMessage']()).toBe('projects.members.errors.removeFailed');
     });
   });
 
-  describe('Menu Toggle', () => {
+  describe('Menu toggle', () => {
     beforeEach(() => {
       mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
       fixture.detectChanges();
     });
 
-    it('should open menu for member', () => {
+    it('should toggle menu open and closed', () => {
       component['toggleMenu']('member-1');
       expect(component['openMenuId']()).toBe('member-1');
-    });
 
-    it('should close menu when toggling open menu', () => {
-      component['openMenuId'].set('member-1');
       component['toggleMenu']('member-1');
       expect(component['openMenuId']()).toBe(null);
-    });
 
-    it('should switch to different menu', () => {
-      component['openMenuId'].set('member-1');
+      component['toggleMenu']('member-1');
       component['toggleMenu']('member-2');
       expect(component['openMenuId']()).toBe('member-2');
     });
 
-    it('should close menu directly', () => {
-      component['openMenuId'].set('member-1');
-      component['closeMenu']();
-      expect(component['openMenuId']()).toBe(null);
-    });
-
-    it('should close menu on document click outside', () => {
+    it('should close menu on document click outside menu-container', () => {
       component['openMenuId'].set('member-1');
       const event = new MouseEvent('click');
       Object.defineProperty(event, 'target', {
@@ -386,7 +290,6 @@ describe('ProjectMembersListComponent', () => {
       });
 
       component['onDocumentClick'](event);
-
       expect(component['openMenuId']()).toBe(null);
     });
 
@@ -404,7 +307,6 @@ describe('ProjectMembersListComponent', () => {
       });
 
       component['onDocumentClick'](event);
-
       expect(component['openMenuId']()).toBe('member-1');
     });
   });

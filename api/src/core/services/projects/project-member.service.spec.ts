@@ -68,10 +68,6 @@ describe(ProjectMemberService.name, () => {
 		projectPort = module.get(PROJECT_PORT);
 	});
 
-	it('should be defined', () => {
-		expect(service).toBeDefined();
-	});
-
 	describe('getProjectMembers', () => {
 		it('should return members when user is a project member', async () => {
 			const members = [mockProjectMember];

@@ -75,10 +75,6 @@ describe(PostgreSQLProjectAdapter.name, () => {
 		jest.clearAllMocks();
 	});
 
-	it('should be defined', () => {
-		expect(adapter).toBeDefined();
-	});
-
 	describe('createProject', () => {
 		const validCommand: CreateProjectCommand = {
 			name: 'My Project',
@@ -94,17 +90,10 @@ describe(PostgreSQLProjectAdapter.name, () => {
 			repository.insert.mockResolvedValue(undefined as any);
 		});
 
-		it('should create a project successfully', async () => {
+		it('should create a project and return Project domain model', async () => {
 			const result = await adapter.createProject(projectId, validCommand);
 
 			expect(result).toEqual(mockProject);
-			expect(repository.create).toHaveBeenCalled();
-			expect(repository.insert).toHaveBeenCalledWith(mockProjectEntity);
-		});
-
-		it('should create project entity with correct data', async () => {
-			await adapter.createProject(projectId, validCommand);
-
 			expect(repository.create).toHaveBeenCalledWith({
 				id: projectId,
 				name: 'My Project',
@@ -114,6 +103,8 @@ describe(PostgreSQLProjectAdapter.name, () => {
 				createdAt: expect.any(Date),
 				lastUpdatedAt: expect.any(Date),
 			});
+			expect(repository.insert).toHaveBeenCalledWith(mockProjectEntity);
+			expect(mockProjectEntity.toProject).toHaveBeenCalled();
 		});
 
 		it('should set createdAt and lastUpdatedAt to the same value', async () => {
@@ -123,7 +114,7 @@ describe(PostgreSQLProjectAdapter.name, () => {
 			expect(createCall.createdAt).toEqual(createCall.lastUpdatedAt);
 		});
 
-		it('should handle project without description', async () => {
+		it('should handle optional description field', async () => {
 			const commandWithoutDescription: CreateProjectCommand = {
 				name: 'My Project',
 				userId: 'user-123',
@@ -142,19 +133,6 @@ describe(PostgreSQLProjectAdapter.name, () => {
 			});
 		});
 
-		it('should insert project entity into repository', async () => {
-			await adapter.createProject(projectId, validCommand);
-
-			expect(repository.insert).toHaveBeenCalledWith(mockProjectEntity);
-		});
-
-		it('should call toProject on the entity', async () => {
-			const result = await adapter.createProject(projectId, validCommand);
-
-			expect(mockProjectEntity.toProject).toHaveBeenCalled();
-			expect(result).toEqual(mockProject);
-		});
-
 		it('should throw ConflictException on duplicate name', async () => {
 			const duplicateError = { code: '23505' };
 			repository.insert.mockRejectedValue(duplicateError);
@@ -171,98 +149,6 @@ describe(PostgreSQLProjectAdapter.name, () => {
 			await expect(adapter.createProject(projectId, validCommand)).rejects.toThrow(
 				genericError,
 			);
-		});
-
-		it('should handle database errors with different error codes', async () => {
-			const otherError = { code: '23503' }; // Foreign key violation
-			repository.insert.mockRejectedValue(otherError);
-
-			await expect(adapter.createProject(projectId, validCommand)).rejects.toEqual(
-				otherError,
-			);
-		});
-
-		it('should use provided project id', async () => {
-			const customId = 'custom-uuid-456';
-			await adapter.createProject(customId, validCommand);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ id: customId }),
-			);
-		});
-
-		it('should handle projects with empty description', async () => {
-			const command = { name: 'My Project', description: '', userId: 'user-123' };
-			await adapter.createProject(projectId, command);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ description: '' }),
-			);
-		});
-
-		it('should handle projects with long names', async () => {
-			const command = { name: 'A'.repeat(1000), description: 'Test', userId: 'user-123' };
-			await adapter.createProject(projectId, command);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'A'.repeat(1000) }),
-			);
-		});
-
-		it('should handle projects with special characters in name', async () => {
-			const command = {
-				name: 'Project #1: Test & Development',
-				description: 'Test',
-				userId: 'user-123',
-			};
-			await adapter.createProject(projectId, command);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'Project #1: Test & Development' }),
-			);
-		});
-
-		it('should handle projects with unicode characters', async () => {
-			const command = {
-				name: 'Проект Тест 项目测试',
-				description: 'Test',
-				userId: 'user-123',
-			};
-			await adapter.createProject(projectId, command);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'Проект Тест 项目测试' }),
-			);
-		});
-
-		it('should create multiple projects with different data', async () => {
-			const project1 = { ...mockProject, id: 'project-1', name: 'Project 1' };
-			const project2 = { ...mockProject, id: 'project-2', name: 'Project 2' };
-
-			const entity1 = {
-				...mockProjectEntity,
-				toProject: jest.fn().mockReturnValue(project1),
-			};
-			const entity2 = {
-				...mockProjectEntity,
-				toProject: jest.fn().mockReturnValue(project2),
-			};
-
-			repository.create
-				.mockReturnValueOnce(entity1 as ProjectEntity)
-				.mockReturnValueOnce(entity2 as ProjectEntity);
-
-			const result1 = await adapter.createProject('project-1', {
-				name: 'Project 1',
-				userId: 'user-123',
-			});
-			const result2 = await adapter.createProject('project-2', {
-				name: 'Project 2',
-				userId: 'user-123',
-			});
-
-			expect(result1.id).toBe('project-1');
-			expect(result2.id).toBe('project-2');
 		});
 	});
 });

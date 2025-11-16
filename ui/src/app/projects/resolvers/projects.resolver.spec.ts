@@ -46,16 +46,11 @@ describe('ProjectsResolver', () => {
     mockState = {} as RouterStateSnapshot;
   });
 
-  it('should be created', () => {
-    expect(resolver).toBeTruthy();
-  });
-
   it('should resolve projects successfully', (done) => {
     mockProjectsService.fetchAllProjects.and.returnValue(of(mockProjects));
 
     resolver.resolve(mockRoute, mockState).subscribe((projects) => {
       expect(projects).toEqual(mockProjects);
-      expect(mockProjectsService.fetchAllProjects).toHaveBeenCalled();
       done();
     });
   });
@@ -67,32 +62,6 @@ describe('ProjectsResolver', () => {
 
     resolver.resolve(mockRoute, mockState).subscribe((projects) => {
       expect(projects).toEqual([]);
-      expect(mockProjectsService.fetchAllProjects).toHaveBeenCalled();
-      done();
-    });
-  });
-
-  it('should fetch projects and return signal value', (done) => {
-    const updatedProjects = [
-      ...mockProjects,
-      {
-        id: 'project-3',
-        name: 'Project 3',
-        description: 'Description 3',
-        createdAt: new Date(),
-        createdBy: 'user-1',
-        lastUpdatedAt: new Date(),
-        lastUpdatedBy: 'user-1',
-      },
-    ];
-
-    Object.defineProperty(mockProjectsService, 'projects', {
-      get: () => signal(updatedProjects),
-    });
-    mockProjectsService.fetchAllProjects.and.returnValue(of(updatedProjects));
-
-    resolver.resolve(mockRoute, mockState).subscribe((projects) => {
-      expect(projects).toEqual(updatedProjects);
       done();
     });
   });

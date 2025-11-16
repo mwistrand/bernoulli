@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateModule } from '@ngx-translate/core';
-
 import { DashboardContainerComponent } from './dashboard-container.component';
 
 describe('DashboardContainerComponent', () => {
@@ -20,7 +19,7 @@ describe('DashboardContainerComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should initialize successfully', () => {
     expect(component).toBeTruthy();
   });
 });

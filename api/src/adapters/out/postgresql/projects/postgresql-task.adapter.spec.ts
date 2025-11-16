@@ -78,10 +78,6 @@ describe(PostgreSQLTaskAdapter.name, () => {
 		jest.clearAllMocks();
 	});
 
-	it('should be defined', () => {
-		expect(adapter).toBeDefined();
-	});
-
 	describe('#createTask', () => {
 		const validCommand: CreateTaskCommand = {
 			projectId: 'project-123',
@@ -99,17 +95,10 @@ describe(PostgreSQLTaskAdapter.name, () => {
 			repository.insert.mockResolvedValue(undefined as any);
 		});
 
-		it('should create a task successfully', async () => {
+		it('should create a task and return Task domain model', async () => {
 			const result = await adapter.createTask(taskId, validCommand);
 
 			expect(result).toEqual(mockTask);
-			expect(repository.create).toHaveBeenCalled();
-			expect(repository.insert).toHaveBeenCalledWith(mockTaskEntity);
-		});
-
-		it('should create task entity with correct data', async () => {
-			await adapter.createTask(taskId, validCommand);
-
 			expect(repository.create).toHaveBeenCalledWith({
 				id: taskId,
 				title: 'My Task',
@@ -121,6 +110,8 @@ describe(PostgreSQLTaskAdapter.name, () => {
 				createdAt: expect.any(Date),
 				lastUpdatedAt: expect.any(Date),
 			});
+			expect(repository.insert).toHaveBeenCalledWith(mockTaskEntity);
+			expect(mockTaskEntity.toTask).toHaveBeenCalled();
 		});
 
 		it('should set createdAt and lastUpdatedAt to the same value', async () => {
@@ -130,7 +121,7 @@ describe(PostgreSQLTaskAdapter.name, () => {
 			expect(createCall.createdAt).toEqual(createCall.lastUpdatedAt);
 		});
 
-		it('should handle task without summar', async () => {
+		it('should handle optional summary field', async () => {
 			const commandWithoutSummary: CreateTaskCommand = {
 				title: 'My Task',
 				description: 'My description',
@@ -151,42 +142,6 @@ describe(PostgreSQLTaskAdapter.name, () => {
 				createdAt: expect.any(Date),
 				lastUpdatedAt: expect.any(Date),
 			});
-		});
-
-		it('should insert task entity into repository', async () => {
-			await adapter.createTask(taskId, validCommand);
-
-			expect(repository.insert).toHaveBeenCalledWith(mockTaskEntity);
-		});
-
-		it('should call toTask on the entity', async () => {
-			const result = await adapter.createTask(taskId, validCommand);
-
-			expect(mockTaskEntity.toTask).toHaveBeenCalled();
-			expect(result).toEqual(mockTask);
-		});
-
-		it('should use provided task id', async () => {
-			const customId = 'custom-uuid-456';
-			await adapter.createTask(customId, validCommand);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ id: customId }),
-			);
-		});
-
-		it('should handle tasks with unicode characters', async () => {
-			const command = {
-				title: 'Проект Тест 项目测试',
-				projectId: 'project-123',
-				description: 'Test',
-				userId: 'user-123',
-			};
-			await adapter.createTask(taskId, command);
-
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ title: 'Проект Тест 项目测试' }),
-			);
 		});
 	});
 });

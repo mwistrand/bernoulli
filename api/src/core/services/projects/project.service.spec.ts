@@ -75,10 +75,6 @@ describe(ProjectService.name, () => {
 		authPort = module.get(AUTH_PORT);
 	});
 
-	it('should be defined', () => {
-		expect(service).toBeDefined();
-	});
-
 	describe('createProject', () => {
 		const validCommand: CreateProjectCommand = {
 			name: 'My Project',
@@ -86,7 +82,6 @@ describe(ProjectService.name, () => {
 		};
 
 		beforeEach(() => {
-			// Mock crypto.randomUUID
 			jest.spyOn(crypto, 'randomUUID').mockReturnValue('mock-uuid-123');
 		});
 
@@ -94,7 +89,7 @@ describe(ProjectService.name, () => {
 			jest.restoreAllMocks();
 		});
 
-		it('should create a project successfully', async () => {
+		it('should create project and add creator as ADMIN member', async () => {
 			projectPort.createProject.mockResolvedValue(mockProject);
 			projectMemberPort.create.mockResolvedValue({
 				id: 'member-123',
@@ -119,28 +114,18 @@ describe(ProjectService.name, () => {
 			});
 		});
 
-		it('should throw UnauthorizedException when userId is missing', async () => {
-			const command = { name: 'My Project' } as any;
-			await expect(() => service.createProject(command)).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
+		it('should throw UnauthorizedException when userId is invalid', async () => {
+			const invalidUserIds = [undefined, '', '   '];
+
+			for (const userId of invalidUserIds) {
+				const command = { name: 'My Project', userId } as any;
+				await expect(() => service.createProject(command)).rejects.toThrow(
+					new UnauthorizedException('User not authenticated'),
+				);
+			}
 		});
 
-		it('should throw UnauthorizedException when userId is empty string', async () => {
-			const command = { name: 'My Project', userId: '' };
-			await expect(() => service.createProject(command)).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
-		});
-
-		it('should throw UnauthorizedException when userId is only whitespace', async () => {
-			const command = { name: 'My Project', userId: '   ' };
-			await expect(() => service.createProject(command)).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
-		});
-
-		it('should generate a unique UUID for each project', async () => {
+		it('should generate unique UUID for each project', async () => {
 			projectPort.createProject.mockResolvedValue(mockProject);
 
 			const uuidSpy = jest
@@ -149,33 +134,26 @@ describe(ProjectService.name, () => {
 				.mockReturnValueOnce('uuid-2');
 
 			await service.createProject(validCommand);
-			expect(projectPort.createProject).toHaveBeenCalledWith('uuid-1', expect.any(Object));
-
 			await service.createProject(validCommand);
-			expect(projectPort.createProject).toHaveBeenCalledWith('uuid-2', expect.any(Object));
 
-			expect(uuidSpy).toHaveBeenCalledTimes(2);
-		});
-
-		it('should pass through description in command', async () => {
-			projectPort.createProject.mockResolvedValue(mockProject);
-
-			const command = {
-				name: 'My Project',
-				description: 'Test description',
-				userId: 'user-123',
-			};
-			await service.createProject(command);
-
-			expect(projectPort.createProject).toHaveBeenCalledWith('mock-uuid-123', command);
+			expect(projectPort.createProject).toHaveBeenNthCalledWith(
+				1,
+				'uuid-1',
+				expect.any(Object),
+			);
+			expect(projectPort.createProject).toHaveBeenNthCalledWith(
+				2,
+				'uuid-2',
+				expect.any(Object),
+			);
 		});
 	});
 
 	describe('findAllProjects', () => {
 		const userId = 'user-123';
-		const mockProjects: Project[] = [mockProject];
 
-		it('should return all projects for authenticated user', async () => {
+		it('should return projects for user with membership', async () => {
+			const mockProjects: Project[] = [mockProject];
 			projectPort.findAllProjectsByMembership.mockResolvedValue(mockProjects);
 
 			const result = await service.findAllProjects(userId);
@@ -184,31 +162,14 @@ describe(ProjectService.name, () => {
 			expect(projectPort.findAllProjectsByMembership).toHaveBeenCalledWith(userId);
 		});
 
-		it('should throw UnauthorizedException when userId is missing', async () => {
-			await expect(() => service.findAllProjects(undefined as any)).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
-		});
+		it('should throw UnauthorizedException when userId is invalid', async () => {
+			const invalidUserIds = [undefined, '', '   '];
 
-		it('should throw UnauthorizedException when userId is empty string', async () => {
-			await expect(() => service.findAllProjects('')).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
-		});
-
-		it('should throw UnauthorizedException when userId is only whitespace', async () => {
-			await expect(() => service.findAllProjects('   ')).rejects.toThrow(
-				new UnauthorizedException('User not authenticated'),
-			);
-		});
-
-		it('should return empty array when user has no projects', async () => {
-			projectPort.findAllProjectsByMembership.mockResolvedValue([]);
-
-			const result = await service.findAllProjects(userId);
-
-			expect(result).toEqual([]);
-			expect(projectPort.findAllProjectsByMembership).toHaveBeenCalledWith(userId);
+			for (const invalidUserId of invalidUserIds) {
+				await expect(() => service.findAllProjects(invalidUserId as any)).rejects.toThrow(
+					new UnauthorizedException('User not authenticated'),
+				);
+			}
 		});
 	});
 });

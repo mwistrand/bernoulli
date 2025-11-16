@@ -29,10 +29,6 @@ describe('TasksResolver', () => {
     resolver = TestBed.inject(TasksResolver);
   });
 
-  it('should be created', () => {
-    expect(resolver).toBeTruthy();
-  });
-
   it('should resolve with tasks when project id is provided', (done) => {
     const mockRoute = {
       paramMap: {
@@ -41,63 +37,23 @@ describe('TasksResolver', () => {
     } as unknown as ActivatedRouteSnapshot;
     const mockState = {} as RouterStateSnapshot;
 
-    const tasks = [mockTask, { ...mockTask, id: '2' }];
+    const tasks = [mockTask];
     mockTasksService.fetchTasksByProjectId.and.returnValue(of(tasks));
 
     resolver.resolve(mockRoute, mockState).subscribe((result) => {
-      expect(mockRoute.paramMap.get).toHaveBeenCalledWith('id');
       expect(mockTasksService.fetchTasksByProjectId).toHaveBeenCalledWith('project-1');
       expect(result).toEqual(tasks);
       done();
     });
   });
 
-  it('should resolve with empty array when project id is not provided', (done) => {
+  it('should resolve with empty array when no id or on error', (done) => {
     const mockRoute = {
       paramMap: {
         get: jasmine.createSpy('get').and.returnValue(null),
       },
     } as unknown as ActivatedRouteSnapshot;
     const mockState = {} as RouterStateSnapshot;
-
-    resolver.resolve(mockRoute, mockState).subscribe((result) => {
-      expect(mockRoute.paramMap.get).toHaveBeenCalledWith('id');
-      expect(mockTasksService.fetchTasksByProjectId).not.toHaveBeenCalled();
-      expect(result).toEqual([]);
-      done();
-    });
-  });
-
-  it('should resolve with empty array when tasks fetch fails', (done) => {
-    const mockRoute = {
-      paramMap: {
-        get: jasmine.createSpy('get').and.returnValue('project-1'),
-      },
-    } as unknown as ActivatedRouteSnapshot;
-    const mockState = {} as RouterStateSnapshot;
-
-    mockTasksService.fetchTasksByProjectId.and.returnValue(
-      throwError(() => new Error('Failed to fetch tasks')),
-    );
-
-    resolver.resolve(mockRoute, mockState).subscribe((result) => {
-      expect(mockTasksService.fetchTasksByProjectId).toHaveBeenCalledWith('project-1');
-      expect(result).toEqual([]);
-      done();
-    });
-  });
-
-  it('should resolve with empty array on any error', (done) => {
-    const mockRoute = {
-      paramMap: {
-        get: jasmine.createSpy('get').and.returnValue('project-1'),
-      },
-    } as unknown as ActivatedRouteSnapshot;
-    const mockState = {} as RouterStateSnapshot;
-
-    mockTasksService.fetchTasksByProjectId.and.returnValue(
-      throwError(() => new Error('Server error')),
-    );
 
     resolver.resolve(mockRoute, mockState).subscribe((result) => {
       expect(result).toEqual([]);

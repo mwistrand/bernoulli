@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionSerializer } from './session.serializer';
-import { User } from '../../../../../../core/models/auth/user.model';
 
 describe('SessionSerializer', () => {
 	let serializer: SessionSerializer;
@@ -13,94 +12,41 @@ describe('SessionSerializer', () => {
 		serializer = module.get<SessionSerializer>(SessionSerializer);
 	});
 
-	describe('serializeUser', () => {
-		it('should serialize user to minimal session data', done => {
-			const mockUser = {
+	it('should serialize user to minimal session data without sensitive fields', done => {
+		const mockUser = {
+			id: '123',
+			email: 'test@example.com',
+			name: 'Test User',
+			role: 'USER',
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		} as any;
+
+		serializer.serializeUser(mockUser, (err, sessionData) => {
+			expect(err).toBeNull();
+			expect(sessionData).toEqual({
 				id: '123',
 				email: 'test@example.com',
 				name: 'Test User',
 				role: 'USER',
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			} as any;
-
-			serializer.serializeUser(mockUser, (err, sessionData) => {
-				expect(err).toBeNull();
-				expect(sessionData).toEqual({
-					id: '123',
-					email: 'test@example.com',
-					name: 'Test User',
-					role: 'USER',
-				});
-				// Ensure sensitive data is not stored in session
-				expect(sessionData).not.toHaveProperty('passwordHash');
-				expect(sessionData).not.toHaveProperty('createdAt');
-				expect(sessionData).not.toHaveProperty('updatedAt');
-				done();
 			});
-		});
-
-		it('should handle user with missing optional fields', done => {
-			const mockUser = {
-				id: '123',
-				email: 'test@example.com',
-				name: 'Test User',
-				role: 'USER',
-			} as any;
-
-			serializer.serializeUser(mockUser as User, (err, sessionData) => {
-				expect(err).toBeNull();
-				expect(sessionData).toEqual({
-					id: '123',
-					email: 'test@example.com',
-					name: 'Test User',
-					role: 'USER',
-				});
-				done();
-			});
+			expect(sessionData).not.toHaveProperty('passwordHash');
+			expect(sessionData).not.toHaveProperty('createdAt');
+			done();
 		});
 	});
 
-	describe('deserializeUser', () => {
-		it('should deserialize session data back to user payload', done => {
-			const sessionPayload = {
-				id: '123',
-				email: 'test@example.com',
-				name: 'Test User',
-			};
+	it('should deserialize session data back to user payload', done => {
+		const sessionPayload = {
+			id: '123',
+			email: 'test@example.com',
+			name: 'Test User',
+		};
 
-			serializer.deserializeUser(sessionPayload, (err, user) => {
-				expect(err).toBeNull();
-				expect(user).toEqual(sessionPayload);
-				done();
-			});
-		});
-
-		it('should handle minimal session payload', done => {
-			const sessionPayload = {
-				id: '123',
-			};
-
-			serializer.deserializeUser(sessionPayload, (err, user) => {
-				expect(err).toBeNull();
-				expect(user).toEqual(sessionPayload);
-				done();
-			});
-		});
-
-		it('should pass through the payload without modification', done => {
-			const sessionPayload = {
-				id: '456',
-				email: 'another@example.com',
-				name: 'Another User',
-				customField: 'custom value',
-			};
-
-			serializer.deserializeUser(sessionPayload, (err, user) => {
-				expect(err).toBeNull();
-				expect(user).toBe(sessionPayload);
-				done();
-			});
+		serializer.deserializeUser(sessionPayload, (err, user) => {
+			expect(err).toBeNull();
+			expect(user).toEqual(sessionPayload);
+			done();
 		});
 	});
 });

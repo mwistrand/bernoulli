@@ -46,12 +46,8 @@ describe(ProjectMemberController.name, () => {
 		service = module.get(ProjectMemberService);
 	});
 
-	it('should be defined', () => {
-		expect(controller).toBeDefined();
-	});
-
 	describe('getMembers', () => {
-		it('should return project members', async () => {
+		it('should delegate to service with userId from request', async () => {
 			const members = [mockProjectMember];
 			service.getProjectMembers.mockResolvedValue(members);
 
@@ -63,7 +59,7 @@ describe(ProjectMemberController.name, () => {
 	});
 
 	describe('addMember', () => {
-		it('should add a new member', async () => {
+		it('should delegate to service with userId from request', async () => {
 			const dto = { userId: 'new-user-123', role: ProjectRole.USER };
 			const newMember = {
 				...mockProjectMember,
@@ -85,7 +81,7 @@ describe(ProjectMemberController.name, () => {
 	});
 
 	describe('removeMember', () => {
-		it('should remove a member', async () => {
+		it('should delegate to service with userId from request', async () => {
 			service.removeMember.mockResolvedValue(undefined);
 
 			await controller.removeMember('project-123', 'member-to-remove', mockRequest);
@@ -99,7 +95,7 @@ describe(ProjectMemberController.name, () => {
 	});
 
 	describe('updateMemberRole', () => {
-		it('should update member role', async () => {
+		it('should delegate to service with userId from request', async () => {
 			const dto = { role: ProjectRole.ADMIN };
 			const updatedMember = { ...mockProjectMember, role: ProjectRole.ADMIN };
 			service.updateMemberRole.mockResolvedValue(updatedMember);

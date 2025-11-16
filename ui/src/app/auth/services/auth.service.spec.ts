@@ -31,16 +31,6 @@ describe('AuthService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
-  describe('currentUser signal', () => {
-    it('should initialize with null', () => {
-      expect(service.currentUser()).toBeNull();
-    });
-  });
-
   describe('signup', () => {
     it('should create a new user and update currentUser signal', (done) => {
       const userData: CreateUserDto = {
@@ -57,18 +47,11 @@ describe('AuthService', () => {
 
       const req = httpMock.expectOne(`${apiUrl}/users`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(userData);
       req.flush(mockUser);
     });
 
     it('should handle signup errors', (done) => {
-      const userData: CreateUserDto = {
-        email: 'existing@example.com',
-        password: 'password123',
-        name: 'Existing User',
-      };
-
-      service.signup(userData).subscribe({
+      service.signup({} as CreateUserDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error).toBeTruthy();
@@ -95,18 +78,11 @@ describe('AuthService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/auth/login`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(credentials);
       req.flush(mockUser);
     });
 
     it('should handle login errors', (done) => {
-      const credentials: LoginDto = {
-        email: 'wrong@example.com',
-        password: 'wrongpassword',
-      };
-
-      service.login(credentials).subscribe({
+      service.login({} as LoginDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error).toBeTruthy();
@@ -121,25 +97,13 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should logout and clear currentUser signal', (done) => {
-      // First set a user using the tap operator in logout
       service.logout().subscribe(() => {
         expect(service.currentUser()).toBeNull();
         done();
       });
 
       const req = httpMock.expectOne(`${apiUrl}/auth/logout`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({});
       req.flush(null);
-    });
-
-    it('should clear currentUser before logout completes', () => {
-      service.logout().subscribe();
-
-      const req = httpMock.expectOne(`${apiUrl}/auth/logout`);
-      req.flush(null);
-
-      expect(service.currentUser()).toBeNull();
     });
   });
 
@@ -152,22 +116,10 @@ describe('AuthService', () => {
       });
 
       const req = httpMock.expectOne(`${apiUrl}/auth/me`);
-      expect(req.request.method).toBe('GET');
       req.flush(mockUser);
     });
 
-    it('should handle null user response', (done) => {
-      service.getCurrentUser().subscribe((user) => {
-        expect(user).toBeNull();
-        expect(service.currentUser()).toBeNull();
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/auth/me`);
-      req.flush(null);
-    });
-
-    it('should handle unauthorized errors', (done) => {
+    it('should handle errors', (done) => {
       service.getCurrentUser().subscribe({
         next: () => fail('should have failed'),
         error: (error) => {

@@ -9,15 +9,8 @@ describe('SessionData Decorator', () => {
 			switchToHttp: () => ({
 				getRequest: () => mockRequest,
 			}),
-			getClass: () => undefined,
-			getHandler: () => undefined,
-			getArgs: () => [],
-			getArgByIndex: () => undefined,
-			type: 'http',
-			getType: () => 'http',
 		} as unknown as ExecutionContext;
-		const result = extractSession(mockContext);
-		expect(result).toBe(mockSession);
-		expect(result).toBe(mockSession);
+
+		expect(extractSession(mockContext)).toBe(mockSession);
 	});
 });

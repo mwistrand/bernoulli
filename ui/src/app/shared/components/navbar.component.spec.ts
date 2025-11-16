@@ -37,27 +37,7 @@ describe('NavbarComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  describe('currentUser', () => {
-    it('should expose currentUser signal from AuthService', () => {
-      const userSignal = signal<User | null>(mockUser);
-      Object.defineProperty(mockAuthService, 'currentUser', {
-        get: () => userSignal.asReadonly(),
-      });
-
-      const newComponent = TestBed.createComponent(NavbarComponent).componentInstance;
-      expect(newComponent['currentUser']()).toEqual(mockUser);
-    });
-
-    it('should show null when no user is logged in', () => {
-      expect(component['currentUser']()).toBeNull();
-    });
-  });
-
-  describe('onSignOut', () => {
+  describe('Sign out', () => {
     it('should call logout and navigate to login on success', (done) => {
       mockAuthService.logout.and.returnValue(of(void 0));
 

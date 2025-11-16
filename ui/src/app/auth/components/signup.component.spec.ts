@@ -35,55 +35,41 @@ describe('SignupComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('Form validation', () => {
-    it('should have invalid form when fields are empty', () => {
+    it('should validate required fields, email format, and password length', () => {
       expect(component['signupForm'].valid).toBe(false);
       expect(component['signupForm'].get('name')?.errors?.['required']).toBe(true);
       expect(component['signupForm'].get('email')?.errors?.['required']).toBe(true);
       expect(component['signupForm'].get('password')?.errors?.['required']).toBe(true);
-    });
 
-    it('should have invalid form when email is invalid', () => {
       component['signupForm'].patchValue({
         name: 'Test User',
         email: 'invalid-email',
         password: 'password123',
       });
-
       expect(component['signupForm'].get('email')?.errors?.['email']).toBeTruthy();
       expect(component['signupForm'].valid).toBe(false);
-    });
 
-    it('should have invalid form when password is too short', () => {
       component['signupForm'].patchValue({
         name: 'Test User',
         email: 'test@example.com',
         password: '12345',
       });
-
       expect(component['signupForm'].get('password')?.errors?.['minlength']).toBeTruthy();
       expect(component['signupForm'].valid).toBe(false);
-    });
 
-    it('should have valid form when all fields are valid', () => {
       component['signupForm'].patchValue({
         name: 'Test User',
         email: 'test@example.com',
         password: 'password123',
       });
-
       expect(component['signupForm'].valid).toBe(true);
     });
   });
 
-  describe('onSubmit', () => {
+  describe('Form submission', () => {
     it('should not submit when form is invalid', () => {
       component.onSubmit();
-
       expect(mockAuthService.signup).not.toHaveBeenCalled();
     });
 
@@ -95,7 +81,6 @@ describe('SignupComponent', () => {
         email: 'test@example.com',
         password: 'password123',
       });
-
       component.onSubmit();
 
       setTimeout(() => {
@@ -105,26 +90,11 @@ describe('SignupComponent', () => {
           password: 'password123',
         });
         expect(router.navigate).toHaveBeenCalledWith(['/']);
-        expect(component['isLoading']()).toBe(true); // Still loading until navigation
         done();
       }, 10);
     });
 
-    it('should set loading state during submission', () => {
-      mockAuthService.signup.and.returnValue(of(mockUser));
-
-      component['signupForm'].patchValue({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
-      expect(component['isLoading']()).toBe(false);
-      component.onSubmit();
-      expect(component['isLoading']()).toBe(true);
-    });
-
-    it('should clear error message on new submission', () => {
+    it('should manage loading state and clear errors on submission', () => {
       mockAuthService.signup.and.returnValue(of(mockUser));
 
       component['errorMessage'].set('Previous error');
@@ -134,15 +104,14 @@ describe('SignupComponent', () => {
         password: 'password123',
       });
 
+      expect(component['isLoading']()).toBe(false);
       component.onSubmit();
-
+      expect(component['isLoading']()).toBe(true);
       expect(component['errorMessage']()).toBeNull();
     });
 
     it('should display error message on failed signup', (done) => {
-      const error = {
-        error: { message: 'Email already exists' },
-      };
+      const error = { error: { message: 'Email already exists' } };
       mockAuthService.signup.and.returnValue(throwError(() => error));
 
       component['signupForm'].patchValue({
@@ -150,7 +119,6 @@ describe('SignupComponent', () => {
         email: 'existing@example.com',
         password: 'password123',
       });
-
       component.onSubmit();
 
       setTimeout(() => {
@@ -169,7 +137,6 @@ describe('SignupComponent', () => {
         email: 'test@example.com',
         password: 'password123',
       });
-
       component.onSubmit();
 
       setTimeout(() => {

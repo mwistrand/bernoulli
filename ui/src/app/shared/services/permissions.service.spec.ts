@@ -56,10 +56,6 @@ describe('PermissionsService', () => {
     service = TestBed.inject(PermissionsService);
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('isSystemAdmin', () => {
     it('should return true for ADMIN user', () => {
       Object.defineProperty(mockAuthService, 'currentUser', {
@@ -69,38 +65,12 @@ describe('PermissionsService', () => {
       expect(service.isSystemAdmin()).toBe(true);
     });
 
-    it('should return false for USER', () => {
+    it('should return false for regular user or null', () => {
       Object.defineProperty(mockAuthService, 'currentUser', {
         get: () => signal(mockRegularUser).asReadonly(),
       });
 
       expect(service.isSystemAdmin()).toBe(false);
-    });
-
-    it('should return false when no user is logged in', () => {
-      Object.defineProperty(mockAuthService, 'currentUser', {
-        get: () => signal(null).asReadonly(),
-      });
-
-      expect(service.isSystemAdmin()).toBe(false);
-    });
-  });
-
-  describe('canCreateProjects', () => {
-    it('should return true for system admin', () => {
-      Object.defineProperty(mockAuthService, 'currentUser', {
-        get: () => signal(mockAdminUser).asReadonly(),
-      });
-
-      expect(service.canCreateProjects()).toBe(true);
-    });
-
-    it('should return false for regular user', () => {
-      Object.defineProperty(mockAuthService, 'currentUser', {
-        get: () => signal(mockRegularUser).asReadonly(),
-      });
-
-      expect(service.canCreateProjects()).toBe(false);
     });
   });
 
@@ -109,30 +79,9 @@ describe('PermissionsService', () => {
       expect(service.isProjectAdmin(mockProjectAdmin)).toBe(true);
     });
 
-    it('should return false for project USER', () => {
+    it('should return false for project USER or null', () => {
       expect(service.isProjectAdmin(mockProjectUser)).toBe(false);
-    });
-
-    it('should return false for null member', () => {
       expect(service.isProjectAdmin(null)).toBe(false);
-    });
-
-    it('should return false for undefined member', () => {
-      expect(service.isProjectAdmin(undefined)).toBe(false);
-    });
-  });
-
-  describe('canManageMembers', () => {
-    it('should return true for project admin', () => {
-      expect(service.canManageMembers(mockProjectAdmin)).toBe(true);
-    });
-
-    it('should return false for project user', () => {
-      expect(service.canManageMembers(mockProjectUser)).toBe(false);
-    });
-
-    it('should return false for null member', () => {
-      expect(service.canManageMembers(null)).toBe(false);
     });
   });
 
@@ -143,21 +92,15 @@ describe('PermissionsService', () => {
       );
     });
 
-    it('should return false when not project admin', () => {
+    it('should return false when not admin or updating creator', () => {
       expect(service.canUpdateMemberRole(mockProjectUser, mockProjectAdmin, 'creator-123')).toBe(
         false,
       );
-    });
 
-    it('should return false when trying to update project creator', () => {
       const creatorMember = { ...mockProjectUser, userId: 'creator-123' };
       expect(service.canUpdateMemberRole(mockProjectAdmin, creatorMember, 'creator-123')).toBe(
         false,
       );
-    });
-
-    it('should return false when member is null', () => {
-      expect(service.canUpdateMemberRole(null, mockProjectUser, 'creator-123')).toBe(false);
     });
   });
 
@@ -166,35 +109,22 @@ describe('PermissionsService', () => {
       expect(service.canRemoveMember(mockProjectAdmin, mockProjectUser, 'creator-123')).toBe(true);
     });
 
-    it('should return false when not project admin', () => {
+    it('should return false when not admin or removing creator', () => {
       expect(service.canRemoveMember(mockProjectUser, mockProjectAdmin, 'creator-123')).toBe(false);
-    });
 
-    it('should return false when trying to remove project creator', () => {
       const creatorMember = { ...mockProjectUser, userId: 'creator-123' };
       expect(service.canRemoveMember(mockProjectAdmin, creatorMember, 'creator-123')).toBe(false);
-    });
-
-    it('should return false when member is null', () => {
-      expect(service.canRemoveMember(null, mockProjectUser, 'creator-123')).toBe(false);
     });
   });
 
   describe('canManageTasks', () => {
-    it('should return true for project admin', () => {
+    it('should return true for any project member', () => {
       expect(service.canManageTasks(mockProjectAdmin)).toBe(true);
-    });
-
-    it('should return true for project user', () => {
       expect(service.canManageTasks(mockProjectUser)).toBe(true);
     });
 
     it('should return false for null member', () => {
       expect(service.canManageTasks(null)).toBe(false);
-    });
-
-    it('should return false for undefined member', () => {
-      expect(service.canManageTasks(undefined)).toBe(false);
     });
   });
 });

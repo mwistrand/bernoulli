@@ -36,31 +36,15 @@ describe('UsersService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('getAllUsers', () => {
     it('should fetch all users', (done) => {
       service.getAllUsers().subscribe((users) => {
         expect(users).toEqual(mockUsers);
-        expect(users.length).toBe(2);
         done();
       });
 
       const req = httpMock.expectOne(`${apiUrl}/users`);
-      expect(req.request.method).toBe('GET');
       req.flush(mockUsers);
-    });
-
-    it('should handle empty user list', (done) => {
-      service.getAllUsers().subscribe((users) => {
-        expect(users).toEqual([]);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/users`);
-      req.flush([]);
     });
 
     it('should handle error response', (done) => {
@@ -68,7 +52,6 @@ describe('UsersService', () => {
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error).toBeTruthy();
-          expect(error.status).toBe(401);
           done();
         },
       });

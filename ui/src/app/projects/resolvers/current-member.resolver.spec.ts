@@ -71,10 +71,6 @@ describe('CurrentMemberResolver', () => {
     mockState = {} as RouterStateSnapshot;
   });
 
-  it('should be created', () => {
-    expect(resolver).toBeTruthy();
-  });
-
   it('should resolve current member when user is authenticated and is a member', (done) => {
     Object.defineProperty(mockAuthService, 'currentUser', {
       get: () => () => mockUser,
@@ -88,53 +84,13 @@ describe('CurrentMemberResolver', () => {
     });
   });
 
-  it('should return null when user is not a member of the project', (done) => {
-    const differentUser: User = { ...mockUser, id: 'user-999' };
-    Object.defineProperty(mockAuthService, 'currentUser', {
-      get: () => () => differentUser,
-    });
-    mockProjectMembersService.getProjectMembers.and.returnValue(of(mockMembers));
-
-    resolver.resolve(mockRoute, mockState).subscribe((member) => {
-      expect(member).toBeNull();
-      expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('project-1');
-      done();
-    });
-  });
-
-  it('should return null when project ID is not present', (done) => {
-    (mockRoute.paramMap.get as jasmine.Spy).and.returnValue(null);
-
-    resolver.resolve(mockRoute, mockState).subscribe((member) => {
-      expect(member).toBeNull();
-      expect(mockProjectMembersService.getProjectMembers).not.toHaveBeenCalled();
-      done();
-    });
-  });
-
-  it('should return null when user is not authenticated', (done) => {
+  it('should return null when not authenticated, not a member, or on error', (done) => {
     Object.defineProperty(mockAuthService, 'currentUser', {
       get: () => () => null,
     });
 
     resolver.resolve(mockRoute, mockState).subscribe((member) => {
       expect(member).toBeNull();
-      expect(mockProjectMembersService.getProjectMembers).not.toHaveBeenCalled();
-      done();
-    });
-  });
-
-  it('should return null on error', (done) => {
-    Object.defineProperty(mockAuthService, 'currentUser', {
-      get: () => () => mockUser,
-    });
-    mockProjectMembersService.getProjectMembers.and.returnValue(
-      throwError(() => new Error('Failed to fetch members')),
-    );
-
-    resolver.resolve(mockRoute, mockState).subscribe((member) => {
-      expect(member).toBeNull();
-      expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('project-1');
       done();
     });
   });

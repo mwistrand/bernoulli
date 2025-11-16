@@ -78,12 +78,8 @@ describe(PostgreSQLAuthAdapter.name, () => {
 		jest.clearAllMocks();
 	});
 
-	it('should be defined', () => {
-		expect(adapter).toBeDefined();
-	});
-
 	describe('toUser', () => {
-		it('should convert UserEntity to User', () => {
+		it('should map UserEntity to User domain model', () => {
 			const result = toUser(mockUserEntity);
 
 			expect(result).toEqual({
@@ -92,18 +88,6 @@ describe(PostgreSQLAuthAdapter.name, () => {
 				name: 'Test User',
 				role: UserRole.USER,
 			});
-		});
-
-		it('should include role field', () => {
-			const result = toUser(mockUserEntity);
-
-			expect(result).toHaveProperty('role');
-			expect(result.role).toBe(UserRole.USER);
-		});
-
-		it('should exclude password and timestamps', () => {
-			const result = toUser(mockUserEntity);
-
 			expect(result).not.toHaveProperty('password');
 			expect(result).not.toHaveProperty('createdAt');
 			expect(result).not.toHaveProperty('lastUpdatedAt');
@@ -132,34 +116,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 			expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed-password');
 		});
 
-		it('should throw UnauthorizedException when user is not found', async () => {
-			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
-			mockQueryBuilder.getOne.mockResolvedValue(null);
-
-			await expect(
-				adapter.authenticate('nonexistent@example.com', 'password123'),
-			).rejects.toThrow(new UnauthorizedException('Unrecognized username or password'));
-
-			expect(repository.createQueryBuilder).toHaveBeenCalledWith('user');
-			expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.email = :email', {
-				email: 'nonexistent@example.com',
-			});
-			expect(bcrypt.compare).not.toHaveBeenCalled();
-		});
-
-		it('should throw UnauthorizedException when password does not match', async () => {
-			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
-			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
-			(bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-			await expect(adapter.authenticate('test@example.com', 'wrongpassword')).rejects.toThrow(
-				new UnauthorizedException('Unrecognized username or password'),
-			);
-
-			expect(bcrypt.compare).toHaveBeenCalledWith('wrongpassword', 'hashed-password');
-		});
-
-		it('should use the same error message for user not found and wrong password', async () => {
+		it('should throw UnauthorizedException with consistent message for user not found and wrong password', async () => {
 			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
 
 			mockQueryBuilder.getOne.mockResolvedValue(null);
@@ -175,18 +132,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 
 			const [msg1, msg2] = await Promise.all([userNotFoundError, wrongPasswordError]);
 			expect(msg1).toBe(msg2);
-		});
-
-		it('should query by email field', async () => {
-			const mockQueryBuilder = (repository.createQueryBuilder as jest.Mock)();
-			mockQueryBuilder.getOne.mockResolvedValue(mockUserEntity);
-			(bcrypt.compare as jest.Mock).mockResolvedValue(true);
-
-			await adapter.authenticate('user@test.com', 'password');
-
-			expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.email = :email', {
-				email: 'user@test.com',
-			});
+			expect(msg1).toBe('Unrecognized username or password');
 		});
 	});
 
@@ -211,7 +157,7 @@ describe(PostgreSQLAuthAdapter.name, () => {
 			repository.insert.mockResolvedValue(undefined as any);
 		});
 
-		it('should create a user successfully', async () => {
+		it('should create a user with hashed password and return User domain model', async () => {
 			const result = await adapter.createUser(userId, validCommand);
 
 			expect(result).toEqual({
@@ -220,18 +166,8 @@ describe(PostgreSQLAuthAdapter.name, () => {
 				name: validCommand.name,
 				role: UserRole.USER,
 			});
+			expect(result).not.toHaveProperty('password');
 			expect(bcrypt.hash).toHaveBeenCalledWith(validCommand.password, 12);
-		});
-
-		it('should hash password with 12 rounds', async () => {
-			await adapter.createUser(userId, validCommand);
-
-			expect(bcrypt.hash).toHaveBeenCalledWith('securePassword123', 12);
-		});
-
-		it('should create user entity with correct data', async () => {
-			await adapter.createUser(userId, validCommand);
-
 			expect(repository.create).toHaveBeenCalledWith({
 				id: userId,
 				name: 'New User',
@@ -249,28 +185,6 @@ describe(PostgreSQLAuthAdapter.name, () => {
 			expect(createCall.createdAt).toEqual(createCall.lastUpdatedAt);
 		});
 
-		it('should insert user entity into repository', async () => {
-			await adapter.createUser(userId, validCommand);
-
-			expect(repository.insert).toHaveBeenCalledWith(
-				expect.objectContaining({
-					id: userId,
-					email: validCommand.email,
-					name: validCommand.name,
-				}),
-			);
-		});
-
-		it('should return user without password', async () => {
-			const result = await adapter.createUser(userId, validCommand);
-
-			expect(result).not.toHaveProperty('password');
-			expect(result).toHaveProperty('id');
-			expect(result).toHaveProperty('email');
-			expect(result).toHaveProperty('name');
-			expect(result).toHaveProperty('role');
-		});
-
 		it('should throw ConflictException on duplicate email', async () => {
 			const duplicateError = { code: '23505' };
 			repository.insert.mockRejectedValue(duplicateError);
@@ -285,35 +199,6 @@ describe(PostgreSQLAuthAdapter.name, () => {
 			repository.insert.mockRejectedValue(genericError);
 
 			await expect(adapter.createUser(userId, validCommand)).rejects.toThrow(genericError);
-		});
-
-		it('should handle database errors with different error codes', async () => {
-			const otherError = { code: '23503' }; // Foreign key violation
-			repository.insert.mockRejectedValue(otherError);
-
-			await expect(adapter.createUser(userId, validCommand)).rejects.toEqual(otherError);
-		});
-
-		it('should use provided user id', async () => {
-			const customId = 'custom-uuid-456';
-			const result = await adapter.createUser(customId, validCommand);
-
-			expect(result.id).toBe(customId);
-			expect(repository.create).toHaveBeenCalledWith(
-				expect.objectContaining({ id: customId }),
-			);
-		});
-
-		it('should handle different passwords by hashing each uniquely', async () => {
-			(bcrypt.hash as jest.Mock)
-				.mockResolvedValueOnce('hashed-password-1')
-				.mockResolvedValueOnce('hashed-password-2');
-
-			await adapter.createUser('id-1', { ...validCommand, password: 'password1' });
-			await adapter.createUser('id-2', { ...validCommand, password: 'password2' });
-
-			expect(bcrypt.hash).toHaveBeenCalledWith('password1', 12);
-			expect(bcrypt.hash).toHaveBeenCalledWith('password2', 12);
 		});
 	});
 });

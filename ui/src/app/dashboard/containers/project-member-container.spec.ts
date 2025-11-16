@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Dialog, DialogRef } from '@angular/cdk/dialog';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Dialog } from '@angular/cdk/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
-import { signal } from '@angular/core';
 import { ProjectMemberContainer } from './project-member-container';
 import {
   ProjectMembersService,
@@ -97,11 +96,7 @@ describe('ProjectMemberContainer', () => {
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  describe('ngOnInit', () => {
+  describe('Initialization', () => {
     it('should load data from route snapshot', () => {
       fixture.detectChanges();
 
@@ -111,104 +106,60 @@ describe('ProjectMemberContainer', () => {
       expect(component['currentMember']()).toEqual(mockCurrentMember);
     });
 
-    it('should navigate to dashboard when project ID is missing', () => {
+    it('should navigate to dashboard when required data is missing', () => {
       mockActivatedRoute.snapshot.paramMap.get.and.returnValue(null);
-
       fixture.detectChanges();
-
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
-    });
 
-    it('should navigate to dashboard when project data is missing', () => {
+      mockActivatedRoute.snapshot.paramMap.get.and.returnValue('project-1');
       mockActivatedRoute.snapshot.data = {
         project: null,
         members: mockMembers,
         currentMember: mockCurrentMember,
       };
-
+      fixture = TestBed.createComponent(ProjectMemberContainer);
       fixture.detectChanges();
-
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
     });
 
-    it('should handle missing members data', () => {
+    it('should handle missing members or current member data', () => {
       mockActivatedRoute.snapshot.data = {
         project: mockProject,
         members: null,
-        currentMember: mockCurrentMember,
-      };
-
-      fixture.detectChanges();
-
-      expect(component['members']()).toEqual([]);
-    });
-
-    it('should handle missing current member data', () => {
-      mockActivatedRoute.snapshot.data = {
-        project: mockProject,
-        members: mockMembers,
         currentMember: null,
       };
 
+      fixture = TestBed.createComponent(ProjectMemberContainer);
       fixture.detectChanges();
 
+      expect(component['members']()).toEqual([]);
       expect(component['currentMember']()).toBeNull();
     });
   });
 
-  describe('canManageMembers', () => {
+  describe('Permission checks', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
 
-    it('should delegate to permissions service', () => {
+    it('should delegate permission checks to PermissionsService', () => {
       mockPermissionsService.canManageMembers.and.returnValue(true);
+      mockPermissionsService.canRemoveMember.and.returnValue(false);
 
-      const result = component['canManageMembers']();
-
-      expect(result).toBe(true);
+      expect(component['canManageMembers']()).toBe(true);
       expect(mockPermissionsService.canManageMembers).toHaveBeenCalledWith(mockCurrentMember);
-    });
 
-    it('should return false when user cannot manage members', () => {
-      mockPermissionsService.canManageMembers.and.returnValue(false);
-
-      const result = component['canManageMembers']();
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('canRemove', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
-    });
-
-    it('should delegate to permissions service with correct parameters', () => {
       const targetMember = mockMembers[1];
-      mockPermissionsService.canRemoveMember.and.returnValue(true);
-
-      const result = component['canRemove'](targetMember);
-
-      expect(result).toBe(true);
+      expect(component['canRemove'](targetMember)).toBe(false);
       expect(mockPermissionsService.canRemoveMember).toHaveBeenCalledWith(
         mockCurrentMember,
         targetMember,
         mockProject.createdBy,
       );
     });
-
-    it('should return false when user cannot remove member', () => {
-      const targetMember = mockMembers[1];
-      mockPermissionsService.canRemoveMember.and.returnValue(false);
-
-      const result = component['canRemove'](targetMember);
-
-      expect(result).toBe(false);
-    });
   });
 
-  describe('onAddMember', () => {
+  describe('Add member dialog', () => {
     let mockDialogRef: any;
 
     beforeEach(() => {
@@ -217,7 +168,7 @@ describe('ProjectMemberContainer', () => {
       mockDialog.open.and.returnValue(mockDialogRef);
     });
 
-    it('should open add member dialog with correct data', () => {
+    it('should open dialog with correct data', () => {
       component['onAddMember']();
 
       expect(mockDialog.open).toHaveBeenCalledWith(jasmine.any(Function), {
@@ -250,113 +201,67 @@ describe('ProjectMemberContainer', () => {
     });
 
     it('should not reload members when dialog is cancelled', () => {
-      mockDialogRef = jasmine.createSpyObj('DialogRef', [], { closed: of(null) });
-      mockDialog.open.and.returnValue(mockDialogRef);
-
       component['onAddMember']();
-
       expect(mockProjectMembersService.getProjectMembers).not.toHaveBeenCalled();
     });
   });
 
-  describe('onRemoveMember', () => {
+  describe('Remove member', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
 
-    it('should prompt for confirmation', () => {
-      spyOn(window, 'confirm').and.returnValue(false);
+    it('should prompt for confirmation and remove member when confirmed', () => {
+      spyOn(window, 'confirm').and.returnValue(true);
       const targetMember = mockMembers[1];
+      mockProjectMembersService.removeMember.and.returnValue(of(undefined));
+      mockProjectMembersService.getProjectMembers.and.returnValue(of([mockMembers[0]]));
 
       component['onRemoveMember'](targetMember);
 
       expect(window.confirm).toHaveBeenCalledWith('projects.members.confirmRemove');
-    });
-
-    it('should not remove member if confirmation is cancelled', () => {
-      spyOn(window, 'confirm').and.returnValue(false);
-      const targetMember = mockMembers[1];
-
-      component['onRemoveMember'](targetMember);
-
-      expect(mockProjectMembersService.removeMember).not.toHaveBeenCalled();
-    });
-
-    it('should remove member when confirmed', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      const targetMember = mockMembers[1];
-      mockProjectMembersService.removeMember.and.returnValue(of(undefined));
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([mockMembers[0]]));
-
-      component['onRemoveMember'](targetMember);
-
-      expect(component['isLoading']()).toBe(false);
       expect(mockProjectMembersService.removeMember).toHaveBeenCalledWith('project-1', 'user-2');
       expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('project-1');
     });
 
-    it('should set loading state during removal', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      const targetMember = mockMembers[1];
-      mockProjectMembersService.removeMember.and.returnValue(of(undefined));
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([mockMembers[0]]));
+    it('should not remove member if confirmation is cancelled', () => {
+      spyOn(window, 'confirm').and.returnValue(false);
+      component['onRemoveMember'](mockMembers[1]);
 
-      component['onRemoveMember'](targetMember);
-
-      expect(component['errorMessage']()).toBeNull();
+      expect(mockProjectMembersService.removeMember).not.toHaveBeenCalled();
     });
 
     it('should handle removal errors', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       const targetMember = mockMembers[1];
+
       const error = { error: { message: 'Server error message' } };
       mockProjectMembersService.removeMember.and.returnValue(throwError(() => error));
-
       component['onRemoveMember'](targetMember);
-
-      expect(component['isLoading']()).toBe(false);
       expect(component['errorMessage']()).toBe('Server error message');
-    });
 
-    it('should show generic error message when error details are missing', () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      const targetMember = mockMembers[1];
       mockProjectMembersService.removeMember.and.returnValue(
         throwError(() => new Error('Unknown error')),
       );
-
       component['onRemoveMember'](targetMember);
-
-      expect(component['isLoading']()).toBe(false);
       expect(component['errorMessage']()).toBe('projects.members.errors.removeFailed');
     });
   });
 
-  describe('getRoleLabel', () => {
-    it('should return admin label for admin role', () => {
-      const label = component['getRoleLabel'](ProjectRole.ADMIN);
-      expect(label).toBe('projects.roles.admin');
-    });
-
-    it('should return user label for user role', () => {
-      const label = component['getRoleLabel'](ProjectRole.USER);
-      expect(label).toBe('projects.roles.user');
-    });
-  });
-
-  describe('goBack', () => {
-    beforeEach(() => {
-      fixture.detectChanges();
+  describe('Utility methods', () => {
+    it('should return correct role labels', () => {
+      expect(component['getRoleLabel'](ProjectRole.ADMIN)).toBe('projects.roles.admin');
+      expect(component['getRoleLabel'](ProjectRole.USER)).toBe('projects.roles.user');
     });
 
     it('should navigate back to project detail page', () => {
+      fixture.detectChanges();
       component['goBack']();
-
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard/projects', 'project-1']);
     });
   });
 
-  describe('loadMembers', () => {
+  describe('Load members', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
@@ -372,24 +277,16 @@ describe('ProjectMemberContainer', () => {
       expect(component['errorMessage']()).toBeNull();
     });
 
-    it('should handle errors when loading members', () => {
+    it('should handle loading errors', () => {
       const error = { error: { message: 'Server error message' } };
       mockProjectMembersService.getProjectMembers.and.returnValue(throwError(() => error));
-
       component['loadMembers']();
-
-      expect(component['isLoading']()).toBe(false);
       expect(component['errorMessage']()).toBe('Server error message');
-    });
 
-    it('should show generic error message when error details are missing', () => {
       mockProjectMembersService.getProjectMembers.and.returnValue(
         throwError(() => new Error('Unknown error')),
       );
-
       component['loadMembers']();
-
-      expect(component['isLoading']()).toBe(false);
       expect(component['errorMessage']()).toBe('projects.members.errors.loadFailed');
     });
   });

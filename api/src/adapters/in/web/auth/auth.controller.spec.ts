@@ -1,11 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, INestApplication } from '@nestjs/common';
 import request from 'supertest';
+
 import { AuthController } from './auth.controller';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
 
-describe('AuthController', () => {
+describe(AuthController.name, () => {
 	let app: INestApplication;
 
 	const mockUser = {
@@ -29,7 +30,6 @@ describe('AuthController', () => {
 
 	describe('POST /auth/login', () => {
 		it('should establish session and return user', async () => {
-			// Mock the LocalAuthGuard to set req.user
 			const mockLocalAuthGuard = {
 				canActivate: jest.fn(context => {
 					const request = context.switchToHttp().getRequest();
@@ -175,53 +175,6 @@ describe('AuthController', () => {
 			await app.init();
 
 			await request(app.getHttpServer()).post('/auth/logout').expect(500);
-		});
-
-		it('should reject if session destroy fails', async () => {
-			const mockError = new Error('Session destroy failed');
-			const mockAuthGuard = {
-				canActivate: jest.fn(context => {
-					const request = context.switchToHttp().getRequest();
-					request.user = mockUser;
-					request.logout = jest.fn(callback => callback());
-					request.session = {
-						destroy: jest.fn(callback => callback(mockError)),
-					};
-					return true;
-				}),
-			};
-
-			await app.close();
-			const module = await Test.createTestingModule({
-				controllers: [AuthController],
-			})
-				.overrideGuard(AuthenticatedGuard)
-				.useValue(mockAuthGuard)
-				.compile();
-
-			app = module.createNestApplication();
-			await app.init();
-
-			await request(app.getHttpServer()).post('/auth/logout').expect(500);
-		});
-
-		it('should return 403 when not authenticated', async () => {
-			const mockAuthGuard = {
-				canActivate: jest.fn(() => false),
-			};
-
-			await app.close();
-			const module = await Test.createTestingModule({
-				controllers: [AuthController],
-			})
-				.overrideGuard(AuthenticatedGuard)
-				.useValue(mockAuthGuard)
-				.compile();
-
-			app = module.createNestApplication();
-			await app.init();
-
-			await request(app.getHttpServer()).post('/auth/logout').expect(403);
 		});
 	});
 

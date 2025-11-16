@@ -35,52 +35,31 @@ describe('LoginComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('Form validation', () => {
-    it('should have invalid form when fields are empty', () => {
+    it('should validate required fields and email format', () => {
       expect(component['loginForm'].valid).toBe(false);
       expect(component['loginForm'].get('email')?.errors?.['required']).toBe(true);
       expect(component['loginForm'].get('password')?.errors?.['required']).toBe(true);
-    });
 
-    it('should have invalid form when email is invalid', () => {
-      component['loginForm'].patchValue({
-        email: 'invalid-email',
-        password: 'password123',
-      });
-
+      component['loginForm'].patchValue({ email: 'invalid-email', password: 'password123' });
       expect(component['loginForm'].get('email')?.errors?.['email']).toBeTruthy();
       expect(component['loginForm'].valid).toBe(false);
-    });
 
-    it('should have valid form when all fields are valid', () => {
-      component['loginForm'].patchValue({
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
+      component['loginForm'].patchValue({ email: 'test@example.com', password: 'password123' });
       expect(component['loginForm'].valid).toBe(true);
     });
   });
 
-  describe('onSubmit', () => {
+  describe('Form submission', () => {
     it('should not submit when form is invalid', () => {
       component.onSubmit();
-
       expect(mockAuthService.login).not.toHaveBeenCalled();
     });
 
     it('should login and navigate on successful submission', (done) => {
       mockAuthService.login.and.returnValue(of(mockUser));
 
-      component['loginForm'].patchValue({
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
+      component['loginForm'].patchValue({ email: 'test@example.com', password: 'password123' });
       component.onSubmit();
 
       setTimeout(() => {
@@ -89,49 +68,27 @@ describe('LoginComponent', () => {
           password: 'password123',
         });
         expect(router.navigate).toHaveBeenCalledWith(['/']);
-        expect(component['isLoading']()).toBe(true); // Still loading until navigation
         done();
       }, 10);
     });
 
-    it('should set loading state during submission', () => {
+    it('should manage loading state and clear errors on submission', () => {
       mockAuthService.login.and.returnValue(of(mockUser));
 
-      component['loginForm'].patchValue({
-        email: 'test@example.com',
-        password: 'password123',
-      });
+      component['errorMessage'].set('Previous error');
+      component['loginForm'].patchValue({ email: 'test@example.com', password: 'password123' });
 
       expect(component['isLoading']()).toBe(false);
       component.onSubmit();
       expect(component['isLoading']()).toBe(true);
-    });
-
-    it('should clear error message on new submission', () => {
-      mockAuthService.login.and.returnValue(of(mockUser));
-
-      component['errorMessage'].set('Previous error');
-      component['loginForm'].patchValue({
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
-      component.onSubmit();
-
       expect(component['errorMessage']()).toBeNull();
     });
 
     it('should display error message on failed login', (done) => {
-      const error = {
-        error: { message: 'Invalid credentials' },
-      };
+      const error = { error: { message: 'Invalid credentials' } };
       mockAuthService.login.and.returnValue(throwError(() => error));
 
-      component['loginForm'].patchValue({
-        email: 'wrong@example.com',
-        password: 'wrongpassword',
-      });
-
+      component['loginForm'].patchValue({ email: 'wrong@example.com', password: 'wrongpassword' });
       component.onSubmit();
 
       setTimeout(() => {
@@ -145,11 +102,7 @@ describe('LoginComponent', () => {
     it('should display default error message when error has no message', (done) => {
       mockAuthService.login.and.returnValue(throwError(() => ({})));
 
-      component['loginForm'].patchValue({
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
+      component['loginForm'].patchValue({ email: 'test@example.com', password: 'password123' });
       component.onSubmit();
 
       setTimeout(() => {

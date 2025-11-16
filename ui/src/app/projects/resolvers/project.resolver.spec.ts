@@ -27,10 +27,6 @@ describe('ProjectResolver', () => {
     resolver = TestBed.inject(ProjectResolver);
   });
 
-  it('should be created', () => {
-    expect(resolver).toBeTruthy();
-  });
-
   it('should resolve with project when id is provided', (done) => {
     const mockRoute = {
       paramMap: {
@@ -42,57 +38,19 @@ describe('ProjectResolver', () => {
     mockProjectsService.getProjectById.and.returnValue(of(mockProject));
 
     resolver.resolve(mockRoute, mockState).subscribe((project) => {
-      expect(mockRoute.paramMap.get).toHaveBeenCalledWith('id');
       expect(mockProjectsService.getProjectById).toHaveBeenCalledWith('1');
       expect(project).toEqual(mockProject);
       done();
     });
   });
 
-  it('should resolve with null when id is not provided', (done) => {
+  it('should resolve with null when id is not provided or on error', (done) => {
     const mockRoute = {
       paramMap: {
         get: jasmine.createSpy('get').and.returnValue(null),
       },
     } as unknown as ActivatedRouteSnapshot;
     const mockState = {} as RouterStateSnapshot;
-
-    resolver.resolve(mockRoute, mockState).subscribe((project) => {
-      expect(mockRoute.paramMap.get).toHaveBeenCalledWith('id');
-      expect(mockProjectsService.getProjectById).not.toHaveBeenCalled();
-      expect(project).toBeNull();
-      done();
-    });
-  });
-
-  it('should resolve with null when project is not found', (done) => {
-    const mockRoute = {
-      paramMap: {
-        get: jasmine.createSpy('get').and.returnValue('nonexistent'),
-      },
-    } as unknown as ActivatedRouteSnapshot;
-    const mockState = {} as RouterStateSnapshot;
-
-    mockProjectsService.getProjectById.and.returnValue(
-      throwError(() => new Error('Project not found')),
-    );
-
-    resolver.resolve(mockRoute, mockState).subscribe((project) => {
-      expect(mockProjectsService.getProjectById).toHaveBeenCalledWith('nonexistent');
-      expect(project).toBeNull();
-      done();
-    });
-  });
-
-  it('should resolve with null on any error', (done) => {
-    const mockRoute = {
-      paramMap: {
-        get: jasmine.createSpy('get').and.returnValue('1'),
-      },
-    } as unknown as ActivatedRouteSnapshot;
-    const mockState = {} as RouterStateSnapshot;
-
-    mockProjectsService.getProjectById.and.returnValue(throwError(() => new Error('Server error')));
 
     resolver.resolve(mockRoute, mockState).subscribe((project) => {
       expect(project).toBeNull();

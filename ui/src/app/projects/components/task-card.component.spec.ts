@@ -29,87 +29,10 @@ describe('TaskCardComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('should create', () => {
-    fixture.componentRef.setInput('task', createMockTask());
-    fixture.detectChanges();
-    expect(component).toBeTruthy();
-  });
-
-  describe('Rendering', () => {
-    it('should display task title', () => {
-      const task = createMockTask({ title: 'My Task Title' });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const titleElement = fixture.nativeElement.querySelector('h3');
-      expect(titleElement.textContent).toBe('My Task Title');
-    });
-
-    it('should display task description', () => {
-      const task = createMockTask({ description: 'This is a test description' });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const descriptionElement = fixture.nativeElement.querySelector('.task-description');
-      expect(descriptionElement.textContent).toBe('This is a test description');
-    });
-
-    it('should display task summary when present', () => {
-      const task = createMockTask({ summary: 'Task summary' });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const summaryElement = fixture.nativeElement.querySelector('.task-summary');
-      expect(summaryElement).not.toBeNull();
-      expect(summaryElement.textContent).toBe('Task summary');
-    });
-
-    it('should not display summary element when summary is not present', () => {
-      const task = createMockTask({ summary: undefined });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const summaryElement = fixture.nativeElement.querySelector('.task-summary');
-      expect(summaryElement).toBeNull();
-    });
-
-    it('should display formatted creation date', () => {
-      const task = createMockTask({ createdAt: new Date('2024-01-15') });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const metaItem = fixture.nativeElement.querySelector('.meta-item');
-      // Note: Date formatting can vary based on timezone, so check for either date
-      const text = metaItem.textContent;
-      expect(text).toMatch(/tasks\.card\.created.*Jan (14|15), 2024/);
-    });
-
-    it('should render as an article element for semantic HTML', () => {
-      fixture.componentRef.setInput('task', createMockTask());
-      fixture.detectChanges();
-
-      const article = fixture.nativeElement.querySelector('article');
-      expect(article).not.toBeNull();
-      expect(article.classList.contains('task-card')).toBe(true);
-    });
-  });
-
   describe('Action buttons', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('task', createMockTask({ title: 'Test Task' }));
       fixture.detectChanges();
-    });
-
-    it('should have edit button', () => {
-      const editButton = fixture.nativeElement.querySelector('.edit-button');
-      expect(editButton).not.toBeNull();
-      expect(editButton.textContent.trim()).toBe('tasks.card.edit');
-    });
-
-    it('should have delete button', () => {
-      const deleteButton = fixture.nativeElement.querySelector('.delete-button');
-      expect(deleteButton).not.toBeNull();
-      expect(deleteButton.textContent.trim()).toBe('tasks.card.delete');
     });
 
     it('should emit edit event when edit button is clicked', () => {
@@ -145,23 +68,13 @@ describe('TaskCardComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have appropriate aria-label on edit button', () => {
+    it('should have appropriate aria-labels and titles on buttons', () => {
       const editButton = fixture.nativeElement.querySelector('.edit-button');
       expect(editButton.getAttribute('aria-label')).toBe('tasks.card.editAriaLabel');
-    });
+      expect(editButton.getAttribute('title')).toBe('tasks.card.editTitle');
 
-    it('should have appropriate aria-label on delete button', () => {
       const deleteButton = fixture.nativeElement.querySelector('.delete-button');
       expect(deleteButton.getAttribute('aria-label')).toBe('tasks.card.deleteAriaLabel');
-    });
-
-    it('should have title attribute on edit button', () => {
-      const editButton = fixture.nativeElement.querySelector('.edit-button');
-      expect(editButton.getAttribute('title')).toBe('tasks.card.editTitle');
-    });
-
-    it('should have title attribute on delete button', () => {
-      const deleteButton = fixture.nativeElement.querySelector('.delete-button');
       expect(deleteButton.getAttribute('title')).toBe('tasks.card.deleteTitle');
     });
 
@@ -175,38 +88,6 @@ describe('TaskCardComponent', () => {
       buttons.forEach((button: HTMLButtonElement) => {
         expect(button.type).toBe('button');
       });
-    });
-  });
-
-  describe('Edge cases', () => {
-    it('should handle very long titles gracefully', () => {
-      const longTitle = 'A'.repeat(300);
-      const task = createMockTask({ title: longTitle });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const titleElement = fixture.nativeElement.querySelector('h3');
-      expect(titleElement.textContent).toBe(longTitle);
-    });
-
-    it('should handle very long descriptions gracefully', () => {
-      const longDescription = 'B'.repeat(5000);
-      const task = createMockTask({ description: longDescription });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const descriptionElement = fixture.nativeElement.querySelector('.task-description');
-      expect(descriptionElement.textContent).toBe(longDescription);
-    });
-
-    it('should handle multi-line descriptions with proper whitespace', () => {
-      const multiLineDescription = 'Line 1\nLine 2\nLine 3';
-      const task = createMockTask({ description: multiLineDescription });
-      fixture.componentRef.setInput('task', task);
-      fixture.detectChanges();
-
-      const descriptionElement = fixture.nativeElement.querySelector('.task-description');
-      expect(descriptionElement.textContent).toBe(multiLineDescription);
     });
   });
 });

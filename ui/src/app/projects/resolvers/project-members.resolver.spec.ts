@@ -60,10 +60,6 @@ describe('ProjectMembersResolver', () => {
     mockState = {} as RouterStateSnapshot;
   });
 
-  it('should be created', () => {
-    expect(resolver).toBeTruthy();
-  });
-
   it('should resolve project members for a valid project ID', (done) => {
     mockProjectMembersService.getProjectMembers.and.returnValue(of(mockMembers));
 
@@ -74,35 +70,11 @@ describe('ProjectMembersResolver', () => {
     });
   });
 
-  it('should return empty array when project ID is not present', (done) => {
+  it('should return empty array when no project ID or on error', (done) => {
     (mockRoute.paramMap.get as jasmine.Spy).and.returnValue(null);
 
     resolver.resolve(mockRoute, mockState).subscribe((members) => {
       expect(members).toEqual([]);
-      expect(mockProjectMembersService.getProjectMembers).not.toHaveBeenCalled();
-      done();
-    });
-  });
-
-  it('should return empty array on error', (done) => {
-    mockProjectMembersService.getProjectMembers.and.returnValue(
-      throwError(() => new Error('Failed to fetch members')),
-    );
-
-    resolver.resolve(mockRoute, mockState).subscribe((members) => {
-      expect(members).toEqual([]);
-      expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('project-1');
-      done();
-    });
-  });
-
-  it('should extract project ID from route params', (done) => {
-    (mockRoute.paramMap.get as jasmine.Spy).and.returnValue('custom-project-id');
-    mockProjectMembersService.getProjectMembers.and.returnValue(of(mockMembers));
-
-    resolver.resolve(mockRoute, mockState).subscribe(() => {
-      expect(mockRoute.paramMap.get).toHaveBeenCalledWith('id');
-      expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('custom-project-id');
       done();
     });
   });

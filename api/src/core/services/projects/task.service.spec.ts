@@ -46,58 +46,38 @@ describe(TaskService.name, () => {
 		projectMemberPort = module.get(PROJECT_MEMBER_PORT);
 	});
 
-	it('should be defined', () => {
-		expect(service).toBeDefined();
-	});
+	describe('createTask', () => {
+		const now = new Date();
+		const validCommand: CreateTaskCommand = {
+			userId: 'user-id',
+			projectId: 'project-id',
+			title: 'Title',
+			description: 'Description',
+		};
 
-	describe('#createTask', () => {
-		it('should throw without a valid user id', async () => {
-			const command: CreateTaskCommand = {
-				userId: '      ',
-				projectId: 'project-123',
-				title: 'Title',
-				description: 'Description',
-			};
+		it('should throw UnauthorizedException when userId is invalid', async () => {
+			const command = { ...validCommand, userId: '      ' };
 			await expect(service.createTask(command)).rejects.toThrow(
 				new UnauthorizedException('User not authenticated'),
 			);
 		});
 
-		it('should throw without a valid project id', async () => {
-			const command: CreateTaskCommand = {
-				userId: 'user-id',
-				projectId: '      ',
-				title: 'Title',
-				description: 'Description',
-			};
+		it('should throw NotFoundException when projectId is invalid', async () => {
+			const command = { ...validCommand, projectId: '      ' };
 			await expect(service.createTask(command)).rejects.toThrow(
 				new NotFoundException('Project not found'),
 			);
 		});
 
 		it('should throw ForbiddenException when user is not a project member', async () => {
-			const command: CreateTaskCommand = {
-				userId: 'user-id',
-				projectId: 'project-id',
-				title: 'Title',
-				description: 'Description',
-			};
 			projectMemberPort.findByProjectAndUser.mockResolvedValue(null);
 
-			await expect(service.createTask(command)).rejects.toThrow(
+			await expect(service.createTask(validCommand)).rejects.toThrow(
 				new ForbiddenException('User is not a project member'),
 			);
 		});
 
-		it('should persist the task with a new task ID', async () => {
-			const now = new Date();
-			const command: CreateTaskCommand = {
-				userId: 'user-id',
-				projectId: 'project-id',
-				title: 'Title',
-				description: 'Description',
-			};
-
+		it('should create task when user is a project member', async () => {
 			projectMemberPort.findByProjectAndUser.mockResolvedValue({
 				id: 'member-id',
 				projectId: 'project-id',
@@ -109,7 +89,7 @@ describe(TaskService.name, () => {
 				lastUpdatedAt: now,
 			});
 
-			taskPort.createTask.mockResolvedValue({
+			const expectedTask = {
 				id: 'task-id',
 				projectId: 'project-id',
 				title: 'Title',
@@ -118,30 +98,25 @@ describe(TaskService.name, () => {
 				createdBy: 'user-123',
 				lastUpdatedBy: 'user-123',
 				lastUpdatedAt: now,
-			});
+			};
 
-			const portSpy = jest.spyOn(taskPort, 'createTask');
-			const task = await service.createTask(command);
-			expect(portSpy).toHaveBeenCalledTimes(1);
+			taskPort.createTask.mockResolvedValue(expectedTask);
+
+			const task = await service.createTask(validCommand);
+
 			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
 				'project-id',
 				'user-id',
 			);
-			expect(task).toEqual({
-				id: 'task-id',
-				projectId: 'project-id',
-				title: 'Title',
-				description: 'Description',
-				createdAt: now,
-				createdBy: 'user-123',
-				lastUpdatedBy: 'user-123',
-				lastUpdatedAt: now,
-			});
+			expect(taskPort.createTask).toHaveBeenCalledTimes(1);
+			expect(task).toEqual(expectedTask);
 		});
 	});
 
-	describe('#findAllTasksByProjectId', () => {
-		it('should throw without a valid project id', async () => {
+	describe('findAllTasksByProjectId', () => {
+		const now = new Date();
+
+		it('should throw NotFoundException when projectId is invalid', async () => {
 			await expect(service.findAllTasksByProjectId('      ', 'user-id')).rejects.toThrow(
 				new NotFoundException('Project not found'),
 			);
@@ -155,9 +130,7 @@ describe(TaskService.name, () => {
 			);
 		});
 
-		it('should load all tasks by project ID', async () => {
-			const now = new Date();
-
+		it('should return tasks when user is a project member', async () => {
 			projectMemberPort.findByProjectAndUser.mockResolvedValue({
 				id: 'member-id',
 				projectId: 'project-id',
@@ -169,7 +142,7 @@ describe(TaskService.name, () => {
 				lastUpdatedAt: now,
 			});
 
-			taskPort.findAllTasksByProjectId.mockResolvedValue([
+			const expectedTasks = [
 				{
 					id: 'task-id',
 					projectId: 'project-id',
@@ -180,27 +153,17 @@ describe(TaskService.name, () => {
 					lastUpdatedBy: 'user-123',
 					lastUpdatedAt: now,
 				},
-			]);
+			];
 
-			const portSpy = jest.spyOn(taskPort, 'findAllTasksByProjectId');
+			taskPort.findAllTasksByProjectId.mockResolvedValue(expectedTasks);
+
 			const tasks = await service.findAllTasksByProjectId('project-id', 'user-id');
-			expect(portSpy).toHaveBeenCalledTimes(1);
+
 			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
 				'project-id',
 				'user-id',
 			);
-			expect(tasks).toEqual([
-				{
-					id: 'task-id',
-					projectId: 'project-id',
-					title: 'Title',
-					description: 'Description',
-					createdAt: now,
-					createdBy: 'user-123',
-					lastUpdatedBy: 'user-123',
-					lastUpdatedAt: now,
-				},
-			]);
+			expect(tasks).toEqual(expectedTasks);
 		});
 	});
 });

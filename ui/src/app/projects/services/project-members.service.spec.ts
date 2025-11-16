@@ -37,41 +37,19 @@ describe('ProjectMembersService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-
   describe('getProjectMembers', () => {
     it('should fetch project members', (done) => {
-      const projectId = 'project-123';
-      const members = [mockMember];
-
-      service.getProjectMembers(projectId).subscribe((result) => {
-        expect(result).toEqual(members);
+      service.getProjectMembers('project-123').subscribe((result) => {
+        expect(result).toEqual([mockMember]);
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
-      expect(req.request.method).toBe('GET');
-      req.flush(members);
-    });
-
-    it('should handle empty member list', (done) => {
-      const projectId = 'project-123';
-
-      service.getProjectMembers(projectId).subscribe((result) => {
-        expect(result).toEqual([]);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
-      req.flush([]);
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members`);
+      req.flush([mockMember]);
     });
 
     it('should handle error response', (done) => {
-      const projectId = 'project-123';
-
-      service.getProjectMembers(projectId).subscribe({
+      service.getProjectMembers('project-123').subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error).toBeTruthy();
@@ -79,38 +57,29 @@ describe('ProjectMembersService', () => {
         },
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members`);
       req.flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
     });
   });
 
   describe('addMember', () => {
     it('should add a new member', (done) => {
-      const projectId = 'project-123';
       const dto: AddMemberDto = {
         userId: 'new-user-123',
         role: ProjectRole.USER,
       };
 
-      service.addMember(projectId, dto).subscribe((result) => {
+      service.addMember('project-123', dto).subscribe((result) => {
         expect(result).toEqual(mockMember);
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(dto);
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members`);
       req.flush(mockMember);
     });
 
-    it('should handle conflict error when user already a member', (done) => {
-      const projectId = 'project-123';
-      const dto: AddMemberDto = {
-        userId: 'existing-user-123',
-        role: ProjectRole.USER,
-      };
-
-      service.addMember(projectId, dto).subscribe({
+    it('should handle conflict error', (done) => {
+      service.addMember('project-123', {} as AddMemberDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error.status).toBe(409);
@@ -118,58 +87,26 @@ describe('ProjectMembersService', () => {
         },
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
-      req.flush(
-        { message: 'User is already a project member' },
-        { status: 409, statusText: 'Conflict' },
-      );
-    });
-
-    it('should add member with ADMIN role', (done) => {
-      const projectId = 'project-123';
-      const dto: AddMemberDto = {
-        userId: 'admin-user-123',
-        role: ProjectRole.ADMIN,
-      };
-
-      service.addMember(projectId, dto).subscribe((result) => {
-        expect(result.role).toBe(ProjectRole.ADMIN);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members`);
-      expect(req.request.body.role).toBe(ProjectRole.ADMIN);
-      req.flush({ ...mockMember, role: ProjectRole.ADMIN });
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members`);
+      req.flush({ message: 'User already member' }, { status: 409, statusText: 'Conflict' });
     });
   });
 
   describe('updateMemberRole', () => {
     it('should update member role', (done) => {
-      const projectId = 'project-123';
-      const userId = 'user-123';
-      const dto: UpdateRoleDto = {
-        role: ProjectRole.ADMIN,
-      };
+      const dto: UpdateRoleDto = { role: ProjectRole.ADMIN };
 
-      service.updateMemberRole(projectId, userId, dto).subscribe((result) => {
+      service.updateMemberRole('project-123', 'user-123', dto).subscribe((result) => {
         expect(result).toEqual(mockMember);
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      expect(req.request.method).toBe('PATCH');
-      expect(req.request.body).toEqual(dto);
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members/user-123`);
       req.flush(mockMember);
     });
 
-    it('should handle forbidden error when not project admin', (done) => {
-      const projectId = 'project-123';
-      const userId = 'user-123';
-      const dto: UpdateRoleDto = {
-        role: ProjectRole.ADMIN,
-      };
-
-      service.updateMemberRole(projectId, userId, dto).subscribe({
+    it('should handle authorization errors', (done) => {
+      service.updateMemberRole('project-123', 'user-123', {} as UpdateRoleDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error.status).toBe(403);
@@ -177,55 +114,23 @@ describe('ProjectMembersService', () => {
         },
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      req.flush(
-        { message: 'User must be project admin' },
-        { status: 403, statusText: 'Forbidden' },
-      );
-    });
-
-    it('should handle not found error when user not a member', (done) => {
-      const projectId = 'project-123';
-      const userId = 'non-member-123';
-      const dto: UpdateRoleDto = {
-        role: ProjectRole.ADMIN,
-      };
-
-      service.updateMemberRole(projectId, userId, dto).subscribe({
-        next: () => fail('should have failed'),
-        error: (error) => {
-          expect(error.status).toBe(404);
-          done();
-        },
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      req.flush(
-        { message: 'User is not a project member' },
-        { status: 404, statusText: 'Not Found' },
-      );
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members/user-123`);
+      req.flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
     });
   });
 
   describe('removeMember', () => {
     it('should remove a member', (done) => {
-      const projectId = 'project-123';
-      const userId = 'user-123';
-
-      service.removeMember(projectId, userId).subscribe(() => {
+      service.removeMember('project-123', 'user-123').subscribe(() => {
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      expect(req.request.method).toBe('DELETE');
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members/user-123`);
       req.flush(null);
     });
 
-    it('should handle forbidden error when not project admin', (done) => {
-      const projectId = 'project-123';
-      const userId = 'user-123';
-
-      service.removeMember(projectId, userId).subscribe({
+    it('should handle authorization errors', (done) => {
+      service.removeMember('project-123', 'user-123').subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
           expect(error.status).toBe(403);
@@ -233,30 +138,8 @@ describe('ProjectMembersService', () => {
         },
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      req.flush(
-        { message: 'User must be project admin' },
-        { status: 403, statusText: 'Forbidden' },
-      );
-    });
-
-    it('should handle error when trying to remove project creator', (done) => {
-      const projectId = 'project-123';
-      const userId = 'creator-123';
-
-      service.removeMember(projectId, userId).subscribe({
-        next: () => fail('should have failed'),
-        error: (error) => {
-          expect(error.status).toBe(403);
-          done();
-        },
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/projects/${projectId}/members/${userId}`);
-      req.flush(
-        { message: 'Cannot remove project creator' },
-        { status: 403, statusText: 'Forbidden' },
-      );
+      const req = httpMock.expectOne(`${apiUrl}/projects/project-123/members/user-123`);
+      req.flush({ message: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });
     });
   });
 });

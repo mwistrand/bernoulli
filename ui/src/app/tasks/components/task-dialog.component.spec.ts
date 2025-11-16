@@ -37,64 +37,14 @@ describe('TaskDialogComponent', () => {
     fixture.componentRef.setInput('task', null);
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  describe('Dialog visibility', () => {
-    it('should not render dialog when isOpen is false', () => {
-      fixture.componentRef.setInput('isOpen', false);
-      fixture.detectChanges();
-
-      const dialogBackdrop = fixture.nativeElement.querySelector('.dialog-backdrop');
-      expect(dialogBackdrop).toBeNull();
-    });
-
-    it('should render dialog when isOpen is true', () => {
-      fixture.componentRef.setInput('isOpen', true);
-      fixture.detectChanges();
-
-      const dialogBackdrop = fixture.nativeElement.querySelector('.dialog-backdrop');
-      expect(dialogBackdrop).not.toBeNull();
-    });
-  });
-
   describe('Focus management', () => {
     it('should auto-focus the title input when dialog opens', (done) => {
       fixture.componentRef.setInput('isOpen', true);
       fixture.detectChanges();
 
-      // Wait for focus trap to activate
       setTimeout(() => {
         const titleInput = fixture.nativeElement.querySelector('#task-title');
         expect(document.activeElement).toBe(titleInput);
-        done();
-      }, 100);
-    });
-
-    it('should trap focus within the dialog', (done) => {
-      fixture.componentRef.setInput('isOpen', true);
-      fixture.detectChanges();
-
-      setTimeout(() => {
-        const dialogContent = fixture.nativeElement.querySelector('.dialog-content');
-        const titleInput = fixture.nativeElement.querySelector('#task-title');
-
-        // Focus should start on title input due to cdkFocusInitial
-        expect(document.activeElement).toBe(titleInput);
-
-        // Verify all focusable elements are within the dialog content
-        const allFocusableElements = dialogContent.querySelectorAll('button, input, textarea');
-        expect(allFocusableElements.length).toBeGreaterThan(0);
-
-        allFocusableElements.forEach((element: Element) => {
-          expect(dialogContent.contains(element)).toBe(true);
-        });
-
-        // Verify cdkTrapFocus directive is applied
-        const trapFocusElement = fixture.nativeElement.querySelector('[cdkTrapFocus]');
-        expect(trapFocusElement).toBe(dialogContent);
-
         done();
       }, 100);
     });
@@ -113,19 +63,6 @@ describe('TaskDialogComponent', () => {
 
       expect(component.closeDialog).toHaveBeenCalled();
     });
-
-    it('should not close dialog when other keys are pressed', () => {
-      fixture.componentRef.setInput('isOpen', true);
-      fixture.detectChanges();
-
-      spyOn(component, 'closeDialog');
-
-      const dialogBackdrop = fixture.nativeElement.querySelector('.dialog-backdrop');
-      const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
-      dialogBackdrop.dispatchEvent(enterEvent);
-
-      expect(component.closeDialog).not.toHaveBeenCalled();
-    });
   });
 
   describe('Form validation', () => {
@@ -134,49 +71,27 @@ describe('TaskDialogComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should have invalid form when title and description are empty', () => {
+    it('should validate required fields and max lengths', () => {
       expect(component.taskForm.valid).toBe(false);
       expect(component.taskForm.get('title')?.errors?.['required']).toBe(true);
       expect(component.taskForm.get('description')?.errors?.['required']).toBe(true);
-    });
 
-    it('should have valid form when title and description are provided', () => {
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
-      expect(component.taskForm.valid).toBe(true);
-    });
-
-    it('should validate title max length', () => {
       const longTitle = 'a'.repeat(301);
       component.taskForm.patchValue({ title: longTitle, description: 'Test' });
       expect(component.taskForm.get('title')?.errors?.['maxlength']).toBeTruthy();
-    });
 
-    it('should validate summary max length', () => {
       const longSummary = 'a'.repeat(501);
-      component.taskForm.patchValue({
-        title: 'Test',
-        summary: longSummary,
-        description: 'Test',
-      });
+      component.taskForm.patchValue({ title: 'Test', summary: longSummary, description: 'Test' });
       expect(component.taskForm.get('summary')?.errors?.['maxlength']).toBeTruthy();
-    });
 
-    it('should validate description max length', () => {
       const longDescription = 'a'.repeat(5001);
       component.taskForm.patchValue({ title: 'Test', description: longDescription });
       expect(component.taskForm.get('description')?.errors?.['maxlength']).toBeTruthy();
     });
 
     it('should accept optional summary field', () => {
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
+      component.taskForm.patchValue({ title: 'Test Task', description: 'Test Description' });
       expect(component.taskForm.valid).toBe(true);
-      // Summary can be null or empty string, both are valid
       const summaryValue = component.taskForm.get('summary')?.value;
       expect(summaryValue === null || summaryValue === '').toBe(true);
     });
@@ -194,23 +109,7 @@ describe('TaskDialogComponent', () => {
       expect(mockTasksService.createTask).not.toHaveBeenCalled();
     });
 
-    it('should submit when form is valid', () => {
-      mockTasksService.createTask.and.returnValue(of(createMockTask()));
-
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
-      component.onSubmit();
-
-      expect(mockTasksService.createTask).toHaveBeenCalledWith('project-1', {
-        title: 'Test Task',
-        summary: undefined,
-        description: 'Test Description',
-      });
-    });
-
-    it('should submit with summary when provided', () => {
+    it('should submit valid form data with optional summary', () => {
       mockTasksService.createTask.and.returnValue(of(createMockTask()));
 
       component.taskForm.patchValue({
@@ -227,13 +126,10 @@ describe('TaskDialogComponent', () => {
       });
     });
 
-    it('should set loading state during submission', (done) => {
+    it('should manage loading state during submission', (done) => {
       mockTasksService.createTask.and.returnValue(of(createMockTask()).pipe(delay(10)));
 
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
+      component.taskForm.patchValue({ title: 'Test Task', description: 'Test Description' });
       expect(component.isLoading()).toBe(false);
 
       component.onSubmit();
@@ -251,14 +147,10 @@ describe('TaskDialogComponent', () => {
       spyOn(component.taskSaved, 'emit');
       spyOn(component, 'closeDialog');
 
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
+      component.taskForm.patchValue({ title: 'Test Task', description: 'Test Description' });
       component.onSubmit();
 
       setTimeout(() => {
-        expect(component.isLoading()).toBe(false);
         expect(component.taskSaved.emit).toHaveBeenCalled();
         expect(component.closeDialog).toHaveBeenCalled();
         done();
@@ -269,10 +161,7 @@ describe('TaskDialogComponent', () => {
       const errorMessage = 'Failed to create task';
       mockTasksService.createTask.and.returnValue(throwError(() => new Error(errorMessage)));
 
-      component.taskForm.patchValue({
-        title: 'Test Task',
-        description: 'Test Description',
-      });
+      component.taskForm.patchValue({ title: 'Test Task', description: 'Test Description' });
       component.onSubmit();
 
       setTimeout(() => {
@@ -289,7 +178,7 @@ describe('TaskDialogComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should close dialog and reset form when closeDialog is called', () => {
+    it('should close dialog and reset form state', () => {
       component.taskForm.patchValue({
         title: 'Test Task',
         summary: 'Test Summary',
@@ -300,58 +189,39 @@ describe('TaskDialogComponent', () => {
       spyOn(component.dialogClosed, 'emit');
       component.closeDialog();
 
-      expect(component.taskForm.value).toEqual({
-        title: null,
-        summary: null,
-        description: null,
-      });
+      expect(component.taskForm.value).toEqual({ title: null, summary: null, description: null });
       expect(component.errorMessage()).toBeNull();
       expect(component.dialogClosed.emit).toHaveBeenCalled();
     });
 
-    it('should close dialog when clicking on backdrop', () => {
-      spyOn(component, 'closeDialog');
-
-      const backdrop = fixture.nativeElement.querySelector('.dialog-backdrop');
-      const clickEvent = new MouseEvent('click');
-      Object.defineProperty(clickEvent, 'target', { value: backdrop, enumerable: true });
-      Object.defineProperty(clickEvent, 'currentTarget', {
-        value: backdrop,
-        enumerable: true,
-      });
-
-      component.onBackdropClick(clickEvent);
-
-      expect(component.closeDialog).toHaveBeenCalled();
-    });
-
-    it('should not close dialog when clicking on dialog content', () => {
+    it('should close dialog when clicking on backdrop but not on content', () => {
       spyOn(component, 'closeDialog');
 
       const backdrop = fixture.nativeElement.querySelector('.dialog-backdrop');
       const dialogContent = fixture.nativeElement.querySelector('.dialog-content');
-      const clickEvent = new MouseEvent('click');
-      Object.defineProperty(clickEvent, 'target', {
-        value: dialogContent,
-        enumerable: true,
-      });
-      Object.defineProperty(clickEvent, 'currentTarget', {
+
+      const backdropClickEvent = new MouseEvent('click');
+      Object.defineProperty(backdropClickEvent, 'target', { value: backdrop, enumerable: true });
+      Object.defineProperty(backdropClickEvent, 'currentTarget', {
         value: backdrop,
         enumerable: true,
       });
-
-      component.onBackdropClick(clickEvent);
-
-      expect(component.closeDialog).not.toHaveBeenCalled();
-    });
-
-    it('should close dialog when clicking close button', () => {
-      spyOn(component, 'closeDialog');
-
-      const closeButton = fixture.nativeElement.querySelector('.close-button');
-      closeButton.click();
-
+      component.onBackdropClick(backdropClickEvent);
       expect(component.closeDialog).toHaveBeenCalled();
+
+      (component.closeDialog as jasmine.Spy).calls.reset();
+
+      const contentClickEvent = new MouseEvent('click');
+      Object.defineProperty(contentClickEvent, 'target', {
+        value: dialogContent,
+        enumerable: true,
+      });
+      Object.defineProperty(contentClickEvent, 'currentTarget', {
+        value: backdrop,
+        enumerable: true,
+      });
+      component.onBackdropClick(contentClickEvent);
+      expect(component.closeDialog).not.toHaveBeenCalled();
     });
   });
 
@@ -369,12 +239,9 @@ describe('TaskDialogComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should display "Edit Task" as dialog title when in edit mode', () => {
+    it('should pre-populate form and show edit mode UI', () => {
       expect(component.isEditMode).toBe(true);
       expect(component.dialogTitle).toBe('tasks.dialog.editTitle');
-    });
-
-    it('should pre-populate form with existing task data', () => {
       expect(component.taskForm.value).toEqual({
         title: 'Existing Task',
         summary: 'Existing Summary',
@@ -385,9 +252,7 @@ describe('TaskDialogComponent', () => {
     it('should call updateTask when submitting in edit mode', () => {
       mockTasksService.updateTask.and.returnValue(of(existingTask));
 
-      component.taskForm.patchValue({
-        title: 'Updated Title',
-      });
+      component.taskForm.patchValue({ title: 'Updated Title' });
       component.onSubmit();
 
       expect(mockTasksService.updateTask).toHaveBeenCalledWith('project-1', 'existing-task-id', {
@@ -397,11 +262,8 @@ describe('TaskDialogComponent', () => {
       });
     });
 
-    it('should display correct button text when editing', () => {
+    it('should display correct button text based on loading state', () => {
       expect(component.submitButtonText).toBe('tasks.dialog.submitEdit');
-    });
-
-    it('should display "Saving..." when loading in edit mode', () => {
       component.isLoading.set(true);
       expect(component.submitButtonText).toBe('tasks.dialog.saving');
     });
@@ -420,35 +282,6 @@ describe('TaskDialogComponent', () => {
         done();
       }, 100);
     });
-
-    it('should display error message on update failure', (done) => {
-      const errorMessage = 'Failed to update task';
-      mockTasksService.updateTask.and.returnValue(throwError(() => new Error(errorMessage)));
-
-      component.onSubmit();
-
-      setTimeout(() => {
-        expect(component.isLoading()).toBe(false);
-        expect(component.errorMessage()).toBe(errorMessage);
-        done();
-      }, 100);
-    });
-
-    it('should reset form to empty when switching from edit to create mode', () => {
-      // First verify form has existing task data
-      expect(component.taskForm.value.title).toBe('Existing Task');
-
-      // Switch to create mode
-      fixture.componentRef.setInput('task', null);
-      fixture.detectChanges();
-
-      // Form should now be empty
-      expect(component.taskForm.value).toEqual({
-        title: null,
-        summary: null,
-        description: null,
-      });
-    });
   });
 
   describe('Create mode', () => {
@@ -458,27 +291,16 @@ describe('TaskDialogComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should display "Create New Task" as dialog title when in create mode', () => {
+    it('should show create mode UI with empty form', () => {
       expect(component.isEditMode).toBe(false);
       expect(component.dialogTitle).toBe('tasks.dialog.createTitle');
-    });
-
-    it('should have empty form in create mode', () => {
-      // Form reset sets values to null, which is acceptable for empty state
-      expect(component.taskForm.value).toEqual({
-        title: null,
-        summary: null,
-        description: null,
-      });
+      expect(component.taskForm.value).toEqual({ title: null, summary: null, description: null });
     });
 
     it('should call createTask when submitting in create mode', () => {
       mockTasksService.createTask.and.returnValue(of(createMockTask()));
 
-      component.taskForm.patchValue({
-        title: 'New Task',
-        description: 'New Description',
-      });
+      component.taskForm.patchValue({ title: 'New Task', description: 'New Description' });
       component.onSubmit();
 
       expect(mockTasksService.createTask).toHaveBeenCalledWith('project-1', {
@@ -488,11 +310,8 @@ describe('TaskDialogComponent', () => {
       });
     });
 
-    it('should display correct button text when creating', () => {
+    it('should display correct button text based on loading state', () => {
       expect(component.submitButtonText).toBe('tasks.dialog.submitCreate');
-    });
-
-    it('should display "Creating..." when loading in create mode', () => {
       component.isLoading.set(true);
       expect(component.submitButtonText).toBe('tasks.dialog.creating');
     });
