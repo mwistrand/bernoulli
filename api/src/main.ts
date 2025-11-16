@@ -1,3 +1,7 @@
+// Import tracing FIRST - before any other imports
+// This is critical for auto-instrumentation to work correctly
+import './tracing';
+
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';

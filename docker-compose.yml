@@ -17,6 +17,16 @@ services:
             retries: 5
             start_period: 10s
 
+    jaeger:
+        image: jaegertracing/all-in-one:1.53
+        restart: unless-stopped
+        environment:
+            COLLECTOR_OTLP_ENABLED: 'true'
+        ports:
+            - '16686:16686' # Jaeger UI
+            - '4318:4318' # OTLP HTTP receiver
+            - '4317:4317' # OTLP gRPC receiver
+
     api:
         build:
             context: ./api
@@ -30,9 +40,13 @@ services:
             DB_PASS: bernoulli
             DB_NAME: bernoulli
             PORT: '3000'
+            OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+            OTEL_SERVICE_NAME: bernoulli-api
         depends_on:
             db:
                 condition: service_healthy
+            jaeger:
+                condition: service_started
         ports:
             - '3000:3000'
 

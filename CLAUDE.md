@@ -126,6 +126,7 @@ npm run build --prefix ui     # Build Angular UI
 - Uses `.env` file in root directory (shared with db/)
 - ConfigModule is global with cascading env file resolution
 - Required variables: DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, SESSION_SECRET
+- Optional variables for observability: OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_SERVICE_NAME
 
 **Authentication:**
 
@@ -329,7 +330,117 @@ npm run test:headless:single --prefix ui
 - **db**: PostgreSQL 15 Alpine, port 5432, health checks enabled
 - **api**: Port 3000, depends on db health
 - **ui**: Port 1234, depends on api
+- **jaeger**: Jaeger all-in-one for distributed tracing, port 16686 (UI), 4318 (OTLP HTTP)
 - Data persisted in `db-data` volume
+
+## Observability & Distributed Tracing
+
+The application uses **OpenTelemetry** for distributed tracing with **Jaeger** as the backend.
+
+### Architecture
+
+**OpenTelemetry Integration:**
+
+- Automatic instrumentation for HTTP requests, Express middleware, and PostgreSQL queries
+- Traces are exported to Jaeger via OTLP (OpenTelemetry Protocol) over HTTP
+- Service name: `bernoulli-api`
+- Initialization happens in `api/src/tracing.ts` (imported first in `main.ts`)
+
+**Instrumentation Packages:**
+
+- `@opentelemetry/sdk-node`: Core SDK for Node.js
+- `@opentelemetry/instrumentation-http`: HTTP request/response tracing
+- `@opentelemetry/instrumentation-express`: Express middleware and route tracing
+- `@opentelemetry/instrumentation-pg`: PostgreSQL query tracing
+- `@opentelemetry/exporter-trace-otlp-http`: OTLP HTTP exporter for Jaeger
+
+**Environment Variables:**
+
+```bash
+# In docker-compose.yml or .env
+OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318  # Jaeger collector endpoint
+OTEL_SERVICE_NAME=bernoulli-api                  # Service identifier in traces
+```
+
+### Accessing Jaeger UI
+
+**Docker environment:**
+
+- Jaeger UI: http://localhost:16686
+- Select service: `bernoulli-api`
+- View traces with full span details including:
+    - HTTP request/response information
+    - Express middleware execution
+    - PostgreSQL query statements and timing
+    - Parent-child span relationships
+
+**Local development without Docker:**
+
+- Start Jaeger: `docker run -d --name jaeger -p 16686:16686 -p 4318:4318 -e COLLECTOR_OTLP_ENABLED=true jaegertracing/all-in-one:1.53`
+- Update `.env`: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`
+
+### How It Works
+
+1. **Initialization** (`api/src/tracing.ts`):
+    - Imported FIRST in `main.ts` before any other code
+    - Creates NodeSDK with specific instrumentations
+    - Configures OTLP exporter with Jaeger endpoint
+    - Sets service resource attributes
+    - Disables tracing in test environment (`NODE_ENV=test`)
+
+2. **Automatic Tracing**:
+    - **HTTP Layer**: Captures all incoming HTTP requests
+    - **Express Layer**: Traces middleware execution (CORS, session, Helmet, etc.)
+    - **Database Layer**: Captures PostgreSQL queries with statements
+    - No code changes required in controllers or services
+
+3. **Trace Export**:
+    - Spans are batched and sent to Jaeger via HTTP
+    - Default endpoint: `http://jaeger:4318/v1/traces`
+    - Graceful shutdown on `SIGTERM`
+
+### Adding Custom Spans
+
+To add custom instrumentation (manual spans):
+
+```typescript
+import { trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('my-service');
+
+async myFunction() {
+  const span = tracer.startSpan('my-operation');
+  try {
+    // Your code here
+    span.setAttribute('custom.attribute', 'value');
+  } catch (error) {
+    span.recordException(error);
+    throw error;
+  } finally {
+    span.end();
+  }
+}
+```
+
+### Troubleshooting
+
+**No traces appearing in Jaeger:**
+
+1. Check API logs: `docker compose logs api | grep -i "tracing\|exporter"`
+2. Verify Jaeger is running: `docker compose ps jaeger`
+3. Check environment variables: `docker compose exec api env | grep OTEL`
+4. Ensure requests are being made to the API
+5. Wait 5-10 seconds for trace export batch
+
+**Testing locally without Docker:**
+
+```bash
+cd api
+npm run build
+npm start
+# Make requests to http://localhost:3000/api/*
+# View traces at http://localhost:16686
+```
 
 ## Important Conventions
 
