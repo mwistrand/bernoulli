@@ -22,6 +22,9 @@ describe('UserController', () => {
 		const mockAuthService = {
 			createUser: jest.fn(),
 			authenticate: jest.fn(),
+			findById: jest.fn(),
+			findAllUsers: jest.fn(),
+			deleteUser: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -49,6 +52,7 @@ describe('UserController', () => {
 			authService.createUser.mockResolvedValue(mockUser);
 
 			const mockRequest = {
+				isAuthenticated: jest.fn(() => false),
 				login: jest.fn((user, callback) => callback()),
 			} as unknown as Request;
 
@@ -64,6 +68,7 @@ describe('UserController', () => {
 			authService.createUser.mockRejectedValue(error);
 
 			const mockRequest = {
+				isAuthenticated: jest.fn(() => false),
 				login: jest.fn(),
 			} as unknown as Request;
 
@@ -76,12 +81,70 @@ describe('UserController', () => {
 
 			const loginError = new Error('Login failed');
 			const mockRequest = {
+				isAuthenticated: jest.fn(() => false),
 				login: jest.fn((user, callback) => callback(loginError)),
 			} as unknown as Request;
 
 			await expect(controller.createUser(validCommand, mockRequest)).rejects.toThrow(
 				'Login failed',
 			);
+		});
+
+		it('should not login if user is already authenticated', async () => {
+			authService.createUser.mockResolvedValue(mockUser);
+
+			const mockRequest = {
+				isAuthenticated: jest.fn(() => true),
+				login: jest.fn(),
+			} as unknown as Request;
+
+			const result = await controller.createUser(validCommand, mockRequest);
+
+			expect(result).toEqual(mockUser);
+			expect(authService.createUser).toHaveBeenCalledWith(validCommand);
+			expect(mockRequest.login).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('createUserAsAdmin', () => {
+		const validCommand: CreateUserCommand = {
+			email: 'admin-created@example.com',
+			password: 'securePassword123',
+			name: 'Admin Created User',
+		};
+
+		it('should create a user successfully without establishing session', async () => {
+			authService.createUser.mockResolvedValue(mockUser);
+
+			const result = await controller.createUserAsAdmin(validCommand);
+
+			expect(result).toEqual(mockUser);
+			expect(authService.createUser).toHaveBeenCalledWith(validCommand);
+		});
+
+		it('should propagate validation errors from AuthService', async () => {
+			const error = new BadRequestException('Invalid email format');
+			authService.createUser.mockRejectedValue(error);
+
+			await expect(controller.createUserAsAdmin(validCommand)).rejects.toThrow(error);
+		});
+	});
+
+	describe('deleteUser', () => {
+		it('should delete a user successfully', async () => {
+			authService.deleteUser.mockResolvedValue(undefined);
+
+			const result = await controller.deleteUser('user-123');
+
+			expect(result).toEqual({ message: 'User deleted successfully' });
+			expect(authService.deleteUser).toHaveBeenCalledWith('user-123');
+		});
+
+		it('should propagate errors from AuthService', async () => {
+			const error = new BadRequestException('User ID is required');
+			authService.deleteUser.mockRejectedValue(error);
+
+			await expect(controller.deleteUser('')).rejects.toThrow(error);
 		});
 	});
 });

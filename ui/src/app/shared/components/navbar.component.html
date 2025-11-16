@@ -1,15 +1,24 @@
 @if (currentUser()) {
   <nav class="navbar">
     <div class="navbar-content">
-      <div class="navbar-brand">
-        <h1>{{ 'navigation.appName' | translate }}</h1>
-      </div>
+      <header class="navbar-brand">
+        <h1>
+          <img src="assets/logo.svg" [attr.alt]="'navigation.appName' | translate" width="150" />
+        </h1>
+      </header>
 
       <div class="navbar-actions">
         <div class="user-info">
           <lucide-icon [attr.aria-hidden]="true" [img]="UserIcon" size="20"></lucide-icon>
           <span class="user-name">{{ currentUser()!.name }}</span>
         </div>
+
+        @if (currentUser()?.role === UserRole.ADMIN) {
+          <a routerLink="/admin" class="admin-link">
+            <lucide-icon [attr.aria-hidden]="true" [img]="ShieldIcon" size="18"></lucide-icon>
+            {{ 'navigation.admin' | translate }}
+          </a>
+        }
 
         <button type="button" class="sign-out-button" (click)="onSignOut()">
           <lucide-icon [attr.aria-hidden]="true" [img]="LogOutIcon" size="18"></lucide-icon>

@@ -162,6 +162,37 @@
     "dashboard": "Dashboard",
     "projects": "Projects",
     "signOut": "Sign Out",
+    "admin": "Admin",
     "appName": "Bernoulli"
+  },
+  "admin": {
+    "title": "User Management",
+    "createUser": "Create User",
+    "deleteUser": "Delete User",
+    "users": "Users",
+    "noUsers": "No users found",
+    "confirmDelete": "Are you sure you want to delete {name}? This action cannot be undone.",
+    "dialog": {
+      "createTitle": "Create New User",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "namePlaceholder": "Enter name",
+      "emailPlaceholder": "Enter email",
+      "passwordPlaceholder": "Enter password",
+      "submit": "Create User",
+      "cancel": "Cancel",
+      "creating": "Creating..."
+    },
+    "roles": {
+      "admin": "Administrator",
+      "user": "User"
+    },
+    "errors": {
+      "loadFailed": "Failed to load users",
+      "createFailed": "Failed to create user",
+      "deleteFailed": "Failed to delete user"
+    }
   }
 }

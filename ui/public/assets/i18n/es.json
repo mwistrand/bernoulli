@@ -162,6 +162,37 @@
     "dashboard": "Panel",
     "projects": "Proyectos",
     "signOut": "Cerrar Sesión",
+    "admin": "Administración",
     "appName": "Bernoulli"
+  },
+  "admin": {
+    "title": "Gestión de Usuarios",
+    "createUser": "Crear Usuario",
+    "deleteUser": "Eliminar Usuario",
+    "users": "Usuarios",
+    "noUsers": "No se encontraron usuarios",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar a {name}? Esta acción no se puede deshacer.",
+    "dialog": {
+      "createTitle": "Crear Nuevo Usuario",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "role": "Rol",
+      "namePlaceholder": "Ingrese el nombre",
+      "emailPlaceholder": "Ingrese el correo electrónico",
+      "passwordPlaceholder": "Ingrese la contraseña",
+      "submit": "Crear Usuario",
+      "cancel": "Cancelar",
+      "creating": "Creando..."
+    },
+    "roles": {
+      "admin": "Administrador",
+      "user": "Usuario"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar usuarios",
+      "createFailed": "Error al crear usuario",
+      "deleteFailed": "Error al eliminar usuario"
+    }
   }
 }

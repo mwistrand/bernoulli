@@ -11,4 +11,6 @@ export interface AuthPort {
 	findById(id: string): Promise<User>;
 
 	findAllUsers(): Promise<User[]>;
+
+	deleteUser(id: string): Promise<void>;
 }

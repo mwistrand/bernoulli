@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { LucideAngularModule, UserIcon, LogOutIcon } from 'lucide-angular';
+import { Router, RouterModule } from '@angular/router';
+import { LucideAngularModule, UserIcon, LogOutIcon, ShieldIcon } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../auth/services/auth.service';
+import { AuthService, UserRole } from '../../auth/services/auth.service';
 
 @Component({
   standalone: true,
   selector: 'bn-navbar',
-  imports: [LucideAngularModule, TranslateModule],
+  imports: [LucideAngularModule, TranslateModule, RouterModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +15,8 @@ import { AuthService } from '../../auth/services/auth.service';
 export class NavbarComponent {
   protected readonly UserIcon = UserIcon;
   protected readonly LogOutIcon = LogOutIcon;
+  protected readonly ShieldIcon = ShieldIcon;
+  protected readonly UserRole = UserRole;
 
   readonly #authService = inject(AuthService);
   readonly #router = inject(Router);

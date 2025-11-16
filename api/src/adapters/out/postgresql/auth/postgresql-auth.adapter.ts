@@ -90,4 +90,12 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 		});
 		return entities.map(toUser);
 	}
+
+	async deleteUser(id: string): Promise<void> {
+		const entity = await this.usersRepository.findOne({ where: { id } });
+		if (!entity) {
+			throw new UnauthorizedException('User not found');
+		}
+		await this.usersRepository.delete({ id });
+	}
 }

@@ -1,0 +1,126 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>{{ 'admin.title' | translate }}</h1>
+    <button type="button" class="create-button" (click)="openCreateDialog()">
+      <lucide-icon [attr.aria-hidden]="true" [img]="PlusIcon" size="20"></lucide-icon>
+      {{ 'admin.createUser' | translate }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="error-message">{{ error() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading">{{ 'common.loading' | translate }}</div>
+  } @else if (users().length === 0) {
+    <div class="empty-state">
+      <p>{{ 'admin.noUsers' | translate }}</p>
+    </div>
+  } @else {
+    <div class="users-table">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ 'admin.dialog.name' | translate }}</th>
+            <th>{{ 'admin.dialog.email' | translate }}</th>
+            <th>{{ 'admin.dialog.role' | translate }}</th>
+            <th class="actions-column">{{ 'common.delete' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="role-badge" [class.admin]="user.role === UserRole.ADMIN">
+                  {{
+                    user.role === UserRole.ADMIN
+                      ? ('admin.roles.admin' | translate)
+                      : ('admin.roles.user' | translate)
+                  }}
+                </span>
+              </td>
+              <td class="actions-column">
+                <button
+                  type="button"
+                  class="delete-button"
+                  (click)="onDeleteUser(user)"
+                  [attr.aria-label]="'admin.deleteUser' | translate"
+                >
+                  <lucide-icon [attr.aria-hidden]="true" [img]="TrashIcon" size="18"></lucide-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (showCreateDialog()) {
+  <div class="dialog-overlay" (click)="closeCreateDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <h2>{{ 'admin.dialog.createTitle' | translate }}</h2>
+
+      <form [formGroup]="createUserForm" (ngSubmit)="onCreateUser()">
+        <div class="form-group">
+          <label for="name">{{ 'admin.dialog.name' | translate }}</label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            [placeholder]="'admin.dialog.namePlaceholder' | translate"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">{{ 'admin.dialog.email' | translate }}</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            [placeholder]="'admin.dialog.emailPlaceholder' | translate"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">{{ 'admin.dialog.password' | translate }}</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            [placeholder]="'admin.dialog.passwordPlaceholder' | translate"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="role">{{ 'admin.dialog.role' | translate }}</label>
+          <select id="role" formControlName="role">
+            <option value="USER">{{ 'admin.roles.user' | translate }}</option>
+            <option value="ADMIN">{{ 'admin.roles.admin' | translate }}</option>
+          </select>
+        </div>
+
+        <div class="dialog-actions">
+          <button type="button" class="cancel-button" (click)="closeCreateDialog()">
+            {{ 'admin.dialog.cancel' | translate }}
+          </button>
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="creating() || createUserForm.invalid"
+          >
+            {{
+              creating()
+                ? ('admin.dialog.creating' | translate)
+                : ('admin.dialog.submit' | translate)
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

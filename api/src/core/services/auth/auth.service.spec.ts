@@ -20,6 +20,9 @@ describe(AuthService.name, () => {
 		const mockAuthPort: jest.Mocked<AuthPort> = {
 			authenticate: jest.fn(),
 			createUser: jest.fn(),
+			findById: jest.fn(),
+			findAllUsers: jest.fn(),
+			deleteUser: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -175,6 +178,26 @@ describe(AuthService.name, () => {
 			expect(authPort.createUser).toHaveBeenCalledWith('uuid-2', expect.any(Object));
 
 			expect(uuidSpy).toHaveBeenCalledTimes(2);
+		});
+	});
+
+	describe('deleteUser', () => {
+		it('should delete a user successfully', async () => {
+			authPort.deleteUser.mockResolvedValue(undefined);
+
+			await service.deleteUser('user-123');
+
+			expect(authPort.deleteUser).toHaveBeenCalledWith('user-123');
+		});
+
+		it('should reject invalid user ID', async () => {
+			await expect(service.deleteUser('')).rejects.toThrow(BadRequestException);
+			await expect(service.deleteUser('   ')).rejects.toThrow(BadRequestException);
+		});
+
+		it('should reject null or undefined user ID', async () => {
+			await expect(service.deleteUser(null as any)).rejects.toThrow(BadRequestException);
+			await expect(service.deleteUser(undefined as any)).rejects.toThrow(BadRequestException);
 		});
 	});
 });

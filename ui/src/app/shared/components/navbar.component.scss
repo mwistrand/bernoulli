@@ -46,6 +46,41 @@
   }
 }
 
+.admin-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f9fafb;
+    color: #3b82f6;
+    border-color: #bfdbfe;
+
+    lucide-icon {
+      color: #3b82f6;
+    }
+  }
+
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  lucide-icon {
+    transition: color 0.2s;
+  }
+}
+
 .sign-out-button {
   display: flex;
   align-items: center;

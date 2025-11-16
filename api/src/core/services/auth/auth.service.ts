@@ -61,4 +61,11 @@ export class AuthService {
 	async findAllUsers(): Promise<User[]> {
 		return this.authPort.findAllUsers();
 	}
+
+	async deleteUser(id: string): Promise<void> {
+		if (!id || id.trim() === '') {
+			throw new BadRequestException('User ID is required');
+		}
+		return this.authPort.deleteUser(id);
+	}
 }
