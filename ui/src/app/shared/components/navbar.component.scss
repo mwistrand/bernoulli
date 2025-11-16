@@ -1,13 +1,14 @@
 .navbar {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px);
 }
 
 .navbar-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: var(--spacing-4) var(--spacing-6);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,97 +17,99 @@
 .navbar-brand {
   h1 {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #3b82f6;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-400);
     letter-spacing: -0.025em;
+    text-shadow: var(--shadow-glow);
   }
 }
 
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: var(--spacing-6);
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 0.875rem;
+  gap: var(--spacing-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 
   lucide-icon {
-    color: #9ca3af;
+    color: var(--color-text-tertiary);
   }
 
   .user-name {
-    font-weight: 500;
-    color: #374151;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
   }
 }
 
 .admin-link {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-2);
   background: transparent;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
 
   &:hover {
-    background: #f9fafb;
-    color: #3b82f6;
-    border-color: #bfdbfe;
+    background: var(--color-hover-overlay);
+    color: var(--color-primary-400);
+    border-color: var(--color-primary-400);
+    box-shadow: var(--shadow-sm);
 
     lucide-icon {
-      color: #3b82f6;
+      color: var(--color-primary-400);
     }
   }
 
   &:focus {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--color-primary-400);
     outline-offset: 2px;
   }
 
   lucide-icon {
-    transition: color 0.2s;
+    transition: color var(--transition-base);
   }
 }
 
 .sign-out-button {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-2);
   background: transparent;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-base);
 
   &:hover {
-    background: #f9fafb;
-    color: #ef4444;
-    border-color: #fecaca;
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--color-error-400);
+    border-color: var(--color-error-500);
 
     lucide-icon {
-      color: #ef4444;
+      color: var(--color-error-400);
     }
   }
 
   &:focus {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--color-primary-400);
     outline-offset: 2px;
   }
 
@@ -115,6 +118,6 @@
   }
 
   lucide-icon {
-    transition: color 0.2s;
+    transition: color var(--transition-base);
   }
 }
