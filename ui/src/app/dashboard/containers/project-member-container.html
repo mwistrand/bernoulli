@@ -1,20 +1,7 @@
 <div class="members-container">
   <div class="members-header">
     <button class="back-button" (click)="goBack()" aria-label="Go back to project">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
+      <lucide-icon [img]="ArrowLeftIcon" size="20" class="icon"></lucide-icon>
       Back to Project
     </button>
 
@@ -29,20 +16,7 @@
     @if (canManageMembers()) {
       <div class="actions-bar">
         <button class="button-primary" (click)="onAddMember()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
+          <lucide-icon [img]="PlusIcon" size="20" class="icon"></lucide-icon>
           {{ 'projects.members.addMember' | translate }}
         </button>
       </div>

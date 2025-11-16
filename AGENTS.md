@@ -21,3 +21,4 @@
 - **Angular**: Standalone components, signals for state, private fields with `#` prefix, `inject()` in constructors
 - **Validation**: Use class-validator decorators in DTOs; validate user authentication in services
 - **Database**: Never use `synchronize: true` - always create migrations in `db/` directory
+- **Icons**: Use `lucide-angular` for icons in the UI, not SVG.

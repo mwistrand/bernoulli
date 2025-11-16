@@ -323,3 +323,4 @@ npm run test:headless:single --prefix ui
 - Environment config shared via root `.env` file (referenced by api/ and db/)
 - Use port interfaces for dependency injection in hexagonal architecture
 - Feature modules should export their port tokens for use by other modules
+- Use `lucide-angular` for icons in the ui, not SVG.

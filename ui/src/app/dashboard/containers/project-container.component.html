@@ -1,20 +1,7 @@
 <div class="project-container-container">
   <div class="project-header">
     <button class="back-button" (click)="goBack()" aria-label="Go back to dashboard">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
+      <lucide-icon [img]="ArrowLeftIcon" size="20" class="icon"></lucide-icon>
       Back
     </button>
 
@@ -31,22 +18,7 @@
   @if (project()) {
     <div class="members-link-section">
       <button class="view-members-button" (click)="navigateToMembers()">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
+        <lucide-icon [img]="UsersIcon" size="20" class="icon"></lucide-icon>
         View Project Members
       </button>
     </div>
@@ -56,20 +28,7 @@
     <div class="tasks-header">
       <h2>Tasks</h2>
       <button class="button-primary" (click)="openDialog()">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
+        <lucide-icon [img]="PlusIcon" size="20" class="icon"></lucide-icon>
         New Task
       </button>
     </div>
@@ -81,20 +40,7 @@
       </div>
     } @else if (tasks().length === 0) {
       <div class="empty-state">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="64"
-          height="64"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M9 11l3 3L22 4"></path>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-        </svg>
+        <lucide-icon [img]="CheckSquareIcon" size="64" class="icon"></lucide-icon>
         <h3>No tasks yet</h3>
         <p>Get started by creating your first task</p>
         <button class="button-primary" (click)="openDialog()">Create Task</button>

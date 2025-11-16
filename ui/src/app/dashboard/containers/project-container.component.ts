@@ -1,4 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  LucideAngularModule,
+  ArrowLeftIcon,
+  UsersIcon,
+  PlusIcon,
+  CheckSquareIcon,
+} from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { Task, TasksService } from '../../tasks/services/tasks.service';
@@ -7,12 +14,17 @@ import { TaskCardComponent } from '../../projects/components/task-card.component
 @Component({
   selector: 'bn-project-container',
   standalone: true,
-  imports: [TaskDialogComponent, TaskCardComponent],
+  imports: [TaskDialogComponent, TaskCardComponent, LucideAngularModule],
   templateUrl: './project-container.component.html',
   styleUrl: './project-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectContainerComponent implements OnInit {
+  protected readonly ArrowLeftIcon = ArrowLeftIcon;
+  protected readonly UsersIcon = UsersIcon;
+  protected readonly PlusIcon = PlusIcon;
+  protected readonly CheckSquareIcon = CheckSquareIcon;
+
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #tasksService = inject(TasksService);

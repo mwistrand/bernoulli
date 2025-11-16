@@ -9,17 +9,20 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
+import { LucideAngularModule, XIcon } from 'lucide-angular';
 import { Task, TasksService } from '../services/tasks.service';
 
 @Component({
   selector: 'bn-task-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, A11yModule],
+  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule],
   templateUrl: './task-dialog.component.html',
   styleUrl: './task-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskDialogComponent {
+  protected readonly XIcon = XIcon;
+
   readonly #tasksService = inject(TasksService);
 
   isOpen = input<boolean>(false);

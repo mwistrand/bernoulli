@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { LucideAngularModule, ArrowLeftIcon, PlusIcon } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -17,12 +18,15 @@ import {
 @Component({
   selector: 'bn-project-member-container',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule],
   templateUrl: './project-member-container.html',
   styleUrl: './project-member-container.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProjectMemberContainer implements OnInit {
+  protected readonly ArrowLeftIcon = ArrowLeftIcon;
+  protected readonly PlusIcon = PlusIcon;
+
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #projectMembersService = inject(ProjectMembersService);

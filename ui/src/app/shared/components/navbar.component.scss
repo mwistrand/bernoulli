@@ -36,7 +36,7 @@
   color: #6b7280;
   font-size: 0.875rem;
 
-  svg {
+  lucide-icon {
     color: #9ca3af;
   }
 
@@ -65,7 +65,7 @@
     color: #ef4444;
     border-color: #fecaca;
 
-    svg {
+    lucide-icon {
       color: #ef4444;
     }
   }
@@ -79,7 +79,7 @@
     transform: scale(0.98);
   }
 
-  svg {
+  lucide-icon {
     transition: color 0.2s;
   }
 }

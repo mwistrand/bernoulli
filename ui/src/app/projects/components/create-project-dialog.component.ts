@@ -9,17 +9,20 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
+import { LucideAngularModule, XIcon } from 'lucide-angular';
 import { ProjectsService } from '../services/projects.service';
 
 @Component({
   selector: 'bn-create-project-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, A11yModule],
+  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule],
   templateUrl: './create-project-dialog.component.html',
   styleUrl: './create-project-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateProjectDialogComponent {
+  protected readonly XIcon = XIcon;
+
   readonly #projectsService = inject(ProjectsService);
 
   isOpen = input<boolean>(false);

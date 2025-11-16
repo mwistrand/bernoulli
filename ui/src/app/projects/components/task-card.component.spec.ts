@@ -164,9 +164,9 @@ describe('TaskCardComponent', () => {
       expect(deleteButton.getAttribute('title')).toBe('Delete task');
     });
 
-    it('should mark decorative SVGs as aria-hidden', () => {
-      const svgs = fixture.nativeElement.querySelectorAll('svg[aria-hidden="true"]');
-      expect(svgs.length).toBeGreaterThan(0);
+    it('should mark decorative icons as aria-hidden', () => {
+      const icons = fixture.nativeElement.querySelectorAll('lucide-icon[aria-hidden="true"]');
+      expect(icons.length).toBeGreaterThan(0);
     });
 
     it('should have type="button" on all buttons', () => {
