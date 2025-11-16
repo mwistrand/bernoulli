@@ -15,7 +15,7 @@
           size="14"
           aria-hidden="true"
         ></lucide-icon>
-        Created {{ task().createdAt | date: 'MMM d, yyyy' }}
+        {{ 'tasks.card.created' | translate }} {{ task().createdAt | date: 'MMM d, yyyy' }}
       </span>
     </div>
   </div>
@@ -25,8 +25,8 @@
       type="button"
       class="action-button edit-button"
       (click)="onEdit()"
-      aria-label="Edit {{ task().title }}"
-      title="Edit task"
+      [attr.aria-label]="'tasks.card.editAriaLabel' | translate: { title: task().title }"
+      [attr.title]="'tasks.card.editTitle' | translate"
     >
       <lucide-icon
         [attr.aria-hidden]="true"
@@ -34,14 +34,14 @@
         size="18"
         aria-hidden="true"
       ></lucide-icon>
-      Edit
+      {{ 'tasks.card.edit' | translate }}
     </button>
     <button
       type="button"
       class="action-button delete-button"
       (click)="onDelete()"
-      aria-label="Delete {{ task().title }}"
-      title="Delete task"
+      [attr.aria-label]="'tasks.card.deleteAriaLabel' | translate: { title: task().title }"
+      [attr.title]="'tasks.card.deleteTitle' | translate"
     >
       <lucide-icon
         [attr.aria-hidden]="true"
@@ -49,7 +49,7 @@
         size="18"
         aria-hidden="true"
       ></lucide-icon>
-      Delete
+      {{ 'tasks.card.delete' | translate }}
     </button>
   </div>
 </article>

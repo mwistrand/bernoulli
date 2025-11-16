@@ -1,13 +1,17 @@
 <div class="project-container-container">
   <div class="project-header">
-    <button class="back-button" (click)="goBack()" aria-label="Go back to dashboard">
+    <button
+      class="back-button"
+      (click)="goBack()"
+      [attr.aria-label]="'projects.backToDashboard' | translate"
+    >
       <lucide-icon
         [attr.aria-hidden]="true"
         [img]="ArrowLeftIcon"
         size="20"
         class="icon"
       ></lucide-icon>
-      Back
+      {{ 'projects.backToDashboard' | translate }}
     </button>
 
     @if (project()) {
@@ -29,14 +33,14 @@
           size="20"
           class="icon"
         ></lucide-icon>
-        View Project Members
+        {{ 'projects.viewMembers' | translate }}
       </button>
     </div>
   }
 
   <div class="tasks-section">
     <div class="tasks-header">
-      <h2>Tasks</h2>
+      <h2>{{ 'tasks.title' | translate }}</h2>
       <button class="button-primary" (click)="openDialog()">
         <lucide-icon
           [attr.aria-hidden]="true"
@@ -44,14 +48,14 @@
           size="20"
           class="icon"
         ></lucide-icon>
-        New Task
+        {{ 'tasks.newTask' | translate }}
       </button>
     </div>
 
     @if (isLoading()) {
       <div class="loading-state">
         <div class="spinner"></div>
-        <p>Loading tasks...</p>
+        <p>{{ 'tasks.loading' | translate }}</p>
       </div>
     } @else if (tasks().length === 0) {
       <div class="empty-state">
@@ -61,9 +65,11 @@
           size="64"
           class="icon"
         ></lucide-icon>
-        <h3>No tasks yet</h3>
-        <p>Get started by creating your first task</p>
-        <button class="button-primary" (click)="openDialog()">Create Task</button>
+        <h3>{{ 'tasks.empty.title' | translate }}</h3>
+        <p>{{ 'tasks.empty.message' | translate }}</p>
+        <button class="button-primary" (click)="openDialog()">
+          {{ 'tasks.createTask' | translate }}
+        </button>
       </div>
     } @else {
       <ol class="tasks-list">

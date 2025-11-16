@@ -10,12 +10,13 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
 import { LucideAngularModule, XIcon } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { Task, TasksService } from '../services/tasks.service';
 
 @Component({
   selector: 'bn-task-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule],
+  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule, TranslateModule],
   templateUrl: './task-dialog.component.html',
   styleUrl: './task-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,14 +62,14 @@ export class TaskDialogComponent {
   }
 
   get dialogTitle(): string {
-    return this.isEditMode ? 'Edit Task' : 'Create New Task';
+    return this.isEditMode ? 'tasks.dialog.editTitle' : 'tasks.dialog.createTitle';
   }
 
   get submitButtonText(): string {
     if (this.isLoading()) {
-      return this.isEditMode ? 'Saving...' : 'Creating...';
+      return this.isEditMode ? 'tasks.dialog.saving' : 'tasks.dialog.creating';
     }
-    return this.isEditMode ? 'Save Changes' : 'Create Task';
+    return this.isEditMode ? 'tasks.dialog.submitEdit' : 'tasks.dialog.submitCreate';
   }
 
   onSubmit(): void {

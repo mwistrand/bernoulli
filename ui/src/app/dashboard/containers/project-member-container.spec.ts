@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Dialog, DialogRef } from '@angular/cdk/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { signal } from '@angular/core';
 import { ProjectMemberContainer } from './project-member-container';
@@ -270,9 +270,7 @@ describe('ProjectMemberContainer', () => {
 
       component['onRemoveMember'](targetMember);
 
-      expect(window.confirm).toHaveBeenCalledWith(
-        `Remove ${targetMember.userName} from this project? This action cannot be undone.`,
-      );
+      expect(window.confirm).toHaveBeenCalledWith('projects.members.confirmRemove');
     });
 
     it('should not remove member if confirmation is cancelled', () => {
@@ -311,13 +309,13 @@ describe('ProjectMemberContainer', () => {
     it('should handle removal errors', () => {
       spyOn(window, 'confirm').and.returnValue(true);
       const targetMember = mockMembers[1];
-      const error = { error: { message: 'Failed to remove member' } };
+      const error = { error: { message: 'Server error message' } };
       mockProjectMembersService.removeMember.and.returnValue(throwError(() => error));
 
       component['onRemoveMember'](targetMember);
 
       expect(component['isLoading']()).toBe(false);
-      expect(component['errorMessage']()).toBe('Failed to remove member');
+      expect(component['errorMessage']()).toBe('Server error message');
     });
 
     it('should show generic error message when error details are missing', () => {
@@ -330,7 +328,7 @@ describe('ProjectMemberContainer', () => {
       component['onRemoveMember'](targetMember);
 
       expect(component['isLoading']()).toBe(false);
-      expect(component['errorMessage']()).toBe('Failed to remove member');
+      expect(component['errorMessage']()).toBe('projects.members.errors.removeFailed');
     });
   });
 
@@ -375,13 +373,13 @@ describe('ProjectMemberContainer', () => {
     });
 
     it('should handle errors when loading members', () => {
-      const error = { error: { message: 'Failed to load members' } };
+      const error = { error: { message: 'Server error message' } };
       mockProjectMembersService.getProjectMembers.and.returnValue(throwError(() => error));
 
       component['loadMembers']();
 
       expect(component['isLoading']()).toBe(false);
-      expect(component['errorMessage']()).toBe('Failed to load members');
+      expect(component['errorMessage']()).toBe('Server error message');
     });
 
     it('should show generic error message when error details are missing', () => {
@@ -392,7 +390,7 @@ describe('ProjectMemberContainer', () => {
       component['loadMembers']();
 
       expect(component['isLoading']()).toBe(false);
-      expect(component['errorMessage']()).toBe('Failed to load members');
+      expect(component['errorMessage']()).toBe('projects.members.errors.loadFailed');
     });
   });
 });

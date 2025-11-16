@@ -22,3 +22,11 @@
 - **Validation**: Use class-validator decorators in DTOs; validate user authentication in services
 - **Database**: Never use `synchronize: true` - always create migrations in `db/` directory
 - **Icons**: Use `lucide-angular` for icons in the UI, not SVG.
+- **Internationalization (i18n)**:
+    - All UI text must use i18n keys from `/ui/public/assets/i18n/` files
+    - Import `TranslateModule` in component imports array for template translations
+    - Import and inject `TranslateService` as `#translate` for programmatic translations
+    - Use `{{ 'key.path' | translate }}` in templates
+    - Use `this.#translate.instant('key.path', { param: value })` for interpolated messages in TypeScript
+    - Add new translations to both `en.json` and `es.json` files
+    - Never hard-code English text in components

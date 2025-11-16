@@ -4,11 +4,12 @@ import { CreateProjectDialogComponent } from '../../projects/components/create-p
 import { ProjectsService } from '../../projects/services/projects.service';
 import { DatePipe } from '@angular/common';
 import { LucideAngularModule, PlusIcon, FolderIcon, CalendarIcon } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'bn-dashboard-container',
   standalone: true,
-  imports: [CreateProjectDialogComponent, DatePipe, LucideAngularModule],
+  imports: [CreateProjectDialogComponent, DatePipe, LucideAngularModule, TranslateModule],
   templateUrl: './dashboard-container.component.html',
   styleUrl: './dashboard-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

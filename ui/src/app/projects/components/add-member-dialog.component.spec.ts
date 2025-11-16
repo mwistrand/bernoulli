@@ -109,7 +109,7 @@ describe('AddMemberDialogComponent', () => {
 
       createComponent();
 
-      expect(component['errorMessage']()).toBe('Failed to load users');
+      expect(component['errorMessage']()).toBe('projects.addMember.errors.loadUsersFailed');
     });
   });
 
@@ -216,7 +216,7 @@ describe('AddMemberDialogComponent', () => {
 
       component['onSubmit']();
 
-      expect(component['submitError']()).toBe('Failed to add member');
+      expect(component['submitError']()).toBe('projects.addMember.errors.addFailed');
       expect(component['isSubmitting']()).toBe(false);
     });
 

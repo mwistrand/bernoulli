@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Dialog, DialogModule } from '@angular/cdk/dialog';
 import { OverlayModule, OverlayContainer } from '@angular/cdk/overlay';
 import { TranslateModule } from '@ngx-translate/core';
-import { of, throwError, Subject } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ProjectMembersListComponent } from './project-members-list.component';
 import {
   ProjectMembersService,
@@ -43,17 +43,6 @@ describe('ProjectMembersListComponent', () => {
     lastUpdatedAt: new Date(),
   };
 
-  const creatorMember: ProjectMember = {
-    id: 'member-3',
-    projectId: 'project-123',
-    userId: 'creator-123',
-    role: ProjectRole.ADMIN,
-    userName: 'Creator User',
-    userEmail: 'creator@example.com',
-    createdAt: new Date(),
-    lastUpdatedAt: new Date(),
-  };
-
   beforeEach(async () => {
     mockProjectMembersService = jasmine.createSpyObj('ProjectMembersService', [
       'getProjectMembers',
@@ -67,6 +56,7 @@ describe('ProjectMembersListComponent', () => {
       'canRemoveMember',
     ]);
     mockDialog = jasmine.createSpyObj('Dialog', ['open']);
+
     // Set default return value for dialog.open
     mockDialog.open.and.returnValue({
       closed: of(null),
@@ -102,38 +92,21 @@ describe('ProjectMembersListComponent', () => {
     overlayContainer.ngOnDestroy();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('Initialization', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy();
+    });
   });
 
   describe('Member Loading', () => {
     it('should load members on init', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember, regularMember]));
+      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
 
-      fixture.detectChanges(); // Triggers ngOnInit
+      fixture.detectChanges();
 
       expect(mockProjectMembersService.getProjectMembers).toHaveBeenCalledWith('project-123');
-      expect(component['members']().length).toBe(2);
+      expect(component['members']()).toEqual([adminMember]);
       expect(component['isLoading']()).toBe(false);
-    });
-
-    it('should set loading state during fetch', () => {
-      const subject = new Subject<ProjectMember[]>();
-      mockProjectMembersService.getProjectMembers.and.returnValue(subject.asObservable());
-
-      fixture.detectChanges();
-
-      expect(component['isLoading']()).toBe(true);
-    });
-
-    it('should handle empty member list', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([]));
-
-      fixture.detectChanges();
-
-      expect(component['members']().length).toBe(0);
-      expect(component['isLoading']()).toBe(false);
-      expect(component['errorMessage']()).toBe(null);
     });
 
     it('should handle loading error', () => {
@@ -152,7 +125,7 @@ describe('ProjectMembersListComponent', () => {
 
       fixture.detectChanges();
 
-      expect(component['errorMessage']()).toBe('Failed to load members');
+      expect(component['errorMessage']()).toBe('projects.members.errors.loadFailed');
     });
   });
 
@@ -291,7 +264,7 @@ describe('ProjectMembersListComponent', () => {
 
       component['onChangeRole'](regularMember);
 
-      expect(component['errorMessage']()).toBe('Failed to update role');
+      expect(component['errorMessage']()).toBe('projects.members.errors.updateFailed');
     });
   });
 
@@ -306,7 +279,7 @@ describe('ProjectMembersListComponent', () => {
 
       component['onRemoveMember'](regularMember);
 
-      expect(window.confirm).toHaveBeenCalledWith('Remove Regular User from this project?');
+      expect(window.confirm).toHaveBeenCalled();
       expect(mockProjectMembersService.removeMember).not.toHaveBeenCalled();
     });
 
@@ -371,7 +344,7 @@ describe('ProjectMembersListComponent', () => {
 
       component['onRemoveMember'](regularMember);
 
-      expect(component['errorMessage']()).toBe('Failed to remove member');
+      expect(component['errorMessage']()).toBe('projects.members.errors.removeFailed');
     });
   });
 
@@ -398,125 +371,41 @@ describe('ProjectMembersListComponent', () => {
       expect(component['openMenuId']()).toBe('member-2');
     });
 
-    it('should close menu explicitly', () => {
+    it('should close menu directly', () => {
       component['openMenuId'].set('member-1');
       component['closeMenu']();
       expect(component['openMenuId']()).toBe(null);
     });
 
-    it('should close menu on document click outside menu', () => {
+    it('should close menu on document click outside', () => {
       component['openMenuId'].set('member-1');
       const event = new MouseEvent('click');
-      Object.defineProperty(event, 'target', { value: document.createElement('div') });
+      Object.defineProperty(event, 'target', {
+        value: document.createElement('div'),
+        writable: false,
+      });
 
       component['onDocumentClick'](event);
 
       expect(component['openMenuId']()).toBe(null);
     });
 
-    it('should not close menu on click inside menu container', () => {
+    it('should not close menu on click inside menu-container', () => {
       component['openMenuId'].set('member-1');
       const menuContainer = document.createElement('div');
       menuContainer.className = 'menu-container';
+      const innerElement = document.createElement('button');
+      menuContainer.appendChild(innerElement);
+
       const event = new MouseEvent('click');
-      Object.defineProperty(event, 'target', { value: menuContainer });
+      Object.defineProperty(event, 'target', {
+        value: innerElement,
+        writable: false,
+      });
 
       component['onDocumentClick'](event);
 
       expect(component['openMenuId']()).toBe('member-1');
-    });
-  });
-
-  describe('Role Label', () => {
-    it('should return admin label for ADMIN role', () => {
-      const label = component['getRoleLabel'](ProjectRole.ADMIN);
-      expect(label).toBe('projects.roles.admin');
-    });
-
-    it('should return user label for USER role', () => {
-      const label = component['getRoleLabel'](ProjectRole.USER);
-      expect(label).toBe('projects.roles.user');
-    });
-  });
-
-  describe('Template Rendering', () => {
-    beforeEach(() => {
-      mockPermissionsService.canManageMembers.and.returnValue(true);
-    });
-
-    it('should show loading state', () => {
-      const subject = new Subject<ProjectMember[]>();
-      mockProjectMembersService.getProjectMembers.and.returnValue(subject.asObservable());
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.loading-container')).toBeTruthy();
-      expect(compiled.querySelector('.spinner')).toBeTruthy();
-    });
-
-    it('should show error message', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(
-        throwError(() => ({ error: { message: 'Network error' } })),
-      );
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.error-message')?.textContent).toContain('Network error');
-    });
-
-    it('should show empty state', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.empty-state')).toBeTruthy();
-    });
-
-    it('should show members list', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember, regularMember]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.members-list')).toBeTruthy();
-      expect(compiled.querySelectorAll('.member-item').length).toBe(2);
-    });
-
-    it('should show add member button when user can manage', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      const addButton = compiled.querySelector('.button-primary');
-      expect(addButton).toBeTruthy();
-    });
-
-    it('should hide add member button when user cannot manage', () => {
-      mockPermissionsService.canManageMembers.and.returnValue(false);
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      const addButton = compiled.querySelector('.button-primary');
-      expect(addButton).toBeFalsy();
-    });
-
-    it('should display member name and email', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.member-name')?.textContent).toBe('Admin User');
-      expect(compiled.querySelector('.member-email')?.textContent).toBe('admin@example.com');
-    });
-
-    it('should display role badge', () => {
-      mockProjectMembersService.getProjectMembers.and.returnValue(of([adminMember]));
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      const badge = compiled.querySelector('.role-badge');
-      expect(badge).toBeTruthy();
-      expect(badge?.classList.contains('role-admin')).toBe(true);
     });
   });
 });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -15,6 +15,7 @@ import { AuthService } from '../services/auth.service';
 export class LoginComponent {
   readonly #authService = inject(AuthService);
   readonly #router = inject(Router);
+  readonly #translate = inject(TranslateService);
 
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly isLoading = signal(false);
@@ -45,7 +46,9 @@ export class LoginComponent {
         },
         error: (error) => {
           this.isLoading.set(false);
-          this.errorMessage.set(error.error?.message || 'Invalid email or password');
+          this.errorMessage.set(
+            error.error?.message || this.#translate.instant('auth.login.errors.invalidCredentials'),
+          );
         },
       });
   }

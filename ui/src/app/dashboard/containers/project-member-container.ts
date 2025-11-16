@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { LucideAngularModule, ArrowLeftIcon, PlusIcon } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import {
@@ -32,6 +32,7 @@ export class ProjectMemberContainer implements OnInit {
   readonly #projectMembersService = inject(ProjectMembersService);
   readonly #permissionsService = inject(PermissionsService);
   readonly #dialog = inject(Dialog);
+  readonly #translate = inject(TranslateService);
 
   protected readonly ProjectRole = ProjectRole;
   protected readonly projectId = signal<string>('');
@@ -87,7 +88,10 @@ export class ProjectMemberContainer implements OnInit {
   }
 
   protected onRemoveMember(member: ProjectMember): void {
-    if (!confirm(`Remove ${member.userName} from this project? This action cannot be undone.`)) {
+    const confirmMessage = this.#translate.instant('projects.members.confirmRemove', {
+      name: member.userName,
+    });
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -101,7 +105,9 @@ export class ProjectMemberContainer implements OnInit {
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.error?.message || 'Failed to remove member');
+        this.errorMessage.set(
+          error.error?.message || this.#translate.instant('projects.members.errors.removeFailed'),
+        );
       },
     });
   }
@@ -124,7 +130,9 @@ export class ProjectMemberContainer implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Failed to load members');
+        this.errorMessage.set(
+          error.error?.message || this.#translate.instant('projects.members.errors.loadFailed'),
+        );
         this.isLoading.set(false);
       },
     });

@@ -9,15 +9,15 @@
   >
     <div class="dialog-content" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
       <div class="dialog-header">
-        <h2 id="dialog-title">Create New Project</h2>
+        <h2 id="dialog-title">{{ 'projects.dialog.createTitle' | translate }}</h2>
         <button
           type="button"
           class="close-button"
           (click)="closeDialog()"
-          aria-label="Close dialog"
+          [attr.aria-label]="'projects.dialog.closeDialog' | translate"
         >
           <lucide-icon [attr.aria-hidden]="true" [img]="XIcon" size="24"></lucide-icon>
-          <span class="sr-only">Close Dialog</span>
+          <span class="sr-only">{{ 'projects.dialog.closeDialog' | translate }}</span>
         </button>
       </div>
 
@@ -29,12 +29,14 @@
         }
 
         <div class="form-group">
-          <label for="project-name" class="required">Project Name</label>
+          <label for="project-name" class="required">{{
+            'projects.dialog.name' | translate
+          }}</label>
           <input
             type="text"
             id="project-name"
             formControlName="name"
-            placeholder="Enter project name"
+            [placeholder]="'projects.dialog.namePlaceholder' | translate"
             maxlength="100"
             [class.invalid]="projectForm.get('name')?.invalid && projectForm.get('name')?.touched"
             aria-required="true"
@@ -43,21 +45,21 @@
           @if (projectForm.get('name')?.invalid && projectForm.get('name')?.touched) {
             <span class="field-error" role="alert">
               @if (projectForm.get('name')?.errors?.['required']) {
-                Project name is required
+                {{ 'projects.dialog.errors.nameRequired' | translate }}
               }
               @if (projectForm.get('name')?.errors?.['maxlength']) {
-                Project name must not exceed 100 characters
+                {{ 'projects.dialog.errors.nameMaxLength' | translate }}
               }
             </span>
           }
         </div>
 
         <div class="form-group">
-          <label for="project-description">Description</label>
+          <label for="project-description">{{ 'projects.dialog.description' | translate }}</label>
           <textarea
             id="project-description"
             formControlName="description"
-            placeholder="Enter project description (optional)"
+            [placeholder]="'projects.dialog.descriptionPlaceholder' | translate"
             maxlength="500"
             rows="4"
             [class.invalid]="
@@ -67,20 +69,22 @@
           @if (projectForm.get('description')?.invalid && projectForm.get('description')?.touched) {
             <span class="field-error" role="alert">
               @if (projectForm.get('description')?.errors?.['maxlength']) {
-                Description must not exceed 500 characters
+                {{ 'projects.dialog.errors.descriptionMaxLength' | translate }}
               }
             </span>
           }
         </div>
 
         <div class="dialog-actions">
-          <button type="button" class="button-secondary" (click)="closeDialog()">Cancel</button>
+          <button type="button" class="button-secondary" (click)="closeDialog()">
+            {{ 'projects.dialog.cancel' | translate }}
+          </button>
           <button
             type="submit"
             class="button-primary"
             [disabled]="projectForm.invalid || isLoading()"
           >
-            {{ isLoading() ? 'Creating...' : 'Create Project' }}
+            {{ (isLoading() ? 'projects.dialog.creating' : 'projects.dialog.submit') | translate }}
           </button>
         </div>
       </form>

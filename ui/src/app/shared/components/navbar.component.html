@@ -2,7 +2,7 @@
   <nav class="navbar">
     <div class="navbar-content">
       <div class="navbar-brand">
-        <h1>Bernoulli</h1>
+        <h1>{{ 'navigation.appName' | translate }}</h1>
       </div>
 
       <div class="navbar-actions">
@@ -13,7 +13,7 @@
 
         <button type="button" class="sign-out-button" (click)="onSignOut()">
           <lucide-icon [attr.aria-hidden]="true" [img]="LogOutIcon" size="18"></lucide-icon>
-          Sign Out
+          {{ 'navigation.signOut' | translate }}
         </button>
       </div>
     </div>

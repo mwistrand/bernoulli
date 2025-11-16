@@ -250,7 +250,7 @@ describe(ProjectContainerComponent.name, () => {
 
       const loadingState = fixture.nativeElement.querySelector('.loading-state');
       expect(loadingState).not.toBeNull();
-      expect(loadingState.textContent).toContain('Loading tasks...');
+      expect(loadingState.textContent).toContain('tasks.loading');
     });
 
     it('should display empty state when no tasks exist', () => {
@@ -263,7 +263,7 @@ describe(ProjectContainerComponent.name, () => {
 
       const emptyState = fixture.nativeElement.querySelector('.empty-state');
       expect(emptyState).not.toBeNull();
-      expect(emptyState.textContent).toContain('No tasks yet');
+      expect(emptyState.textContent).toContain('tasks.empty.title');
     });
 
     it('should display tasks list when tasks exist', () => {
@@ -323,7 +323,7 @@ describe(ProjectContainerComponent.name, () => {
 
       const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
       expect(newTaskButton).not.toBeNull();
-      expect(newTaskButton.textContent).toContain('New Task');
+      expect(newTaskButton.textContent).toContain('tasks.newTask');
     });
 
     it('should open dialog when New Task button is clicked', () => {
@@ -340,7 +340,7 @@ describe(ProjectContainerComponent.name, () => {
 
       const backButton = fixture.nativeElement.querySelector('.back-button');
       expect(backButton).not.toBeNull();
-      expect(backButton.textContent).toContain('Back');
+      expect(backButton.textContent).toContain('projects.backToDashboard');
     });
 
     it('should navigate back when Back button is clicked', () => {

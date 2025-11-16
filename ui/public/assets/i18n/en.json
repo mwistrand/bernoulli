@@ -12,7 +12,9 @@
       "signupLink": "Sign up",
       "errors": {
         "emailRequired": "Valid email is required",
-        "passwordRequired": "Password is required"
+        "passwordRequired": "Password is required",
+        "invalidCredentials": "Invalid email or password",
+        "defaultError": "An error occurred during login"
       }
     },
     "signup": {
@@ -31,7 +33,8 @@
         "nameRequired": "Name is required",
         "emailRequired": "Valid email is required",
         "passwordRequired": "Password is required",
-        "passwordMinLength": "Password must be at least 8 characters"
+        "passwordMinLength": "Password must be at least 6 characters",
+        "defaultError": "An error occurred during signup"
       }
     }
   },
@@ -50,20 +53,34 @@
       "description": "Description",
       "namePlaceholder": "Enter project name",
       "descriptionPlaceholder": "Enter project description (optional)",
-      "submit": "Create",
+      "submit": "Create Project",
       "cancel": "Cancel",
       "creating": "Creating...",
+      "closeDialog": "Close dialog",
       "errors": {
-        "nameRequired": "Project name is required"
+        "nameRequired": "Project name is required",
+        "nameMaxLength": "Project name must not exceed 100 characters",
+        "descriptionMaxLength": "Description must not exceed 500 characters"
       }
     },
+    "backToDashboard": "Back",
+    "viewMembers": "View Project Members",
+    "membersPageTitle": "Members",
+    "backToProject": "Back to Project",
     "members": {
       "title": "Team Members",
       "addMember": "Add Member",
       "noMembers": "No team members yet",
+      "noMembersMessage": "This project has no members yet.",
       "memberActions": "Member actions",
       "changeRole": "Change Role",
-      "removeMember": "Remove Member"
+      "removeMember": "Remove Member",
+      "confirmRemove": "Remove {name} from this project? This action cannot be undone.",
+      "errors": {
+        "loadFailed": "Failed to load members",
+        "removeFailed": "Failed to remove member",
+        "updateFailed": "Failed to update role"
+      }
     },
     "addMember": {
       "title": "Add Team Member",
@@ -71,7 +88,11 @@
       "role": "Role",
       "userRequired": "Please select a user",
       "roleRequired": "Please select a role",
-      "add": "Add Member"
+      "add": "Add Member",
+      "errors": {
+        "loadUsersFailed": "Failed to load users",
+        "addFailed": "Failed to add member"
+      }
     },
     "roles": {
       "admin": "Admin",
@@ -79,6 +100,7 @@
     }
   },
   "tasks": {
+    "title": "Tasks",
     "newTask": "New Task",
     "createTask": "Create Task",
     "editTask": "Edit Task",
@@ -86,7 +108,16 @@
     "loading": "Loading tasks...",
     "empty": {
       "title": "No tasks yet",
-      "message": "Create your first task to get started"
+      "message": "Get started by creating your first task"
+    },
+    "card": {
+      "created": "Created",
+      "edit": "Edit",
+      "delete": "Delete",
+      "editAriaLabel": "Edit {title}",
+      "deleteAriaLabel": "Delete {title}",
+      "editTitle": "Edit task",
+      "deleteTitle": "Delete task"
     },
     "dialog": {
       "createTitle": "Create New Task",
@@ -97,15 +128,24 @@
       "titlePlaceholder": "Enter task title",
       "summaryPlaceholder": "Enter task summary (optional)",
       "descriptionPlaceholder": "Enter task description",
-      "submit": "Save",
+      "submitCreate": "Create Task",
+      "submitEdit": "Save Changes",
       "cancel": "Cancel",
+      "creating": "Creating...",
       "saving": "Saving...",
+      "closeDialog": "Close dialog",
       "errors": {
         "titleRequired": "Task title is required",
-        "descriptionRequired": "Task description is required"
+        "titleMaxLength": "Task title must not exceed 300 characters",
+        "summaryMaxLength": "Task summary must not exceed 500 characters",
+        "descriptionRequired": "Task description is required",
+        "descriptionMaxLength": "Task description must not exceed 5000 characters"
       }
     },
-    "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+    "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "errors": {
+      "deleteFailed": "Failed to delete task: {message}"
+    }
   },
   "common": {
     "back": "Back",
@@ -121,6 +161,7 @@
   "navigation": {
     "dashboard": "Dashboard",
     "projects": "Projects",
-    "logout": "Log Out"
+    "signOut": "Sign Out",
+    "appName": "Bernoulli"
   }
 }

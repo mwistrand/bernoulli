@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { LucideAngularModule, CalendarIcon, EditIcon, Trash2Icon } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { Task } from '../../tasks/services/tasks.service';
 
 @Component({
   selector: 'bn-task-card',
   standalone: true,
-  imports: [DatePipe, LucideAngularModule],
+  imports: [DatePipe, LucideAngularModule, TranslateModule],
   templateUrl: './task-card.component.html',
   styleUrl: './task-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

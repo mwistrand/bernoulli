@@ -3,6 +3,7 @@ import { TaskDialogComponent } from './task-dialog.component';
 import { Task, TasksService } from '../services/tasks.service';
 import { of, throwError, delay } from 'rxjs';
 import { A11yModule } from '@angular/cdk/a11y';
+import { TranslateModule } from '@ngx-translate/core';
 
 const createMockTask = (overrides?: Partial<Task>): Task => ({
   id: '1',
@@ -26,7 +27,7 @@ describe('TaskDialogComponent', () => {
     mockTasksService = jasmine.createSpyObj('TasksService', ['createTask', 'updateTask']);
 
     await TestBed.configureTestingModule({
-      imports: [TaskDialogComponent, A11yModule],
+      imports: [TaskDialogComponent, A11yModule, TranslateModule.forRoot()],
       providers: [{ provide: TasksService, useValue: mockTasksService }],
     }).compileComponents();
 
@@ -370,7 +371,7 @@ describe('TaskDialogComponent', () => {
 
     it('should display "Edit Task" as dialog title when in edit mode', () => {
       expect(component.isEditMode).toBe(true);
-      expect(component.dialogTitle).toBe('Edit Task');
+      expect(component.dialogTitle).toBe('tasks.dialog.editTitle');
     });
 
     it('should pre-populate form with existing task data', () => {
@@ -397,12 +398,12 @@ describe('TaskDialogComponent', () => {
     });
 
     it('should display correct button text when editing', () => {
-      expect(component.submitButtonText).toBe('Save Changes');
+      expect(component.submitButtonText).toBe('tasks.dialog.submitEdit');
     });
 
     it('should display "Saving..." when loading in edit mode', () => {
       component.isLoading.set(true);
-      expect(component.submitButtonText).toBe('Saving...');
+      expect(component.submitButtonText).toBe('tasks.dialog.saving');
     });
 
     it('should emit taskSaved event with updated task on successful update', (done) => {
@@ -459,7 +460,7 @@ describe('TaskDialogComponent', () => {
 
     it('should display "Create New Task" as dialog title when in create mode', () => {
       expect(component.isEditMode).toBe(false);
-      expect(component.dialogTitle).toBe('Create New Task');
+      expect(component.dialogTitle).toBe('tasks.dialog.createTitle');
     });
 
     it('should have empty form in create mode', () => {
@@ -488,12 +489,12 @@ describe('TaskDialogComponent', () => {
     });
 
     it('should display correct button text when creating', () => {
-      expect(component.submitButtonText).toBe('Create Task');
+      expect(component.submitButtonText).toBe('tasks.dialog.submitCreate');
     });
 
     it('should display "Creating..." when loading in create mode', () => {
       component.isLoading.set(true);
-      expect(component.submitButtonText).toBe('Creating...');
+      expect(component.submitButtonText).toBe('tasks.dialog.creating');
     });
   });
 });

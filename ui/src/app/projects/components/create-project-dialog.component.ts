@@ -10,12 +10,13 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { A11yModule } from '@angular/cdk/a11y';
 import { LucideAngularModule, XIcon } from 'lucide-angular';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProjectsService } from '../services/projects.service';
 
 @Component({
   selector: 'bn-create-project-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule],
+  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule, TranslateModule],
   templateUrl: './create-project-dialog.component.html',
   styleUrl: './create-project-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

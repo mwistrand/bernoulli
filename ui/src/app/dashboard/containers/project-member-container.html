@@ -1,18 +1,22 @@
 <div class="members-container">
   <div class="members-header">
-    <button class="back-button" (click)="goBack()" aria-label="Go back to project">
+    <button
+      class="back-button"
+      (click)="goBack()"
+      [attr.aria-label]="'projects.backToProject' | translate"
+    >
       <lucide-icon
         [attr.aria-hidden]="true"
         [img]="ArrowLeftIcon"
         size="20"
         class="icon"
       ></lucide-icon>
-      Back to Project
+      {{ 'projects.backToProject' | translate }}
     </button>
 
     @if (project()) {
       <div class="project-info">
-        <h1>{{ project().name }} - Members</h1>
+        <h1>{{ project().name }} - {{ 'projects.membersPageTitle' | translate }}</h1>
       </div>
     }
   </div>
@@ -44,7 +48,7 @@
     } @else if (members().length === 0) {
       <div class="empty-state">
         <h3>{{ 'projects.members.noMembers' | translate }}</h3>
-        <p>This project has no members yet.</p>
+        <p>{{ 'projects.members.noMembersMessage' | translate }}</p>
       </div>
     } @else {
       <div class="members-list">

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService, User, UserRole } from '../services/auth.service';
@@ -153,7 +153,7 @@ describe('LoginComponent', () => {
       component.onSubmit();
 
       setTimeout(() => {
-        expect(component['errorMessage']()).toBe('Invalid email or password');
+        expect(component['errorMessage']()).toBe('auth.login.errors.invalidCredentials');
         expect(component['isLoading']()).toBe(false);
         done();
       }, 10);

@@ -246,6 +246,21 @@ _Project Members:_
 - HTTP services for API communication
 - Services communicate with backend at `http://localhost:3000/api`
 
+**Internationalization (i18n):**
+
+- Uses `@ngx-translate/core` for translations
+- Translation files: `public/assets/i18n/en.json` and `es.json`
+- **Templates**: Use the `translate` pipe: `{{ 'key.path' | translate }}`
+- **Component code**: Inject `TranslateService` as `#translate` and use `this.#translate.instant('key.path')` or `this.#translate.instant('key.path', { param: value })` for parameterized translations
+- All components using translations must import `TranslateModule` in their imports array
+- Translation keys follow a hierarchical structure:
+    - `auth.*` - Authentication related strings
+    - `projects.*` - Project management strings
+    - `tasks.*` - Task management strings
+    - `common.*` - Shared/common strings
+- **Never hard-code user-facing text** - always use translation keys
+- When adding new features, add corresponding translation keys to both `en.json` and `es.json`
+
 ### Database
 
 **Configuration:**

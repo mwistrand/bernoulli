@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TranslateModule } from '@ngx-translate/core';
 import { TaskCardComponent } from './task-card.component';
 import { Task } from '../../tasks/services/tasks.service';
 
@@ -21,7 +22,7 @@ describe('TaskCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TaskCardComponent],
+      imports: [TaskCardComponent, TranslateModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TaskCardComponent);
@@ -80,7 +81,7 @@ describe('TaskCardComponent', () => {
       const metaItem = fixture.nativeElement.querySelector('.meta-item');
       // Note: Date formatting can vary based on timezone, so check for either date
       const text = metaItem.textContent;
-      expect(text).toMatch(/Created Jan (14|15), 2024/);
+      expect(text).toMatch(/tasks\.card\.created.*Jan (14|15), 2024/);
     });
 
     it('should render as an article element for semantic HTML', () => {
@@ -102,13 +103,13 @@ describe('TaskCardComponent', () => {
     it('should have edit button', () => {
       const editButton = fixture.nativeElement.querySelector('.edit-button');
       expect(editButton).not.toBeNull();
-      expect(editButton.textContent.trim()).toBe('Edit');
+      expect(editButton.textContent.trim()).toBe('tasks.card.edit');
     });
 
     it('should have delete button', () => {
       const deleteButton = fixture.nativeElement.querySelector('.delete-button');
       expect(deleteButton).not.toBeNull();
-      expect(deleteButton.textContent.trim()).toBe('Delete');
+      expect(deleteButton.textContent.trim()).toBe('tasks.card.delete');
     });
 
     it('should emit edit event when edit button is clicked', () => {
@@ -146,22 +147,22 @@ describe('TaskCardComponent', () => {
 
     it('should have appropriate aria-label on edit button', () => {
       const editButton = fixture.nativeElement.querySelector('.edit-button');
-      expect(editButton.getAttribute('aria-label')).toBe('Edit My Task');
+      expect(editButton.getAttribute('aria-label')).toBe('tasks.card.editAriaLabel');
     });
 
     it('should have appropriate aria-label on delete button', () => {
       const deleteButton = fixture.nativeElement.querySelector('.delete-button');
-      expect(deleteButton.getAttribute('aria-label')).toBe('Delete My Task');
+      expect(deleteButton.getAttribute('aria-label')).toBe('tasks.card.deleteAriaLabel');
     });
 
     it('should have title attribute on edit button', () => {
       const editButton = fixture.nativeElement.querySelector('.edit-button');
-      expect(editButton.getAttribute('title')).toBe('Edit task');
+      expect(editButton.getAttribute('title')).toBe('tasks.card.editTitle');
     });
 
     it('should have title attribute on delete button', () => {
       const deleteButton = fixture.nativeElement.querySelector('.delete-button');
-      expect(deleteButton.getAttribute('title')).toBe('Delete task');
+      expect(deleteButton.getAttribute('title')).toBe('tasks.card.deleteTitle');
     });
 
     it('should mark decorative icons as aria-hidden', () => {

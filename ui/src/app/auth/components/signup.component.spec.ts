@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { SignupComponent } from './signup.component';
 import { AuthService, User, UserRole } from '../services/auth.service';
@@ -22,7 +23,7 @@ describe('SignupComponent', () => {
     mockAuthService = jasmine.createSpyObj('AuthService', ['signup']);
 
     await TestBed.configureTestingModule({
-      imports: [SignupComponent],
+      imports: [SignupComponent, TranslateModule.forRoot()],
       providers: [{ provide: AuthService, useValue: mockAuthService }, provideRouter([])],
     }).compileComponents();
 
@@ -172,7 +173,7 @@ describe('SignupComponent', () => {
       component.onSubmit();
 
       setTimeout(() => {
-        expect(component['errorMessage']()).toBe('An error occurred during signup');
+        expect(component['errorMessage']()).toBe('auth.signup.errors.defaultError');
         expect(component['isLoading']()).toBe(false);
         done();
       }, 10);

@@ -1,6 +1,6 @@
 <div class="signup-container">
   <div class="signup-card">
-    <h1>Sign Up</h1>
+    <h1>{{ 'auth.signup.title' | translate }}</h1>
 
     @if (errorMessage()) {
       <div class="error-message">
@@ -10,54 +10,57 @@
 
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label for="name">Name</label>
+        <label for="name">{{ 'auth.signup.name' | translate }}</label>
         <input
           type="text"
           id="name"
           formControlName="name"
-          placeholder="Enter your name"
+          [placeholder]="'auth.signup.namePlaceholder' | translate"
           [class.invalid]="signupForm.get('name')?.invalid && signupForm.get('name')?.touched"
         />
         @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
-          <span class="field-error">Name is required</span>
+          <span class="field-error">{{ 'auth.signup.errors.nameRequired' | translate }}</span>
         }
       </div>
 
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">{{ 'auth.signup.email' | translate }}</label>
         <input
           type="email"
           id="email"
           formControlName="email"
-          placeholder="Enter your email"
+          [placeholder]="'auth.signup.emailPlaceholder' | translate"
           [class.invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
         />
         @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
-          <span class="field-error">Valid email is required</span>
+          <span class="field-error">{{ 'auth.signup.errors.emailRequired' | translate }}</span>
         }
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">{{ 'auth.signup.password' | translate }}</label>
         <input
           type="password"
           id="password"
           formControlName="password"
-          placeholder="Enter your password"
+          [placeholder]="'auth.signup.passwordPlaceholder' | translate"
           [class.invalid]="
             signupForm.get('password')?.invalid && signupForm.get('password')?.touched
           "
         />
         @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
-          <span class="field-error">Password must be at least 6 characters</span>
+          <span class="field-error">{{ 'auth.signup.errors.passwordMinLength' | translate }}</span>
         }
       </div>
 
       <button type="submit" [disabled]="signupForm.invalid || isLoading()" class="submit-button">
-        {{ isLoading() ? 'Creating account...' : 'Sign Up' }}
+        {{ (isLoading() ? 'auth.signup.submitting' : 'auth.signup.submit') | translate }}
       </button>
     </form>
 
-    <p class="login-link">Already have an account? <a routerLink="/login">Log in</a></p>
+    <p class="login-link">
+      {{ 'auth.signup.loginPrompt' | translate }}
+      <a routerLink="/login">{{ 'auth.signup.loginLink' | translate }}</a>
+    </p>
   </div>
 </div>

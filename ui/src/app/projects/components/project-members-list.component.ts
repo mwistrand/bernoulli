@@ -2,7 +2,7 @@ import { Component, inject, input, output, signal, OnInit } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { Dialog, DialogModule } from '@angular/cdk/dialog';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   ProjectMember,
   ProjectMembersService,
@@ -25,6 +25,7 @@ export class ProjectMembersListComponent implements OnInit {
   readonly #permissionsService = inject(PermissionsService);
   readonly #projectMembersService = inject(ProjectMembersService);
   readonly #dialog = inject(Dialog);
+  readonly #translate = inject(TranslateService);
 
   // Inputs
   readonly projectId = input.required<string>();
@@ -55,7 +56,9 @@ export class ProjectMembersListComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Failed to load members');
+        this.errorMessage.set(
+          error.error?.message || this.#translate.instant('projects.members.errors.loadFailed'),
+        );
         this.isLoading.set(false);
       },
     });
@@ -141,7 +144,9 @@ export class ProjectMembersListComponent implements OnInit {
           this.membersChanged.emit();
         },
         error: (error) => {
-          this.errorMessage.set(error.error?.message || 'Failed to update role');
+          this.errorMessage.set(
+            error.error?.message || this.#translate.instant('projects.members.errors.updateFailed'),
+          );
         },
       });
   }
@@ -149,7 +154,10 @@ export class ProjectMembersListComponent implements OnInit {
   protected onRemoveMember(member: ProjectMember): void {
     this.closeMenu();
 
-    if (!confirm(`Remove ${member.userName} from this project?`)) {
+    const confirmMessage = this.#translate.instant('projects.members.confirmRemove', {
+      name: member.userName,
+    });
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -159,7 +167,9 @@ export class ProjectMembersListComponent implements OnInit {
         this.membersChanged.emit();
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Failed to remove member');
+        this.errorMessage.set(
+          error.error?.message || this.#translate.instant('projects.members.errors.removeFailed'),
+        );
       },
     });
   }

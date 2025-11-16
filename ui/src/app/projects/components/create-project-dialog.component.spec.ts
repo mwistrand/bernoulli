@@ -3,6 +3,7 @@ import { CreateProjectDialogComponent } from './create-project-dialog.component'
 import { Project, ProjectsService } from '../services/projects.service';
 import { of, throwError, delay } from 'rxjs';
 import { A11yModule } from '@angular/cdk/a11y';
+import { TranslateModule } from '@ngx-translate/core';
 
 const createMockProject = (overrides?: Partial<Project>): Project => ({
   id: '1',
@@ -24,7 +25,7 @@ describe('CreateProjectDialogComponent', () => {
     mockProjectsService = jasmine.createSpyObj('ProjectsService', ['createProject']);
 
     await TestBed.configureTestingModule({
-      imports: [CreateProjectDialogComponent, A11yModule],
+      imports: [CreateProjectDialogComponent, A11yModule, TranslateModule.forRoot()],
       providers: [{ provide: ProjectsService, useValue: mockProjectsService }],
     }).compileComponents();
 

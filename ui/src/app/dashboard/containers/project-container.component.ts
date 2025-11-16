@@ -7,6 +7,7 @@ import {
   CheckSquareIcon,
 } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { Task, TasksService } from '../../tasks/services/tasks.service';
 import { TaskCardComponent } from '../../projects/components/task-card.component';
@@ -14,7 +15,7 @@ import { TaskCardComponent } from '../../projects/components/task-card.component
 @Component({
   selector: 'bn-project-container',
   standalone: true,
-  imports: [TaskDialogComponent, TaskCardComponent, LucideAngularModule],
+  imports: [TaskDialogComponent, TaskCardComponent, LucideAngularModule, TranslateModule],
   templateUrl: './project-container.component.html',
   styleUrl: './project-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,7 @@ export class ProjectContainerComponent implements OnInit {
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #tasksService = inject(TasksService);
+  readonly #translate = inject(TranslateService);
 
   readonly isDialogOpen = signal<boolean>(false);
   readonly isLoading = signal<boolean>(false);
@@ -83,9 +85,8 @@ export class ProjectContainerComponent implements OnInit {
   }
 
   protected onDeleteTask(task: Task): void {
-    if (
-      !confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`)
-    ) {
+    const confirmMessage = this.#translate.instant('tasks.confirmDelete', { title: task.title });
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -98,7 +99,10 @@ export class ProjectContainerComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading.set(false);
-        alert(`Failed to delete task: ${error.message}`);
+        const errorMessage = this.#translate.instant('tasks.errors.deleteFailed', {
+          message: error.message,
+        });
+        alert(errorMessage);
       },
     });
   }

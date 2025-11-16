@@ -12,7 +12,9 @@
       "signupLink": "Regístrate",
       "errors": {
         "emailRequired": "Se requiere un correo electrónico válido",
-        "passwordRequired": "Se requiere contraseña"
+        "passwordRequired": "Se requiere contraseña",
+        "invalidCredentials": "Correo electrónico o contraseña inválidos",
+        "defaultError": "Ocurrió un error durante el inicio de sesión"
       }
     },
     "signup": {
@@ -31,7 +33,8 @@
         "nameRequired": "Se requiere nombre",
         "emailRequired": "Se requiere un correo electrónico válido",
         "passwordRequired": "Se requiere contraseña",
-        "passwordMinLength": "La contraseña debe tener al menos 8 caracteres"
+        "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+        "defaultError": "Ocurrió un error durante el registro"
       }
     }
   },
@@ -50,20 +53,34 @@
       "description": "Descripción",
       "namePlaceholder": "Ingrese el nombre del proyecto",
       "descriptionPlaceholder": "Ingrese la descripción del proyecto (opcional)",
-      "submit": "Crear",
+      "submit": "Crear Proyecto",
       "cancel": "Cancelar",
       "creating": "Creando...",
+      "closeDialog": "Cerrar diálogo",
       "errors": {
-        "nameRequired": "Se requiere el nombre del proyecto"
+        "nameRequired": "Se requiere el nombre del proyecto",
+        "nameMaxLength": "El nombre del proyecto no debe exceder 100 caracteres",
+        "descriptionMaxLength": "La descripción no debe exceder 500 caracteres"
       }
     },
+    "backToDashboard": "Atrás",
+    "viewMembers": "Ver Miembros del Proyecto",
+    "membersPageTitle": "Miembros",
+    "backToProject": "Volver al Proyecto",
     "members": {
       "title": "Miembros del Equipo",
       "addMember": "Agregar Miembro",
       "noMembers": "Aún no hay miembros del equipo",
+      "noMembersMessage": "Este proyecto aún no tiene miembros.",
       "memberActions": "Acciones de miembro",
       "changeRole": "Cambiar Rol",
-      "removeMember": "Eliminar Miembro"
+      "removeMember": "Eliminar Miembro",
+      "confirmRemove": "¿Eliminar a {name} de este proyecto? Esta acción no se puede deshacer.",
+      "errors": {
+        "loadFailed": "Error al cargar miembros",
+        "removeFailed": "Error al eliminar miembro",
+        "updateFailed": "Error al actualizar rol"
+      }
     },
     "addMember": {
       "title": "Agregar Miembro del Equipo",
@@ -71,7 +88,11 @@
       "role": "Rol",
       "userRequired": "Por favor seleccione un usuario",
       "roleRequired": "Por favor seleccione un rol",
-      "add": "Agregar Miembro"
+      "add": "Agregar Miembro",
+      "errors": {
+        "loadUsersFailed": "Error al cargar usuarios",
+        "addFailed": "Error al agregar miembro"
+      }
     },
     "roles": {
       "admin": "Administrador",
@@ -79,6 +100,7 @@
     }
   },
   "tasks": {
+    "title": "Tareas",
     "newTask": "Nueva Tarea",
     "createTask": "Crear Tarea",
     "editTask": "Editar Tarea",
@@ -86,7 +108,16 @@
     "loading": "Cargando tareas...",
     "empty": {
       "title": "Aún no hay tareas",
-      "message": "Crea tu primera tarea para comenzar"
+      "message": "Comienza creando tu primera tarea"
+    },
+    "card": {
+      "created": "Creado",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "editAriaLabel": "Editar {title}",
+      "deleteAriaLabel": "Eliminar {title}",
+      "editTitle": "Editar tarea",
+      "deleteTitle": "Eliminar tarea"
     },
     "dialog": {
       "createTitle": "Crear Nueva Tarea",
@@ -97,15 +128,24 @@
       "titlePlaceholder": "Ingrese el título de la tarea",
       "summaryPlaceholder": "Ingrese el resumen de la tarea (opcional)",
       "descriptionPlaceholder": "Ingrese la descripción de la tarea",
-      "submit": "Guardar",
+      "submitCreate": "Crear Tarea",
+      "submitEdit": "Guardar Cambios",
       "cancel": "Cancelar",
+      "creating": "Creando...",
       "saving": "Guardando...",
+      "closeDialog": "Cerrar diálogo",
       "errors": {
         "titleRequired": "Se requiere el título de la tarea",
-        "descriptionRequired": "Se requiere la descripción de la tarea"
+        "titleMaxLength": "El título de la tarea no debe exceder 300 caracteres",
+        "summaryMaxLength": "El resumen de la tarea no debe exceder 500 caracteres",
+        "descriptionRequired": "Se requiere la descripción de la tarea",
+        "descriptionMaxLength": "La descripción de la tarea no debe exceder 5000 caracteres"
       }
     },
-    "confirmDelete": "¿Estás seguro de que deseas eliminar \"{title}\"? Esta acción no se puede deshacer."
+    "confirmDelete": "¿Estás seguro de que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
+    "errors": {
+      "deleteFailed": "Error al eliminar tarea: {message}"
+    }
   },
   "common": {
     "back": "Atrás",
@@ -121,6 +161,7 @@
   "navigation": {
     "dashboard": "Panel",
     "projects": "Proyectos",
-    "logout": "Cerrar Sesión"
+    "signOut": "Cerrar Sesión",
+    "appName": "Bernoulli"
   }
 }

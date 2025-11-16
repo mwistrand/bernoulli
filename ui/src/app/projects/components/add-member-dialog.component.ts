@@ -2,7 +2,7 @@ import { Component, inject, signal, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   ProjectMembersService,
   ProjectRole,
@@ -29,6 +29,7 @@ export class AddMemberDialogComponent {
   readonly #projectMembersService = inject(ProjectMembersService);
   readonly #usersService = inject(UsersService);
   readonly #data: AddMemberDialogData = inject(DIALOG_DATA);
+  readonly #translate = inject(TranslateService);
 
   protected readonly ProjectRole = ProjectRole;
   protected readonly isLoadingUsers = signal(true);
@@ -57,7 +58,10 @@ export class AddMemberDialogComponent {
         this.isLoadingUsers.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Failed to load users');
+        this.errorMessage.set(
+          error.error?.message ||
+            this.#translate.instant('projects.addMember.errors.loadUsersFailed'),
+        );
         this.isLoadingUsers.set(false);
       },
     });
@@ -81,7 +85,9 @@ export class AddMemberDialogComponent {
         this.#dialogRef.close(member);
       },
       error: (error) => {
-        this.submitError.set(error.error?.message || 'Failed to add member');
+        this.submitError.set(
+          error.error?.message || this.#translate.instant('projects.addMember.errors.addFailed'),
+        );
         this.isSubmitting.set(false);
       },
     });
