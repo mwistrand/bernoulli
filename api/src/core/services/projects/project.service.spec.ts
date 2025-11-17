@@ -12,6 +12,9 @@ import type { CreateProjectCommand } from '../../commands/project.command';
 import type { Project } from '../../models/projects/project.model';
 import { UserRole } from '../../models/auth/user.model';
 import { ProjectRole } from '../../models/projects/project-member.model';
+import { LoggerService } from '../../../common/logging/logger.service';
+import { TracingService } from '../../../common/tracing/tracing.service';
+import { MetricsService } from '../../../common/metrics/metrics.service';
 
 describe(ProjectService.name, () => {
 	let service: ProjectService;
@@ -51,6 +54,28 @@ describe(ProjectService.name, () => {
 			}),
 		};
 
+		const mockLogger = {
+			debug: jest.fn(),
+			info: jest.fn(),
+			warn: jest.fn(),
+			error: jest.fn(),
+			security: jest.fn(),
+		};
+
+		const mockTracing = {
+			traceOperation: jest.fn((name, fn) => fn({ setAttribute: jest.fn() })),
+			addEvent: jest.fn(),
+			setAttributes: jest.fn(),
+			recordException: jest.fn(),
+		};
+
+		const mockMetrics = {
+			trackAuthEvent: jest.fn(),
+			trackBusinessOperation: jest.fn(),
+			trackAuthorizationFailure: jest.fn(),
+			trackError: jest.fn(),
+		};
+
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				ProjectService,
@@ -65,6 +90,18 @@ describe(ProjectService.name, () => {
 				{
 					provide: AUTH_PORT,
 					useValue: mockAuthPort,
+				},
+				{
+					provide: LoggerService,
+					useValue: mockLogger,
+				},
+				{
+					provide: TracingService,
+					useValue: mockTracing,
+				},
+				{
+					provide: MetricsService,
+					useValue: mockMetrics,
 				},
 			],
 		}).compile();

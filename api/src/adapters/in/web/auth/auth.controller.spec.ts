@@ -5,6 +5,9 @@ import request from 'supertest';
 import { AuthController } from './auth.controller';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthenticatedGuard } from './guards/authenticated.guard';
+import { LoggerService } from '../../../../common/logging/logger.service';
+import { TracingService } from '../../../../common/tracing/tracing.service';
+import { MetricsService } from '../../../../common/metrics/metrics.service';
 
 describe(AuthController.name, () => {
 	let app: INestApplication;
@@ -15,9 +18,45 @@ describe(AuthController.name, () => {
 		name: 'Test User',
 	};
 
+	const mockLogger = {
+		debug: jest.fn(),
+		info: jest.fn(),
+		warn: jest.fn(),
+		error: jest.fn(),
+		security: jest.fn(),
+	};
+
+	const mockTracing = {
+		traceOperation: jest.fn((name, fn) => fn({ setAttribute: jest.fn() })),
+		addEvent: jest.fn(),
+		setAttributes: jest.fn(),
+		recordException: jest.fn(),
+	};
+
+	const mockMetrics = {
+		trackAuthEvent: jest.fn(),
+		trackBusinessOperation: jest.fn(),
+		trackAuthorizationFailure: jest.fn(),
+		trackError: jest.fn(),
+	};
+
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [AuthController],
+			providers: [
+				{
+					provide: LoggerService,
+					useValue: mockLogger,
+				},
+				{
+					provide: TracingService,
+					useValue: mockTracing,
+				},
+				{
+					provide: MetricsService,
+					useValue: mockMetrics,
+				},
+			],
 		}).compile();
 
 		app = module.createNestApplication();
@@ -26,6 +65,7 @@ describe(AuthController.name, () => {
 
 	afterEach(async () => {
 		await app.close();
+		jest.clearAllMocks();
 	});
 
 	describe('POST /auth/login', () => {
@@ -46,6 +86,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(LocalAuthGuard)
 				.useValue(mockLocalAuthGuard)
@@ -84,6 +129,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(LocalAuthGuard)
 				.useValue(mockLocalAuthGuard)
@@ -106,6 +156,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(LocalAuthGuard)
 				.useValue(mockLocalAuthGuard)
@@ -138,6 +193,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(AuthenticatedGuard)
 				.useValue(mockAuthGuard)
@@ -166,6 +226,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(AuthenticatedGuard)
 				.useValue(mockAuthGuard)
@@ -191,6 +256,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(AuthenticatedGuard)
 				.useValue(mockAuthGuard)
@@ -212,6 +282,11 @@ describe(AuthController.name, () => {
 			await app.close();
 			const module = await Test.createTestingModule({
 				controllers: [AuthController],
+				providers: [
+					{ provide: LoggerService, useValue: mockLogger },
+					{ provide: TracingService, useValue: mockTracing },
+					{ provide: MetricsService, useValue: mockMetrics },
+				],
 			})
 				.overrideGuard(AuthenticatedGuard)
 				.useValue(mockAuthGuard)

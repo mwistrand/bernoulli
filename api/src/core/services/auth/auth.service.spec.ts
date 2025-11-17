@@ -5,10 +5,16 @@ import { AuthService } from './auth.service';
 import { AUTH_PORT, AuthPort } from '../../ports/out/auth/auth.port';
 import { User } from '../../models/auth/user.model';
 import { CreateUserCommand } from '../../commands/user.command';
+import { LoggerService } from '../../../common/logging/logger.service';
+import { TracingService } from '../../../common/tracing/tracing.service';
+import { MetricsService } from '../../../common/metrics/metrics.service';
 
 describe(AuthService.name, () => {
 	let service: AuthService;
 	let authPort: jest.Mocked<AuthPort>;
+	let logger: jest.Mocked<LoggerService>;
+	let tracing: jest.Mocked<TracingService>;
+	let metrics: jest.Mocked<MetricsService>;
 
 	const mockUser: User = {
 		id: '123',
@@ -25,6 +31,28 @@ describe(AuthService.name, () => {
 			deleteUser: jest.fn(),
 		};
 
+		const mockLogger = {
+			debug: jest.fn(),
+			info: jest.fn(),
+			warn: jest.fn(),
+			error: jest.fn(),
+			security: jest.fn(),
+		};
+
+		const mockTracing = {
+			traceOperation: jest.fn((name, fn) => fn({ setAttribute: jest.fn() })),
+			addEvent: jest.fn(),
+			setAttributes: jest.fn(),
+			recordException: jest.fn(),
+		};
+
+		const mockMetrics = {
+			trackAuthEvent: jest.fn(),
+			trackBusinessOperation: jest.fn(),
+			trackAuthorizationFailure: jest.fn(),
+			trackError: jest.fn(),
+		};
+
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				AuthService,
@@ -32,11 +60,26 @@ describe(AuthService.name, () => {
 					provide: AUTH_PORT,
 					useValue: mockAuthPort,
 				},
+				{
+					provide: LoggerService,
+					useValue: mockLogger,
+				},
+				{
+					provide: TracingService,
+					useValue: mockTracing,
+				},
+				{
+					provide: MetricsService,
+					useValue: mockMetrics,
+				},
 			],
 		}).compile();
 
 		service = module.get<AuthService>(AuthService);
 		authPort = module.get(AUTH_PORT);
+		logger = module.get(LoggerService);
+		tracing = module.get(TracingService);
+		metrics = module.get(MetricsService);
 	});
 
 	describe('authenticate', () => {
