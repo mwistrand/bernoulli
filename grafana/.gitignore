@@ -1,0 +1,5 @@
+# Ignore any runtime generated files that might appear in this directory
+# Only provisioning configuration should be tracked in git
+*.log
+*.tmp
+.DS_Store

@@ -27,6 +27,22 @@ services:
             - '4318:4318' # OTLP HTTP receiver
             - '4317:4317' # OTLP gRPC receiver
 
+    grafana:
+        image: grafana/grafana:10.2.3
+        restart: unless-stopped
+        environment:
+            GF_SECURITY_ADMIN_USER: admin
+            GF_SECURITY_ADMIN_PASSWORD: admin
+            GF_AUTH_ANONYMOUS_ENABLED: 'false'
+            GF_SERVER_ROOT_URL: http://localhost:3001
+        volumes:
+            - grafana-data:/var/lib/grafana
+            - ./grafana/provisioning:/etc/grafana/provisioning
+        ports:
+            - '3001:3000'
+        depends_on:
+            - jaeger
+
     api:
         build:
             context: ./api
@@ -62,3 +78,4 @@ services:
 
 volumes:
     db-data:
+    grafana-data:

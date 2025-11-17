@@ -331,7 +331,8 @@ npm run test:headless:single --prefix ui
 - **api**: Port 3000, depends on db health
 - **ui**: Port 1234, depends on api
 - **jaeger**: Jaeger all-in-one for distributed tracing, port 16686 (UI), 4318 (OTLP HTTP)
-- Data persisted in `db-data` volume
+- **grafana**: Grafana 10.2.3 for visualization and dashboards, port 3001
+- Data persisted in `db-data` and `grafana-data` volumes
 
 ## Observability & Distributed Tracing
 
@@ -378,6 +379,32 @@ OTEL_SERVICE_NAME=bernoulli-api                  # Service identifier in traces
 
 - Start Jaeger: `docker run -d --name jaeger -p 16686:16686 -p 4318:4318 -e COLLECTOR_OTLP_ENABLED=true jaegertracing/all-in-one:1.53`
 - Update `.env`: `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`
+
+### Accessing Grafana
+
+**Grafana** provides advanced visualization and dashboarding capabilities on top of Jaeger:
+
+- Grafana UI: http://localhost:3001
+- Default credentials: `admin/admin` (change on first login)
+- Pre-configured Jaeger datasource
+- Pre-built dashboard: **Dashboards** → **Bernoulli** → **Bernoulli API - Trace Overview**
+
+**Key features:**
+
+- Advanced trace search and filtering
+- Custom dashboard creation
+- Trace correlation with metrics and logs (when configured)
+- Auto-refreshing trace views
+- More flexible querying than Jaeger UI alone
+
+**Configuration:**
+
+- Datasource auto-provisioned via `grafana/provisioning/datasources/jaeger.yml`
+- Dashboards auto-provisioned via `grafana/provisioning/dashboards/`
+- Data persisted in `grafana-data` Docker volume
+- Connects to Jaeger at `http://jaeger:16686` (internal Docker network)
+
+For detailed Grafana usage, dashboard creation, and troubleshooting, see `private_/docs/GRAFANA.md`.
 
 ### How It Works
 

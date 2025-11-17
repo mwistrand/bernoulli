@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+    - name: Jaeger
+      type: jaeger
+      uid: jaeger-uid
+      access: proxy
+      url: http://jaeger:16686
+      isDefault: true
+      editable: true
+      jsonData:
+          # Jaeger UI endpoint for trace queries
+          # The Grafana container can reach Jaeger using the docker-compose service name
+          tracesToLogs:
+              # Optional: Configure correlation between traces and logs
+              datasourceUid: 'loki-uid'
+              enabled: false

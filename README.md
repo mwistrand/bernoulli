@@ -133,10 +133,21 @@ Notes:
 - You can still use the Docker CLI directly with `docker compose` or `docker-compose` if you prefer.
 - To run only a specific service, append the service name: `docker compose up api`.
 
-## Useful Commands
+## Observability Dashboards: Jaeger & Grafana
 
-- Build Angular UI: `npm run build --prefix ui`
-- Build Nest.js API: `npm run build --prefix api`
+This project includes demo observability dashboards for tracing and metrics:
+
+- **Jaeger** (distributed tracing): [http://localhost:16686](http://localhost:16686)
+- **Grafana** (metrics & dashboards): [http://localhost:3001](http://localhost:3001)
+
+> **Warning:**
+> These dashboards are for demonstration purposes only. They do **not** use a production-ready backing database. Data is ephemeral and may be reset or lost on container restart. Do not use for production monitoring.
+
+**How to view dashboards:**
+
+- Start the stack with `make up` (see instructions above).
+- Open the Jaeger or Grafana URLs in your browser.
+- Example dashboards are pre-provisioned in `grafana/provisioning/dashboards/`.
 
 ---
 
