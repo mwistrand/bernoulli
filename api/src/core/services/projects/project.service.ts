@@ -17,6 +17,7 @@ import { ProjectRole } from '../../models/projects/project-member.model';
 import { LoggerService } from '../../../common/logging/logger.service';
 import { TracingService } from '../../../common/tracing/tracing.service';
 import { MetricsService } from '../../../common/metrics/metrics.service';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class ProjectService {
@@ -28,12 +29,17 @@ export class ProjectService {
 		private readonly logger: LoggerService,
 		private readonly tracing: TracingService,
 		private readonly metrics: MetricsService,
+		private readonly i18n: I18nService,
 	) {}
 
 	async createProject(command: CreateProjectCommand) {
 		return this.tracing.traceOperation('project.service.createProject', async span => {
 			if (!command.userId?.trim()) {
-				throw new UnauthorizedException('User not authenticated');
+				throw new UnauthorizedException(
+					this.i18n.t('auth.errors.user_not_authenticated', {
+						lang: I18nContext.current()?.lang,
+					}),
+				);
 			}
 
 			span.setAttribute('user.id', command.userId);
@@ -51,7 +57,11 @@ export class ProjectService {
 					command.userId,
 					'not_admin',
 				);
-				throw new ForbiddenException('Only admins can create projects');
+				throw new ForbiddenException(
+					this.i18n.t('projects.errors.create_projects_admin', {
+						lang: I18nContext.current()?.lang,
+					}),
+				);
 			}
 
 			try {
@@ -96,7 +106,12 @@ export class ProjectService {
 			const project = await this.projectPort.findById(id);
 			if (!project) {
 				this.logger.warn('Project not found', { projectId: id, userId });
-				throw new NotFoundException(`No project exists with ID ${id}`);
+				throw new NotFoundException(
+					this.i18n.t('projects.errors.not_found_with_id', {
+						lang: I18nContext.current()?.lang,
+						args: { id },
+					}),
+				);
 			}
 
 			// Verify user is a member
@@ -107,7 +122,11 @@ export class ProjectService {
 					userId,
 				});
 				this.metrics.trackAuthorizationFailure('project.view', userId, 'not_member');
-				throw new ForbiddenException('User is not a project member');
+				throw new ForbiddenException(
+					this.i18n.t('projects.errors.not_a_member', {
+						lang: I18nContext.current()?.lang,
+					}),
+				);
 			}
 
 			this.logger.debug('Project retrieved successfully', { projectId: id, userId });
@@ -118,7 +137,11 @@ export class ProjectService {
 	async findAllProjects(userId: string) {
 		return this.tracing.traceOperation('project.service.findAllProjects', async span => {
 			if (!userId?.trim()) {
-				throw new UnauthorizedException('User not authenticated');
+				throw new UnauthorizedException(
+					this.i18n.t('auth.errors.user_not_authenticated', {
+						lang: I18nContext.current()?.lang,
+					}),
+				);
 			}
 
 			span.setAttribute('user.id', userId);

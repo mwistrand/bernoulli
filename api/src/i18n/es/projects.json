@@ -1,7 +1,14 @@
 {
 	"errors": {
 		"not_found": "Proyecto no encontrado",
-		"not_found_with_id": "No existe ningún proyecto con ID {id}",
-		"name_exists": "El nombre ya existe"
+		"not_found_with_id": "No existe ningún proyecto con ID {{id}}",
+		"name_exists": "El nombre ya existe",
+		"already_member": "El usuario ya es miembro del proyecto",
+		"cannot_remove_creator": "No se puede eliminar al creador del proyecto",
+		"not_a_member": "El usuario no es miembro del proyecto",
+		"cannot_change_creator_role": "No se puede cambiar el rol del creador del proyecto",
+		"must_be_admin": "El usuario debe ser administrador del proyecto",
+		"create_project_admin": "Solo los administradores pueden crear proyectos",
+		"task_not_found": "Tarea no encontrada"
 	}
 }

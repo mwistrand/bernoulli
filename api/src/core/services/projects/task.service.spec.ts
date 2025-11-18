@@ -8,6 +8,7 @@ import {
 	ProjectMemberPort,
 } from '../../../core/ports/out/projects/project-member.port';
 import { ProjectRole } from '../../../core/models/projects/project-member.model';
+import { I18nService } from 'nestjs-i18n';
 
 describe(TaskService.name, () => {
 	let service: TaskService;
@@ -27,6 +28,18 @@ describe(TaskService.name, () => {
 			findByProjectAndUser: jest.fn(),
 		};
 
+		const mockI18nService = {
+			t: jest.fn((key: string) => {
+				const translations: Record<string, string> = {
+					'auth.errors.user_not_authenticated': 'User not authenticated',
+					'projects.errors.not_found': 'Project not found',
+					'projects.errors.not_a_member': 'User is not a project member',
+					'projects.errors.task_not_found': 'Task not found',
+				};
+				return translations[key] || key;
+			}),
+		};
+
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [
 				TaskService,
@@ -37,6 +50,10 @@ describe(TaskService.name, () => {
 				{
 					provide: PROJECT_MEMBER_PORT,
 					useValue: mockProjectMemberPort,
+				},
+				{
+					provide: I18nService,
+					useValue: mockI18nService,
 				},
 			],
 		}).compile();

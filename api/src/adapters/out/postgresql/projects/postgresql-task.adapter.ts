@@ -66,16 +66,17 @@ export class PostgreSQLTaskAdapter implements TaskPort {
 	async updateTask(command: UpdateTaskCommand): Promise<Task> {
 		const { taskId, projectId, userId, title, description, summary } = command;
 
-		const user = await this.userRepository.findOne({ where: { id: userId } });
+		const [user, entity] = await Promise.all([
+			this.userRepository.findOne({ where: { id: userId } }),
+			this.taskRepository.findOne({
+				where: { id: taskId, projectId },
+				relations: ['createdBy', 'lastUpdatedBy'],
+			}),
+		]);
+
 		if (!user) {
 			throw new Error('Logic error: user not found');
 		}
-
-		const entity = await this.taskRepository.findOne({
-			where: { id: taskId, projectId },
-			relations: ['createdBy', 'lastUpdatedBy'],
-		});
-
 		if (!entity) {
 			throw new Error('Logic error: task not found');
 		}

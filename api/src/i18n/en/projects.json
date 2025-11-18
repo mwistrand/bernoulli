@@ -1,7 +1,14 @@
 {
 	"errors": {
 		"not_found": "Project not found",
-		"not_found_with_id": "No project exists with ID {id}",
-		"name_exists": "Name already exists"
+		"not_found_with_id": "No project exists with ID {{id}}",
+		"name_exists": "Name already exists",
+		"already_member": "User is already a project member",
+		"cannot_remove_creator": "Cannot remove project creator",
+		"not_a_member": "User is not a project member",
+		"cannot_change_creator_role": "Cannot change project creator role",
+		"must_be_admin": "User must be a project admin",
+		"create_project_admin": "Only admins can create projects",
+		"task_not_found": "Task not found"
 	}
 }

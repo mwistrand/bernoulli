@@ -15,6 +15,7 @@ import {
 	PROJECT_MEMBER_PORT,
 	ProjectMemberPort,
 } from 'src/core/ports/out/projects/project-member.port';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class TaskService {
@@ -22,14 +23,23 @@ export class TaskService {
 		@Inject(TASK_PORT) private readonly taskPort: TaskPort,
 		@Inject(PROJECT_MEMBER_PORT)
 		private readonly projectMemberPort: ProjectMemberPort,
+		private readonly i18n: I18nService,
 	) {}
 
 	async createTask(command: CreateTaskCommand) {
 		if (!command.userId?.trim()) {
-			throw new UnauthorizedException('User not authenticated');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.user_not_authenticated', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		if (!command.projectId?.trim()) {
-			throw new NotFoundException('Project not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		// Verify user is project member
@@ -40,7 +50,11 @@ export class TaskService {
 
 	async findAllTasksByProjectId(projectId: string, userId: string) {
 		if (!projectId?.trim()) {
-			throw new NotFoundException('Project not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		// Verify user is project member
@@ -51,13 +65,25 @@ export class TaskService {
 
 	async updateTask(command: UpdateTaskCommand) {
 		if (!command.userId?.trim()) {
-			throw new UnauthorizedException('User not authenticated');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.user_not_authenticated', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		if (!command.projectId?.trim()) {
-			throw new NotFoundException('Project not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		if (!command.taskId?.trim()) {
-			throw new NotFoundException('Task not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.task_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		// Verify user is project member
@@ -66,7 +92,11 @@ export class TaskService {
 		// Verify task exists and belongs to the project
 		const existingTask = await this.taskPort.findTaskById(command.taskId, command.projectId);
 		if (!existingTask) {
-			throw new NotFoundException('Task not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.task_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		return this.taskPort.updateTask(command);
@@ -74,13 +104,25 @@ export class TaskService {
 
 	async deleteTask(command: DeleteTaskCommand) {
 		if (!command.userId?.trim()) {
-			throw new UnauthorizedException('User not authenticated');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.user_not_authenticated', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		if (!command.projectId?.trim()) {
-			throw new NotFoundException('Project not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		if (!command.taskId?.trim()) {
-			throw new NotFoundException('Task not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.task_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		// Verify user is project member
@@ -89,7 +131,11 @@ export class TaskService {
 		// Verify task exists and belongs to the project
 		const existingTask = await this.taskPort.findTaskById(command.taskId, command.projectId);
 		if (!existingTask) {
-			throw new NotFoundException('Task not found');
+			throw new NotFoundException(
+				this.i18n.t('projects.errors.task_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 
 		return this.taskPort.deleteTask(command);
@@ -98,7 +144,11 @@ export class TaskService {
 	private async requireProjectMember(projectId: string, userId: string) {
 		const member = await this.projectMemberPort.findByProjectAndUser(projectId, userId);
 		if (!member) {
-			throw new ForbiddenException('User is not a project member');
+			throw new ForbiddenException(
+				this.i18n.t('projects.errors.not_a_member', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		return member;
 	}

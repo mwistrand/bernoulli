@@ -15,6 +15,8 @@ import { ProjectRole } from '../../models/projects/project-member.model';
 import { LoggerService } from '../../../common/logging/logger.service';
 import { TracingService } from '../../../common/tracing/tracing.service';
 import { MetricsService } from '../../../common/metrics/metrics.service';
+import { I18nService } from 'nestjs-i18n';
+import { METRIC_DOTNET_PROCESS_MEMORY_WORKING_SET } from '@opentelemetry/semantic-conventions';
 
 describe(ProjectService.name, () => {
 	let service: ProjectService;
@@ -30,6 +32,17 @@ describe(ProjectService.name, () => {
 		lastUpdatedAt: new Date(),
 		createdBy: 'user-123',
 		lastUpdatedBy: 'user-123',
+	};
+
+	const mockI18nService = {
+		t: jest.fn((key: string) => {
+			const translations: Record<string, string> = {
+				'auth.errors.user_not_authenticated': 'User not authenticated',
+				'projects.errors.not_found_with_id': 'No project exists with ID {{id}}',
+				'projects.errors.not_a_member': 'User is not a project member',
+			};
+			return translations[key] || key;
+		}),
 	};
 
 	beforeEach(async () => {
@@ -102,6 +115,10 @@ describe(ProjectService.name, () => {
 				{
 					provide: MetricsService,
 					useValue: mockMetrics,
+				},
+				{
+					provide: I18nService,
+					useValue: mockI18nService,
 				},
 			],
 		}).compile();

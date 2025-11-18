@@ -79,7 +79,11 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 	async findById(id: string): Promise<User> {
 		const entity = await this.usersRepository.findOne({ where: { id } });
 		if (!entity) {
-			throw new UnauthorizedException('User not found');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.user_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		return toUser(entity);
 	}
@@ -94,7 +98,11 @@ export class PostgreSQLAuthAdapter implements AuthPort {
 	async deleteUser(id: string): Promise<void> {
 		const entity = await this.usersRepository.findOne({ where: { id } });
 		if (!entity) {
-			throw new UnauthorizedException('User not found');
+			throw new UnauthorizedException(
+				this.i18n.t('auth.errors.user_not_found', {
+					lang: I18nContext.current()?.lang,
+				}),
+			);
 		}
 		await this.usersRepository.delete({ id });
 	}

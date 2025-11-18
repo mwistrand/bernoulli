@@ -9,6 +9,7 @@ import {
 import { type ProjectPort, PROJECT_PORT } from '../../ports/out/projects/project.port';
 import { ProjectRole, type ProjectMember } from '../../models/projects/project-member.model';
 import type { Project } from '../../models/projects/project.model';
+import { I18nService } from 'nestjs-i18n';
 
 describe(ProjectMemberService.name, () => {
 	let service: ProjectMemberService;
@@ -36,6 +37,22 @@ describe(ProjectMemberService.name, () => {
 		lastUpdatedAt: new Date(),
 	};
 
+	const mockI18nService = {
+		t: jest.fn((key: string) => {
+			const translations: Record<string, string> = {
+				'projects.errors.not_found': 'Project not found',
+				'projects.errors.not_found_with_id': 'No project exists with ID {{id}}',
+				'projects.errors.name_exists': 'Name already exists',
+				'projects.errors.already_member': 'User is already a project member',
+				'projects.errors.cannot_remove_creator': 'Cannot remove project creator',
+				'projects.errors.not_a_member': 'User is not a project member',
+				'projects.errors.cannot_change_creator_role': 'Cannot change project creator role',
+				'projects.errors.must_be_admin': 'User must be a project admin',
+			};
+			return translations[key] || key;
+		}),
+	};
+
 	beforeEach(async () => {
 		const mockProjectMemberPort: jest.Mocked<Partial<ProjectMemberPort>> = {
 			findByProjectAndUser: jest.fn(),
@@ -59,6 +76,10 @@ describe(ProjectMemberService.name, () => {
 				{
 					provide: PROJECT_PORT,
 					useValue: mockProjectPort,
+				},
+				{
+					provide: I18nService,
+					useValue: mockI18nService,
 				},
 			],
 		}).compile();
@@ -136,7 +157,7 @@ describe(ProjectMemberService.name, () => {
 
 			await expect(
 				service.addMember('project-123', 'user-123', 'new-user-123', ProjectRole.USER),
-			).rejects.toThrow(new ForbiddenException('User must be project admin'));
+			).rejects.toThrow(new ForbiddenException('User must be a project admin'));
 		});
 
 		it('should throw ConflictException when user is already a member', async () => {
@@ -190,7 +211,7 @@ describe(ProjectMemberService.name, () => {
 					'member-123',
 					ProjectRole.ADMIN,
 				),
-			).rejects.toThrow(new ForbiddenException('User must be project admin'));
+			).rejects.toThrow(new ForbiddenException('User must be a project admin'));
 		});
 
 		it('should throw NotFoundException when target user is not a member', async () => {
@@ -205,7 +226,7 @@ describe(ProjectMemberService.name, () => {
 					'member-123',
 					ProjectRole.ADMIN,
 				),
-			).rejects.toThrow(new NotFoundException('User is not a project member'));
+			).rejects.toThrow(new ForbiddenException('User is not a project member'));
 		});
 
 		it('should throw ForbiddenException when trying to change project creator role', async () => {
@@ -247,7 +268,7 @@ describe(ProjectMemberService.name, () => {
 
 			await expect(
 				service.removeMember('project-123', 'user-123', 'member-to-remove'),
-			).rejects.toThrow(new ForbiddenException('User must be project admin'));
+			).rejects.toThrow(new ForbiddenException('User must be a project admin'));
 		});
 
 		it('should throw ForbiddenException when trying to remove project creator', async () => {
