@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, Observable, tap, throwError } from 'rxjs';
+import { extractErrorMessage } from '../../shared/utils/error-handling.util';
 
 export interface Project {
   id: string;
@@ -55,31 +56,7 @@ export class ProjectsService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unexpected error occurred';
-
-    if (error.error instanceof ErrorEvent) {
-      // Client-side error
-      errorMessage = error.error.message;
-    } else {
-      // Server-side error
-      if (error.status === 409) {
-        errorMessage = 'A project with this name already exists';
-      } else if (error.status === 400) {
-        // Extract validation error messages
-        if (error.error?.message) {
-          if (Array.isArray(error.error.message)) {
-            errorMessage = error.error.message.join(', ');
-          } else {
-            errorMessage = error.error.message;
-          }
-        }
-      } else if (error.status === 0) {
-        errorMessage = 'Unable to connect to the server';
-      } else {
-        errorMessage = error.error?.message || errorMessage;
-      }
-    }
-
+    const errorMessage = extractErrorMessage(error);
     return throwError(() => new Error(errorMessage));
   }
 }

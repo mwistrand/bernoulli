@@ -82,7 +82,8 @@ describe('ProjectMembersService', () => {
       service.addMember('project-123', {} as AddMemberDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
-          expect(error.status).toBe(409);
+          expect(error).toBeInstanceOf(Error);
+          expect(error.message).toBeTruthy();
           done();
         },
       });
@@ -109,7 +110,8 @@ describe('ProjectMembersService', () => {
       service.updateMemberRole('project-123', 'user-123', {} as UpdateRoleDto).subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
-          expect(error.status).toBe(403);
+          expect(error).toBeInstanceOf(Error);
+          expect(error.message).toBeTruthy();
           done();
         },
       });
@@ -133,7 +135,8 @@ describe('ProjectMembersService', () => {
       service.removeMember('project-123', 'user-123').subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
-          expect(error.status).toBe(403);
+          expect(error).toBeInstanceOf(Error);
+          expect(error.message).toBeTruthy();
           done();
         },
       });

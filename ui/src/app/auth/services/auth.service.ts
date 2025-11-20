@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError, Observable, tap, throwError } from 'rxjs';
+import { extractErrorMessage } from '../../shared/utils/error-handling.util';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -43,6 +44,7 @@ export class AuthService {
       tap((user) => {
         this.currentUser.set(user);
       }),
+      catchError(this.handleError),
     );
   }
 
@@ -51,6 +53,7 @@ export class AuthService {
       tap((user) => {
         this.currentUser.set(user);
       }),
+      catchError(this.handleError),
     );
   }
 
@@ -59,6 +62,7 @@ export class AuthService {
       tap(() => {
         this.currentUser.set(null);
       }),
+      catchError(this.handleError),
     );
   }
 
@@ -67,6 +71,7 @@ export class AuthService {
       tap((user) => {
         this.currentUser.set(user);
       }),
+      catchError(this.handleError),
     );
   }
 
@@ -77,5 +82,10 @@ export class AuthService {
         this.currentUser.set(null);
       },
     });
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    const errorMessage = extractErrorMessage(error);
+    return throwError(() => new Error(errorMessage));
   }
 }

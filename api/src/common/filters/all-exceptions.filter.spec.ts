@@ -59,6 +59,7 @@ describe('AllExceptionsFilter', () => {
 		mockResponse = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
+			setHeader: jest.fn(),
 		};
 
 		// Mock ArgumentsHost
@@ -71,18 +72,24 @@ describe('AllExceptionsFilter', () => {
 	});
 
 	describe('catch - HttpException', () => {
-		it('should handle HttpException and return proper response', () => {
+		it('should handle HttpException and return RFC 7807 Problem Details', () => {
 			const exception = new HttpException('Not Found', HttpStatus.NOT_FOUND);
 
 			filter.catch(exception, mockArgumentsHost);
 
+			expect(mockResponse.setHeader).toHaveBeenCalledWith(
+				'Content-Type',
+				'application/problem+json',
+			);
 			expect(mockResponse.status).toHaveBeenCalledWith(404);
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					statusCode: 404,
+					type: 'https://httpstatuses.io/404',
+					title: 'Not Found',
+					status: 404,
+					detail: 'Not Found',
+					instance: '/api/users',
 					timestamp: expect.any(String),
-					path: '/api/users',
-					message: 'Not Found',
 					correlationId: 'test-correlation-id',
 				}),
 			);
@@ -131,14 +138,13 @@ describe('AllExceptionsFilter', () => {
 			);
 		});
 
-		it('should include error details in non-production', () => {
+		it('should include validation errors in non-production', () => {
 			const originalEnv = process.env['NODE_ENV'];
 			process.env['NODE_ENV'] = 'development';
 
 			const exception = new HttpException(
 				{
-					message: 'Validation failed',
-					errors: ['field1 is required', 'field2 is invalid'],
+					message: ['field1 is required', 'field2 is invalid'],
 				},
 				HttpStatus.BAD_REQUEST,
 			);
@@ -147,24 +153,20 @@ describe('AllExceptionsFilter', () => {
 
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					details: expect.objectContaining({
-						message: 'Validation failed',
-						errors: expect.any(Array),
-					}),
+					errors: ['field1 is required', 'field2 is invalid'],
 				}),
 			);
 
 			process.env['NODE_ENV'] = originalEnv;
 		});
 
-		it('should not include error details in production', () => {
+		it('should not include validation errors in production', () => {
 			const originalEnv = process.env['NODE_ENV'];
 			process.env['NODE_ENV'] = 'production';
 
 			const exception = new HttpException(
 				{
-					message: 'Validation failed',
-					errors: ['field1 is required'],
+					message: ['field1 is required'],
 				},
 				HttpStatus.BAD_REQUEST,
 			);
@@ -173,7 +175,7 @@ describe('AllExceptionsFilter', () => {
 
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.not.objectContaining({
-					details: expect.anything(),
+					errors: expect.anything(),
 				}),
 			);
 
@@ -182,7 +184,7 @@ describe('AllExceptionsFilter', () => {
 	});
 
 	describe('catch - Error', () => {
-		it('should handle generic Error and return 500', () => {
+		it('should handle generic Error and return 500 with RFC 7807 format', () => {
 			const exception = new Error('Something went wrong');
 
 			filter.catch(exception, mockArgumentsHost);
@@ -190,8 +192,11 @@ describe('AllExceptionsFilter', () => {
 			expect(mockResponse.status).toHaveBeenCalledWith(500);
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					statusCode: 500,
-					message: 'Something went wrong',
+					type: 'https://httpstatuses.io/500',
+					title: 'Internal Server Error',
+					status: 500,
+					detail: 'Something went wrong',
+					instance: '/api/users',
 				}),
 			);
 		});
@@ -210,7 +215,7 @@ describe('AllExceptionsFilter', () => {
 			);
 		});
 
-		it('should hide internal error messages in production for 5xx errors', () => {
+		it('should hide internal error details in production for 5xx errors', () => {
 			const originalEnv = process.env['NODE_ENV'];
 			process.env['NODE_ENV'] = 'production';
 
@@ -220,14 +225,14 @@ describe('AllExceptionsFilter', () => {
 
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					message: 'Internal server error',
+					detail: 'An internal server error occurred.',
 				}),
 			);
 
 			process.env['NODE_ENV'] = originalEnv;
 		});
 
-		it('should show error messages in development for 5xx errors', () => {
+		it('should show error details in development for 5xx errors', () => {
 			const originalEnv = process.env['NODE_ENV'];
 			process.env['NODE_ENV'] = 'development';
 
@@ -237,7 +242,7 @@ describe('AllExceptionsFilter', () => {
 
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					message: 'Database connection failed',
+					detail: 'Database connection failed',
 				}),
 			);
 
@@ -254,8 +259,8 @@ describe('AllExceptionsFilter', () => {
 			expect(mockResponse.status).toHaveBeenCalledWith(500);
 			expect(mockResponse.json).toHaveBeenCalledWith(
 				expect.objectContaining({
-					statusCode: 500,
-					message: 'Internal server error',
+					status: 500,
+					detail: 'Internal server error',
 				}),
 			);
 		});
@@ -338,38 +343,51 @@ describe('AllExceptionsFilter', () => {
 		});
 	});
 
-	describe('getSafeErrorMessage', () => {
-		it('should return original message for 4xx errors in production', () => {
-			const originalEnv = process.env['NODE_ENV'];
-			process.env['NODE_ENV'] = 'production';
+	describe('extractValidationErrors', () => {
+		it('should extract validation errors from message array', () => {
+			const errorResponse = {
+				message: ['field1 is required', 'field2 is invalid'],
+			};
 
-			const message = filter['getSafeErrorMessage']('Not found', 404);
+			const errors = filter['extractValidationErrors'](errorResponse);
 
-			expect(message).toBe('Not found');
-
-			process.env['NODE_ENV'] = originalEnv;
+			expect(errors).toEqual(['field1 is required', 'field2 is invalid']);
 		});
 
-		it('should return generic message for 5xx errors in production', () => {
-			const originalEnv = process.env['NODE_ENV'];
-			process.env['NODE_ENV'] = 'production';
+		it('should extract validation errors from errors array', () => {
+			const errorResponse = {
+				errors: ['error1', 'error2'],
+			};
 
-			const message = filter['getSafeErrorMessage']('Database connection failed', 500);
+			const errors = filter['extractValidationErrors'](errorResponse);
 
-			expect(message).toBe('Internal server error');
-
-			process.env['NODE_ENV'] = originalEnv;
+			expect(errors).toEqual(['error1', 'error2']);
 		});
 
-		it('should return original message for 5xx errors in development', () => {
-			const originalEnv = process.env['NODE_ENV'];
-			process.env['NODE_ENV'] = 'development';
+		it('should filter out non-string values', () => {
+			const errorResponse = {
+				message: ['valid error', 123, null, 'another error'],
+			};
 
-			const message = filter['getSafeErrorMessage']('Database connection failed', 500);
+			const errors = filter['extractValidationErrors'](errorResponse);
 
-			expect(message).toBe('Database connection failed');
+			expect(errors).toEqual(['valid error', 'another error']);
+		});
 
-			process.env['NODE_ENV'] = originalEnv;
+		it('should return undefined for non-object responses', () => {
+			expect(filter['extractValidationErrors'](null)).toBeUndefined();
+			expect(filter['extractValidationErrors'](undefined)).toBeUndefined();
+			expect(filter['extractValidationErrors']('string')).toBeUndefined();
+		});
+
+		it('should return undefined when no error arrays present', () => {
+			const errorResponse = {
+				foo: 'bar',
+			};
+
+			const errors = filter['extractValidationErrors'](errorResponse);
+
+			expect(errors).toBeUndefined();
 		});
 	});
 });

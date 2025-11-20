@@ -2,10 +2,11 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from
 import { Request, Response } from 'express';
 import { LoggerService } from '../logging/logger.service';
 import { MetricsService } from '../metrics/metrics.service';
+import { ProblemDetailsBuilder } from '../utils/problem-details.builder';
 
 /**
  * Global exception filter that catches all errors and provides
- * centralized logging, metrics tracking, and consistent error responses.
+ * centralized logging, metrics tracking, and RFC 7807 Problem Details responses.
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -45,23 +46,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		// Track error metrics
 		this.metrics.trackError(`${request.method} ${request.path}`, errorType, status);
 
-		// Send error response
-		const responseBody: Record<string, unknown> = {
-			statusCode: status,
-			timestamp: new Date().toISOString(),
-			path: request.path,
-			message: this.getSafeErrorMessage(message, status),
-		};
+		// Extract validation errors if present
+		const errors = this.extractValidationErrors(errorResponse);
 
-		if (correlationId) {
-			responseBody['correlationId'] = correlationId;
-		}
+		// Build RFC 7807 Problem Details response
+		const problemDetails = ProblemDetailsBuilder.build({
+			status,
+			detail: ProblemDetailsBuilder.sanitizeDetail(message, status),
+			instance: request.path,
+			correlationId,
+			errors: process.env['NODE_ENV'] !== 'production' ? errors : undefined,
+		});
 
-		if (process.env['NODE_ENV'] !== 'production' && errorResponse) {
-			responseBody['details'] = errorResponse;
-		}
-
-		response.status(status).json(responseBody);
+		// Set Content-Type header per RFC 7807
+		response.setHeader('Content-Type', 'application/problem+json');
+		response.status(status).json(problemDetails);
 	}
 
 	/**
@@ -99,14 +98,25 @@ export class AllExceptionsFilter implements ExceptionFilter {
 	}
 
 	/**
-	 * Get a safe error message to return to clients.
-	 * Prevents leaking sensitive information in production.
+	 * Extract validation errors from exception response
 	 */
-	private getSafeErrorMessage(message: string, status: number): string {
-		// In production, don't expose internal error details for 5xx errors
-		if (process.env['NODE_ENV'] === 'production' && status >= 500) {
-			return 'Internal server error';
+	private extractValidationErrors(errorResponse: unknown): string[] | undefined {
+		if (!errorResponse || typeof errorResponse !== 'object') {
+			return undefined;
 		}
-		return message;
+
+		const response = errorResponse as Record<string, unknown>;
+
+		// Handle validation errors from class-validator
+		if (Array.isArray(response['message'])) {
+			return response['message'].filter((msg): msg is string => typeof msg === 'string');
+		}
+
+		// Handle other error formats
+		if (response['errors'] && Array.isArray(response['errors'])) {
+			return response['errors'].filter((msg): msg is string => typeof msg === 'string');
+		}
+
+		return undefined;
 	}
 }
