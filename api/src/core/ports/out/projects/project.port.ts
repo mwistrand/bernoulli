@@ -1,5 +1,5 @@
-import { CreateProjectCommand } from 'src/core/commands/project.command';
-import { Project } from 'src/core/models/projects/project.model';
+import { CreateProjectCommand } from '../../../commands/project.command';
+import { Project } from '../../../models/projects/project.model';
 
 export const PROJECT_PORT = 'PROJECT_PORT';
 

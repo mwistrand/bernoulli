@@ -12,7 +12,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ProjectMemberService } from 'src/core/services/projects/project-member.service';
+import { ProjectMemberService } from '../../../../core/services/projects/project-member.service';
 import { AddMemberDto, UpdateRoleDto } from './dto/project-member.dto';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 

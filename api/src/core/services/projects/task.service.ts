@@ -9,12 +9,12 @@ import {
 	CreateTaskCommand,
 	UpdateTaskCommand,
 	DeleteTaskCommand,
-} from 'src/core/commands/task.command';
-import { TASK_PORT, TaskPort } from 'src/core/ports/out/projects/task.port';
+} from '../../commands/task.command';
+import { TASK_PORT, TaskPort } from '../../ports/out/projects/task.port';
 import {
 	PROJECT_MEMBER_PORT,
 	ProjectMemberPort,
-} from 'src/core/ports/out/projects/project-member.port';
+} from '../../ports/out/projects/project-member.port';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()

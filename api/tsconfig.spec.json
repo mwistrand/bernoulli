@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"outDir": "./dist/out-tsc",
 		"module": "commonjs",
+		"target": "ES2022",
 		"types": ["jest", "node"],
 		"esModuleInterop": true,
 		"emitDecoratorMetadata": true,

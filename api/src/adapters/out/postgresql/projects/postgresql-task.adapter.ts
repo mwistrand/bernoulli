@@ -9,8 +9,8 @@ import {
 	CreateTaskCommand,
 	UpdateTaskCommand,
 	DeleteTaskCommand,
-} from 'src/core/commands/task.command';
-import { Task } from 'src/core/models/projects/task.model';
+} from '../../../../core/commands/task.command';
+import { Task } from '../../../../core/models/projects/task.model';
 
 @Injectable()
 export class PostgreSQLTaskAdapter implements TaskPort {

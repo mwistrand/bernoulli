@@ -5,8 +5,8 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../auth/entities/user.entity';
 import { PostgreSQLTaskAdapter } from './postgresql-task.adapter';
 import { TaskEntity } from './entities/task.entity';
-import { Task } from 'src/core/models/projects/task.model';
-import { CreateTaskCommand } from 'src/core/commands/task.command';
+import { Task } from '../../../../core/models/projects/task.model';
+import { CreateTaskCommand } from '../../../../core/commands/task.command';
 
 describe(PostgreSQLTaskAdapter.name, () => {
 	let adapter: PostgreSQLTaskAdapter;

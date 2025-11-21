@@ -1,4 +1,4 @@
-import { ProjectMember, ProjectMemberCreate } from 'src/core/models/projects/project-member.model';
+import { ProjectMember, ProjectMemberCreate } from '../../../models/projects/project-member.model';
 
 export const PROJECT_MEMBER_PORT = 'PROJECT_MEMBER_PORT';
 

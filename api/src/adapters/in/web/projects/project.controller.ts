@@ -12,11 +12,11 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ProjectService } from 'src/core/services/projects/project.service';
+import { ProjectService } from '../../../../core/services/projects/project.service';
 import { CreateProjectDto } from './dto/project.dto';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
-import { TaskService } from 'src/core/services/projects/task.service';
+import { TaskService } from '../../../../core/services/projects/task.service';
 
 @Controller('projects')
 export class ProjectController {
