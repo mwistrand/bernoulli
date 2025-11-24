@@ -147,6 +147,28 @@
     "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
     "errors": {
       "deleteFailed": "Failed to delete task: {message}"
+    },
+    "comments": {
+      "title": "Comments",
+      "addComment": "Add Comment",
+      "editComment": "Edit Comment",
+      "deleteComment": "Delete Comment",
+      "submitComment": "Submit",
+      "cancelEdit": "Cancel",
+      "confirmDelete": "Are you sure you want to delete this comment? This action cannot be undone.",
+      "commentPlaceholder": "Write a comment...",
+      "commentLabel": "Comment",
+      "noComments": "No comments yet",
+      "edited": "edited",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "errors": {
+        "commentRequired": "Comment cannot be blank",
+        "loadFailed": "Failed to load comments",
+        "createFailed": "Failed to add comment",
+        "updateFailed": "Failed to update comment",
+        "deleteFailed": "Failed to delete comment"
+      }
     }
   },
   "common": {

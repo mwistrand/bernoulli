@@ -27,19 +27,44 @@ export interface UpdateTaskRequest {
   description?: string;
 }
 
+export interface TaskComment {
+  id: string;
+  taskId: string;
+  comment: string;
+  createdAt: Date;
+  createdBy: string;
+  createdByName: string;
+  lastUpdatedAt: Date;
+  lastUpdatedBy: string;
+  lastUpdatedByName: string;
+}
+
+export interface CreateTaskCommentRequest {
+  comment: string;
+}
+
+export interface UpdateTaskCommentRequest {
+  comment: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class TasksService {
   readonly #apiUrl = 'http://localhost:3000/api';
   readonly #tasksSignal = signal<Record<string, Task[]>>({});
+  readonly #commentsSignal = signal<Record<string, TaskComment[]>>({});
   readonly #http = inject(HttpClient);
 
   get tasks() {
     return this.#tasksSignal.asReadonly();
   }
 
-  getTasksByProjectId(projectId: string): Task[] {
+  get comments() {
+    return this.#commentsSignal.asReadonly();
+  }
+
+  findTasksByProjectId(projectId: string): Task[] {
     return this.#tasksSignal()[projectId] || [];
   }
 
@@ -113,6 +138,94 @@ export class TasksService {
       }),
       catchError(this.handleError),
     );
+  }
+
+  findCommentsByTaskId(taskId: string): TaskComment[] {
+    return this.#commentsSignal()[taskId] || [];
+  }
+
+  createTaskComment(
+    projectId: string,
+    taskId: string,
+    request: CreateTaskCommentRequest,
+  ): Observable<TaskComment> {
+    return this.#http
+      .post<TaskComment>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}/comments`, request)
+      .pipe(
+        tap((comment) => {
+          // Add the new comment to the beginning of the task's comment list
+          this.#commentsSignal.update((comments) => {
+            const taskComments = comments[taskId] || [];
+            return {
+              ...comments,
+              [taskId]: [comment, ...taskComments],
+            };
+          });
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  fetchCommentsByTaskId(projectId: string, taskId: string): Observable<TaskComment[]> {
+    return this.#http
+      .get<TaskComment[]>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}/comments`)
+      .pipe(
+        tap((comments) => {
+          this.#commentsSignal.update((currentComments) => ({
+            ...currentComments,
+            [taskId]: comments,
+          }));
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  updateTaskComment(
+    projectId: string,
+    taskId: string,
+    commentId: string,
+    request: UpdateTaskCommentRequest,
+  ): Observable<TaskComment> {
+    return this.#http
+      .patch<TaskComment>(
+        `${this.#apiUrl}/projects/${projectId}/tasks/${taskId}/comments/${commentId}`,
+        request,
+      )
+      .pipe(
+        tap((updatedComment) => {
+          // Update the comment in the task's comment list
+          this.#commentsSignal.update((comments) => {
+            const taskComments = comments[taskId] || [];
+            const updatedComments = taskComments.map((comment) =>
+              comment.id === commentId ? updatedComment : comment,
+            );
+            return {
+              ...comments,
+              [taskId]: updatedComments,
+            };
+          });
+        }),
+        catchError(this.handleError),
+      );
+  }
+
+  deleteTaskComment(projectId: string, taskId: string, commentId: string): Observable<void> {
+    return this.#http
+      .delete<void>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}/comments/${commentId}`)
+      .pipe(
+        tap(() => {
+          // Remove the comment from the task's comment list
+          this.#commentsSignal.update((comments) => {
+            const taskComments = comments[taskId] || [];
+            const filteredComments = taskComments.filter((comment) => comment.id !== commentId);
+            return {
+              ...comments,
+              [taskId]: filteredComments,
+            };
+          });
+        }),
+        catchError(this.handleError),
+      );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

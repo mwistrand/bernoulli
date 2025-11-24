@@ -1,19 +1,13 @@
-import { ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TaskService } from './task.service';
-import { CreateTaskCommand } from '../../../core/commands/task.command';
+import { AddTaskCommentCommand, CreateTaskCommand } from '../../../core/commands/task.command';
 import { TASK_PORT, TaskPort } from '../../../core/ports/out/projects/task.port';
-import {
-	PROJECT_MEMBER_PORT,
-	ProjectMemberPort,
-} from '../../../core/ports/out/projects/project-member.port';
-import { ProjectRole } from '../../../core/models/projects/project-member.model';
 import { I18nService } from 'nestjs-i18n';
 
 describe(TaskService.name, () => {
 	let service: TaskService;
 	let taskPort: jest.Mocked<TaskPort>;
-	let projectMemberPort: jest.Mocked<ProjectMemberPort>;
 
 	beforeEach(async () => {
 		const mockTaskPort: jest.Mocked<TaskPort> = {
@@ -22,11 +16,8 @@ describe(TaskService.name, () => {
 			findTaskById: jest.fn(),
 			updateTask: jest.fn(),
 			deleteTask: jest.fn(),
+			addTaskComment: jest.fn(),
 		} as any;
-
-		const mockProjectMemberPort: jest.Mocked<Partial<ProjectMemberPort>> = {
-			findByProjectAndUser: jest.fn(),
-		};
 
 		const mockI18nService = {
 			t: jest.fn((key: string) => {
@@ -35,6 +26,7 @@ describe(TaskService.name, () => {
 					'projects.errors.not_found': 'Project not found',
 					'projects.errors.not_a_member': 'User is not a project member',
 					'projects.errors.task_not_found': 'Task not found',
+					'projects.errors.comment_blank': 'Comment must not be blank',
 				};
 				return translations[key] || key;
 			}),
@@ -48,10 +40,6 @@ describe(TaskService.name, () => {
 					useValue: mockTaskPort,
 				},
 				{
-					provide: PROJECT_MEMBER_PORT,
-					useValue: mockProjectMemberPort,
-				},
-				{
 					provide: I18nService,
 					useValue: mockI18nService,
 				},
@@ -60,7 +48,6 @@ describe(TaskService.name, () => {
 
 		service = module.get<TaskService>(TaskService);
 		taskPort = module.get(TASK_PORT);
-		projectMemberPort = module.get(PROJECT_MEMBER_PORT);
 	});
 
 	describe('createTask', () => {
@@ -86,26 +73,7 @@ describe(TaskService.name, () => {
 			);
 		});
 
-		it('should throw ForbiddenException when user is not a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue(null);
-
-			await expect(service.createTask(validCommand)).rejects.toThrow(
-				new ForbiddenException('User is not a project member'),
-			);
-		});
-
-		it('should create task when user is a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue({
-				id: 'member-id',
-				projectId: 'project-id',
-				userId: 'user-id',
-				role: ProjectRole.USER,
-				userName: 'Test User',
-				userEmail: 'test@example.com',
-				createdAt: now,
-				lastUpdatedAt: now,
-			});
-
+		it('should create task', async () => {
 			const expectedTask = {
 				id: 'task-id',
 				projectId: 'project-id',
@@ -120,11 +88,6 @@ describe(TaskService.name, () => {
 			taskPort.createTask.mockResolvedValue(expectedTask);
 
 			const task = await service.createTask(validCommand);
-
-			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
-				'project-id',
-				'user-id',
-			);
 			expect(taskPort.createTask).toHaveBeenCalledTimes(1);
 			expect(task).toEqual(expectedTask);
 		});
@@ -139,26 +102,7 @@ describe(TaskService.name, () => {
 			);
 		});
 
-		it('should throw ForbiddenException when user is not a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue(null);
-
-			await expect(service.findAllTasksByProjectId('project-id', 'user-id')).rejects.toThrow(
-				new ForbiddenException('User is not a project member'),
-			);
-		});
-
-		it('should return tasks when user is a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue({
-				id: 'member-id',
-				projectId: 'project-id',
-				userId: 'user-id',
-				role: ProjectRole.USER,
-				userName: 'Test User',
-				userEmail: 'test@example.com',
-				createdAt: now,
-				lastUpdatedAt: now,
-			});
-
+		it('should return tasks', async () => {
 			const expectedTasks = [
 				{
 					id: 'task-id',
@@ -175,11 +119,6 @@ describe(TaskService.name, () => {
 			taskPort.findAllTasksByProjectId.mockResolvedValue(expectedTasks);
 
 			const tasks = await service.findAllTasksByProjectId('project-id', 'user-id');
-
-			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
-				'project-id',
-				'user-id',
-			);
 			expect(tasks).toEqual(expectedTasks);
 		});
 	});
@@ -199,26 +138,7 @@ describe(TaskService.name, () => {
 			);
 		});
 
-		it('should throw ForbiddenException when user is not a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue(null);
-
-			await expect(service.findTaskById('project-id', 'task-id', 'user-id')).rejects.toThrow(
-				new ForbiddenException('User is not a project member'),
-			);
-		});
-
-		it('should return the requested task when user is a project member', async () => {
-			projectMemberPort.findByProjectAndUser.mockResolvedValue({
-				id: 'member-id',
-				projectId: 'project-id',
-				userId: 'user-id',
-				role: ProjectRole.USER,
-				userName: 'Test User',
-				userEmail: 'test@example.com',
-				createdAt: now,
-				lastUpdatedAt: now,
-			});
-
+		it('should return the requested task', async () => {
 			const expectedTask = {
 				id: 'task-id',
 				projectId: 'project-id',
@@ -233,12 +153,55 @@ describe(TaskService.name, () => {
 			taskPort.findTaskById.mockResolvedValue(expectedTask);
 
 			const task = await service.findTaskById('project-id', 'task-id', 'user-id');
-
-			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
-				'project-id',
-				'user-id',
-			);
 			expect(task).toEqual(expectedTask);
+		});
+	});
+
+	describe('#addTaskComment', () => {
+		beforeEach(() => {
+			jest.spyOn(crypto, 'randomUUID').mockReturnValue('type-safe-mock-uuid-123');
+		});
+
+		afterEach(() => {
+			jest.restoreAllMocks();
+		});
+
+		it('should throw without a valid user ID', async () => {
+			const command: AddTaskCommentCommand = {
+				comment: 'Lorem ipsum',
+				userId: '   ',
+				taskId: 'task-123',
+			};
+
+			await expect(service.addTaskComment(command)).rejects.toThrow(
+				new UnauthorizedException('User not authenticated'),
+			);
+		});
+
+		it('should throw without a valid comment', async () => {
+			const command: AddTaskCommentCommand = {
+				comment: '      ',
+				userId: 'user-123',
+				taskId: 'task-123',
+			};
+
+			await expect(service.addTaskComment(command)).rejects.toThrow(
+				new BadRequestException('Comment must not be blank'),
+			);
+		});
+
+		it('should add a comment successfully', async () => {
+			const command: AddTaskCommentCommand = {
+				comment: 'Lorem ipsum dolor sit amet',
+				userId: 'user-123',
+				taskId: 'task-123',
+			};
+
+			await service.addTaskComment(command);
+			expect(taskPort.addTaskComment).toHaveBeenCalledWith(
+				'type-safe-mock-uuid-123',
+				command,
+			);
 		});
 	});
 });

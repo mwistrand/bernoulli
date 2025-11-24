@@ -1,0 +1,76 @@
+<div class="comments-section">
+  <h3 class="comments-title">{{ 'tasks.comments.title' | translate }}</h3>
+
+  @if (errorMessage()) {
+    <div class="error-message" role="alert">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (comments().length === 0) {
+    <p class="no-comments">{{ 'tasks.comments.noComments' | translate }}</p>
+  } @else {
+    <ul class="comments-list">
+      @for (comment of comments(); track comment.id) {
+        <li class="comment-item">
+          <div class="comment-header">
+            <span class="comment-author">{{ comment.createdByName }}</span>
+            <span class="comment-date">
+              {{ comment.createdAt | date: 'MMM d, yyyy, h:mm a' }}
+              @if (isEdited(comment)) {
+                <span class="edited-indicator">({{ 'tasks.comments.edited' | translate }})</span>
+              }
+            </span>
+          </div>
+
+          @if (editingCommentId() === comment.id) {
+            <div class="comment-edit-form">
+              <textarea
+                class="comment-textarea"
+                [(ngModel)]="editingCommentText"
+                [placeholder]="'tasks.comments.commentPlaceholder' | translate"
+                rows="4"
+                [disabled]="isSubmitting()"
+              ></textarea>
+              <div class="comment-actions">
+                <button
+                  class="btn-primary"
+                  (click)="submitEdit(comment.id)"
+                  [disabled]="isSubmitting()"
+                >
+                  {{ 'tasks.comments.submitComment' | translate }}
+                </button>
+                <button class="btn-secondary" (click)="cancelEdit()" [disabled]="isSubmitting()">
+                  {{ 'tasks.comments.cancelEdit' | translate }}
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="comment-content" [innerHTML]="renderMarkdown(comment.comment)"></div>
+
+            @if (canEditOrDelete(comment)) {
+              <div class="comment-controls">
+                <button
+                  class="btn-icon"
+                  (click)="startEdit(comment)"
+                  [attr.aria-label]="'tasks.comments.editComment' | translate"
+                >
+                  <lucide-icon [img]="EditIcon" size="16" aria-hidden="true"></lucide-icon>
+                  {{ 'common.edit' | translate }}
+                </button>
+                <button
+                  class="btn-icon btn-danger"
+                  (click)="deleteComment(comment)"
+                  [attr.aria-label]="'tasks.comments.deleteComment' | translate"
+                >
+                  <lucide-icon [img]="TrashIcon" size="16" aria-hidden="true"></lucide-icon>
+                  {{ 'common.delete' | translate }}
+                </button>
+              </div>
+            }
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -4,11 +4,20 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { LucideAngularModule, ArrowLeftIcon, CalendarIcon } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Task, TasksService } from '../services/tasks.service';
+import { TaskCommentListComponent } from './task-comment-list.component';
+import { TaskCommentAddComponent } from './task-comment-add.component';
 
 @Component({
   selector: 'bn-task-details',
   standalone: true,
-  imports: [CommonModule, DatePipe, LucideAngularModule, TranslateModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    LucideAngularModule,
+    TranslateModule,
+    TaskCommentListComponent,
+    TaskCommentAddComponent,
+  ],
   templateUrl: './task-details.component.html',
   styleUrl: './task-details.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +28,6 @@ export class TaskDetailsComponent implements OnInit {
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #tasksService = inject(TasksService);
-  readonly #translate = inject(TranslateService);
 
   readonly task = signal<Task | null>(null);
   readonly isLoading = signal<boolean>(true);

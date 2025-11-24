@@ -147,6 +147,28 @@
     "confirmDelete": "¿Estás seguro de que deseas eliminar \"{title}\"? Esta acción no se puede deshacer.",
     "errors": {
       "deleteFailed": "Error al eliminar tarea: {message}"
+    },
+    "comments": {
+      "title": "Comentarios",
+      "addComment": "Agregar Comentario",
+      "editComment": "Editar Comentario",
+      "deleteComment": "Eliminar Comentario",
+      "submitComment": "Enviar",
+      "cancelEdit": "Cancelar",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+      "commentPlaceholder": "Escribe un comentario...",
+      "commentLabel": "Comentario",
+      "noComments": "Aún no hay comentarios",
+      "edited": "editado",
+      "collapse": "Colapsar",
+      "expand": "Expandir",
+      "errors": {
+        "commentRequired": "El comentario no puede estar vacío",
+        "loadFailed": "Error al cargar comentarios",
+        "createFailed": "Error al agregar comentario",
+        "updateFailed": "Error al actualizar comentario",
+        "deleteFailed": "Error al eliminar comentario"
+      }
     }
   },
   "common": {

@@ -9,6 +9,8 @@
 		"cannot_change_creator_role": "No se puede cambiar el rol del creador del proyecto",
 		"must_be_admin": "El usuario debe ser administrador del proyecto",
 		"create_project_admin": "Solo los administradores pueden crear proyectos",
-		"task_not_found": "Tarea no encontrada"
+		"task_not_found": "Tarea no encontrada",
+		"no_comment_with_id": "No existe ningún comentario con ID {{id}}",
+		"comment_blank": "El comentario no debe estar vacío"
 	}
 }

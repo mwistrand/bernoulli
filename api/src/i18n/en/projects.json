@@ -9,6 +9,8 @@
 		"cannot_change_creator_role": "Cannot change project creator role",
 		"must_be_admin": "User must be a project admin",
 		"create_project_admin": "Only admins can create projects",
-		"task_not_found": "Task not found"
+		"task_not_found": "Task not found",
+		"no_comment_with_id": "No such comment with ID {{id}}",
+		"comment_blank": "Comment must not be blank"
 	}
 }

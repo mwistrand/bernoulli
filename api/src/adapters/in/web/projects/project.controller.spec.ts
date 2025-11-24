@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
 	INestApplication,
 	BadRequestException,
+	NotFoundException,
 	ValidationPipe,
 	ExecutionContext,
 } from '@nestjs/common';
@@ -12,7 +13,8 @@ import { ProjectService } from '../../../../core/services/projects/project.servi
 import type { Project } from '../../../../core/models/projects/project.model';
 import { TaskService } from '../../../../core/services/projects/task.service';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
-import { Task } from '../../../../core/models/projects/task.model';
+import { Task, TaskComment } from '../../../../core/models/projects/task.model';
+import { ProjectMemberGuard } from './guards/project-member.guard';
 
 describe(ProjectController.name, () => {
 	let app: INestApplication;
@@ -55,6 +57,10 @@ describe(ProjectController.name, () => {
 			findAllTasksByProjectId: jest.fn(),
 			updateTask: jest.fn(),
 			deleteTask: jest.fn(),
+			addTaskComment: jest.fn(),
+			findAllCommentsByTaskId: jest.fn(),
+			updateTaskComment: jest.fn(),
+			deleteTaskComment: jest.fn(),
 		};
 
 		const mockAuthGuard = {
@@ -63,6 +69,10 @@ describe(ProjectController.name, () => {
 				request.user = mockUser;
 				return true;
 			}),
+		};
+
+		const mockProjectMemberGuard = {
+			canActivate: jest.fn(() => true),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -80,6 +90,8 @@ describe(ProjectController.name, () => {
 		})
 			.overrideGuard(AuthenticatedGuard)
 			.useValue(mockAuthGuard)
+			.overrideGuard(ProjectMemberGuard)
+			.useValue(mockProjectMemberGuard)
 			.compile();
 
 		app = module.createNestApplication();
@@ -278,6 +290,165 @@ describe(ProjectController.name, () => {
 			await request(app.getHttpServer())
 				.delete('/projects/project-123/tasks/task-123')
 				.expect(400);
+		});
+	});
+
+	describe('POST /projects/:id/tasks/:id/comments', () => {
+		const mockComment: TaskComment = {
+			id: 'task-123',
+			taskId: 'task-123',
+			comment: 'Lorem ipsum dolor sit amet',
+			createdAt: new Date('2024-01-01'),
+			createdBy: 'user-123',
+			lastUpdatedAt: new Date('2024-01-01'),
+			lastUpdatedBy: 'user-123',
+		};
+
+		const validCommentDto = {
+			comment: 'Lorem ipsum dolor sit amet',
+		};
+
+		it('should add a comment successfully', async () => {
+			taskService.addTaskComment.mockResolvedValue(mockComment);
+
+			const response = await request(app.getHttpServer())
+				.post('/projects/project-123/tasks/task-123/comments')
+				.send(validCommentDto)
+				.expect(201);
+
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockComment)));
+			expect(taskService.addTaskComment).toHaveBeenCalledWith({
+				...validCommentDto,
+				taskId: 'task-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should validate comment is required', async () => {
+			await request(app.getHttpServer())
+				.post('/projects/project-123/tasks/task-123/comments')
+				.send({ ...validCommentDto, comment: '' })
+				.expect(400);
+		});
+
+		it('should propagate errors from TaskService', async () => {
+			taskService.addTaskComment.mockRejectedValue(
+				new BadRequestException('Invalid comment'),
+			);
+
+			await request(app.getHttpServer())
+				.post('/projects/project-123/tasks/task-123/comments')
+				.send(validCommentDto)
+				.expect(400);
+		});
+	});
+
+	describe('GET /projects/:projectId/tasks/:taskId/comments', () => {
+		const mockComment: TaskComment = {
+			id: 'comment-123',
+			taskId: 'task-123',
+			comment: 'Lorem ipsum dolor sit amet',
+			createdAt: new Date('2024-01-01'),
+			createdBy: 'user-123',
+			lastUpdatedAt: new Date('2024-01-01'),
+			lastUpdatedBy: 'user-123',
+		};
+
+		it('should return all comments for a task', async () => {
+			const mockComments = [mockComment, { ...mockComment, id: 'comment-456' }];
+			taskService.findAllCommentsByTaskId.mockResolvedValue(mockComments);
+
+			const response = await request(app.getHttpServer())
+				.get('/projects/project-123/tasks/task-123/comments')
+				.expect(200);
+
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockComments)));
+			expect(taskService.findAllCommentsByTaskId).toHaveBeenCalledWith(
+				'task-123',
+				'user-123',
+			);
+		});
+
+		it('should propagate errors from TaskService', async () => {
+			taskService.findAllCommentsByTaskId.mockRejectedValue(
+				new NotFoundException('Task not found'),
+			);
+
+			await request(app.getHttpServer())
+				.get('/projects/project-123/tasks/task-123/comments')
+				.expect(404);
+		});
+	});
+
+	describe('PATCH /projects/:projectId/tasks/:taskId/comments/:commentId', () => {
+		const mockComment: TaskComment = {
+			id: 'comment-123',
+			taskId: 'task-123',
+			comment: 'Updated comment',
+			createdAt: new Date('2024-01-01'),
+			createdBy: 'user-123',
+			lastUpdatedAt: new Date('2024-01-02'),
+			lastUpdatedBy: 'user-123',
+		};
+
+		const updateDto = {
+			comment: 'Updated comment',
+		};
+
+		it('should update a comment successfully', async () => {
+			taskService.updateTaskComment.mockResolvedValue(mockComment);
+
+			const response = await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123/comments/comment-123')
+				.send(updateDto)
+				.expect(200);
+
+			expect(response.body).toEqual(JSON.parse(JSON.stringify(mockComment)));
+			expect(taskService.updateTaskComment).toHaveBeenCalledWith({
+				...updateDto,
+				commentId: 'comment-123',
+				userId: 'user-123',
+			});
+		});
+
+		it('should validate comment is required', async () => {
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123/comments/comment-123')
+				.send({ comment: '' })
+				.expect(400);
+		});
+
+		it('should propagate errors from TaskService', async () => {
+			taskService.updateTaskComment.mockRejectedValue(
+				new NotFoundException('Comment not found'),
+			);
+
+			await request(app.getHttpServer())
+				.patch('/projects/project-123/tasks/task-123/comments/comment-123')
+				.send(updateDto)
+				.expect(404);
+		});
+	});
+
+	describe('DELETE /projects/:projectId/tasks/:taskId/comments/:commentId', () => {
+		it('should delete a comment successfully', async () => {
+			taskService.deleteTaskComment.mockResolvedValue(undefined);
+
+			await request(app.getHttpServer())
+				.delete('/projects/project-123/tasks/task-123/comments/comment-123')
+				.expect(204);
+
+			expect(taskService.deleteTaskComment).toHaveBeenCalledWith('comment-123', 'user-123');
+		});
+
+		it('should propagate errors from TaskService', async () => {
+			taskService.deleteTaskComment.mockRejectedValue(
+				new NotFoundException('Comment not found'),
+			);
+
+			await request(app.getHttpServer())
+				.delete('/projects/project-123/tasks/task-123/comments/comment-123')
+				.expect(404);
 		});
 	});
 });

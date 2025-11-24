@@ -114,21 +114,6 @@ export class ProjectService {
 				);
 			}
 
-			// Verify user is a member
-			const member = await this.projectMemberPort.findByProjectAndUser(id, userId);
-			if (!member) {
-				this.logger.security('Project access denied: user not a member', {
-					projectId: id,
-					userId,
-				});
-				this.metrics.trackAuthorizationFailure('project.view', userId, 'not_member');
-				throw new ForbiddenException(
-					this.i18n.t('projects.errors.not_a_member', {
-						lang: I18nContext.current()?.lang,
-					}),
-				);
-			}
-
 			this.logger.debug('Project retrieved successfully', { projectId: id, userId });
 			return project;
 		});

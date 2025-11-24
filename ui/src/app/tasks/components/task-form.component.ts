@@ -2,13 +2,21 @@ import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } fr
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeftIcon } from 'lucide-angular';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { Task, TasksService } from '../services/tasks.service';
+import { TaskCommentAddComponent } from './task-comment-add.component';
+import { TaskCommentListComponent } from './task-comment-list.component';
 
 @Component({
   selector: 'bn-task-form',
   standalone: true,
-  imports: [ReactiveFormsModule, LucideAngularModule, TranslateModule],
+  imports: [
+    ReactiveFormsModule,
+    LucideAngularModule,
+    TranslateModule,
+    TaskCommentAddComponent,
+    TaskCommentListComponent,
+  ],
   templateUrl: './task-form.component.html',
   styleUrl: './task-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +27,6 @@ export class TaskFormComponent implements OnInit {
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #tasksService = inject(TasksService);
-  readonly #translate = inject(TranslateService);
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);

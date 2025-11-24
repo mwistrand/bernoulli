@@ -107,5 +107,10 @@
         </button>
       </div>
     </form>
+
+    @if (task()) {
+      <bn-task-comment-list [projectId]="projectId()" [taskId]="task()!.id" />
+      <bn-task-comment-add [projectId]="projectId()" [taskId]="task()!.id" />
+    }
   }
 </div>

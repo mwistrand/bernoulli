@@ -20,3 +20,15 @@ export interface DeleteTaskCommand {
 	taskId: string;
 	projectId: string;
 }
+
+export interface AddTaskCommentCommand {
+	comment: string;
+	taskId: string;
+	userId: string;
+}
+
+export interface UpdateTaskCommentCommand {
+	comment: string;
+	commentId: string;
+	userId: string;
+}

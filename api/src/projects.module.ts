@@ -16,17 +16,26 @@ import { PROJECT_MEMBER_PORT } from './core/ports/out/projects/project-member.po
 import { PostgreSQLProjectMemberAdapter } from './adapters/out/postgresql/projects/postgresql-project-member.adapter';
 import { ProjectMemberEntity } from './adapters/out/postgresql/projects/entities/project-member.entity';
 import { AuthModule } from './auth.module';
+import { ProjectMemberGuard } from './adapters/in/web/projects/guards/project-member.guard';
+import { TaskCommentEntity } from './adapters/out/postgresql/projects/entities/task-comment.entity';
 
 @Module({
 	controllers: [ProjectController, ProjectMemberController],
 	imports: [
-		TypeOrmModule.forFeature([ProjectEntity, TaskEntity, ProjectMemberEntity, UserEntity]),
+		TypeOrmModule.forFeature([
+			ProjectEntity,
+			TaskEntity,
+			TaskCommentEntity,
+			ProjectMemberEntity,
+			UserEntity,
+		]),
 		AuthModule,
 	],
 	providers: [
 		ProjectService,
 		TaskService,
 		ProjectMemberService,
+		ProjectMemberGuard,
 		{
 			provide: PROJECT_PORT,
 			useClass: PostgreSQLProjectAdapter,

@@ -1,0 +1,59 @@
+<div class="add-comment-container" [class.expanded]="isExpanded()">
+  <button
+    class="toggle-button"
+    (click)="toggleExpanded()"
+    type="button"
+    [attr.aria-expanded]="isExpanded()"
+    aria-controls="add-comment-form"
+  >
+    <span>{{ 'tasks.comments.addComment' | translate }}</span>
+    <lucide-icon
+      [img]="isExpanded() ? ChevronDownIcon : ChevronUpIcon"
+      size="20"
+      aria-hidden="true"
+    ></lucide-icon>
+  </button>
+
+  @if (isExpanded()) {
+    <div class="comment-form" id="add-comment-form">
+      @if (errorMessage()) {
+        <div class="error-message" role="alert" id="comment-error">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <label class="sr-only" for="comment-textarea">
+        {{ 'tasks.comments.commentLabel' | translate }}
+      </label>
+      <textarea
+        id="comment-textarea"
+        class="comment-textarea"
+        [(ngModel)]="commentText"
+        [placeholder]="'tasks.comments.commentPlaceholder' | translate"
+        rows="4"
+        [disabled]="isSubmitting()"
+        (keydown.escape)="toggleExpanded()"
+        aria-describedby="comment-error"
+      ></textarea>
+
+      <div class="form-actions">
+        <button
+          class="btn-primary"
+          (click)="submitComment()"
+          [disabled]="isSubmitting()"
+          type="submit"
+        >
+          {{ 'tasks.comments.submitComment' | translate }}
+        </button>
+        <button
+          class="btn-secondary"
+          (click)="toggleExpanded()"
+          [disabled]="isSubmitting()"
+          type="button"
+        >
+          {{ 'common.cancel' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

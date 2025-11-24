@@ -14,9 +14,15 @@ import {
 import { Request } from 'express';
 import { ProjectService } from '../../../../core/services/projects/project.service';
 import { CreateProjectDto } from './dto/project.dto';
-import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
+import {
+	AddTaskCommentDto,
+	CreateTaskDto,
+	UpdateTaskDto,
+	UpdateTaskCommentDto,
+} from './dto/task.dto';
 import { AuthenticatedGuard } from '../auth/guards/authenticated.guard';
 import { TaskService } from '../../../../core/services/projects/task.service';
+import { ProjectMemberGuard } from './guards/project-member.guard';
 
 @Controller('projects')
 export class ProjectController {
@@ -43,7 +49,7 @@ export class ProjectController {
 	}
 
 	@Get(':id')
-	@UseGuards(AuthenticatedGuard)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
 	findProjectById(@Param('id') id: string, @Req() request: Request) {
 		const userId = (request.user! as any).id as string;
 		return this.projectService.findById(id, userId);
@@ -51,7 +57,7 @@ export class ProjectController {
 
 	@Post(':id/tasks')
 	@HttpCode(201)
-	@UseGuards(AuthenticatedGuard)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
 	createTask(
 		@Param('id') projectId: string,
 		@Req() request: Request,
@@ -66,25 +72,25 @@ export class ProjectController {
 	}
 
 	@Get(':id/tasks')
-	@UseGuards(AuthenticatedGuard)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
 	findAllTasksByProjectId(@Param('id') projectId: string, @Req() request: Request) {
 		const userId = (request.user! as any).id as string;
 		return this.taskService.findAllTasksByProjectId(projectId, userId);
 	}
 
 	@Get(':projectId/tasks/:taskId')
-	@UseGuards(AuthenticatedGuard)
-	getTaskById(
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
+	findTaskById(
 		@Param('projectId') projectId: string,
 		@Param('taskId') taskId: string,
 		@Req() request: Request,
 	) {
 		const userId: string = (request.user! as any).id;
-		return this.taskService.getTaskById(projectId, taskId, userId);
+		return this.taskService.findTaskById(projectId, taskId, userId);
 	}
 
 	@Patch(':projectId/tasks/:taskId')
-	@UseGuards(AuthenticatedGuard)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
 	updateTask(
 		@Param('projectId') projectId: string,
 		@Param('taskId') taskId: string,
@@ -102,7 +108,7 @@ export class ProjectController {
 
 	@Delete(':projectId/tasks/:taskId')
 	@HttpCode(204)
-	@UseGuards(AuthenticatedGuard)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
 	async deleteTask(
 		@Param('projectId') projectId: string,
 		@Param('taskId') taskId: string,
@@ -114,5 +120,51 @@ export class ProjectController {
 			taskId,
 			userId,
 		});
+	}
+
+	@Post(':id/tasks/:taskId/comments')
+	@HttpCode(201)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
+	addTaskComment(
+		@Param('taskId') taskId: string,
+		@Req() request: Request,
+		@Body() dto: AddTaskCommentDto,
+	) {
+		const userId = (request.user! as any).id;
+		return this.taskService.addTaskComment({
+			...dto,
+			taskId,
+			userId,
+		});
+	}
+
+	@Get(':projectId/tasks/:taskId/comments')
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
+	findAllCommentsByTaskId(@Param('taskId') taskId: string, @Req() request: Request) {
+		const userId = (request.user! as any).id;
+		return this.taskService.findAllCommentsByTaskId(taskId, userId);
+	}
+
+	@Patch(':projectId/tasks/:taskId/comments/:commentId')
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
+	updateTaskComment(
+		@Param('commentId') commentId: string,
+		@Req() request: Request,
+		@Body() dto: UpdateTaskCommentDto,
+	) {
+		const userId = (request.user! as any).id;
+		return this.taskService.updateTaskComment({
+			...dto,
+			commentId,
+			userId,
+		});
+	}
+
+	@Delete(':projectId/tasks/:taskId/comments/:commentId')
+	@HttpCode(204)
+	@UseGuards(AuthenticatedGuard, ProjectMemberGuard)
+	async deleteTaskComment(@Param('commentId') commentId: string, @Req() request: Request) {
+		const userId = (request.user! as any).id;
+		await this.taskService.deleteTaskComment(commentId, userId);
 	}
 }

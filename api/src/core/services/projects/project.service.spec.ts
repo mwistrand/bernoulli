@@ -16,7 +16,6 @@ import { LoggerService } from '../../../common/logging/logger.service';
 import { TracingService } from '../../../common/tracing/tracing.service';
 import { MetricsService } from '../../../common/metrics/metrics.service';
 import { I18nService } from 'nestjs-i18n';
-import { METRIC_DOTNET_PROCESS_MEMORY_WORKING_SET } from '@opentelemetry/semantic-conventions';
 
 describe(ProjectService.name, () => {
 	let service: ProjectService;

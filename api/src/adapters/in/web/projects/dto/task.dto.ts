@@ -43,3 +43,19 @@ export class UpdateTaskDto {
 	@Transform(({ value }) => (value !== null && typeof value === 'string' ? value.trim() : value))
 	summary?: string | null;
 }
+
+export class AddTaskCommentDto {
+	@IsString()
+	@IsNotEmpty({ message: 'Comment is required' })
+	@MaxLength(5000, { message: 'Comment must not exceed 5000 characters' })
+	@Transform(({ value }) => (typeof value === 'string' ? value.trim() : ''))
+	comment!: string;
+}
+
+export class UpdateTaskCommentDto {
+	@IsString()
+	@IsNotEmpty({ message: 'Comment is required' })
+	@MaxLength(5000, { message: 'Comment must not exceed 5000 characters' })
+	@Transform(({ value }) => (typeof value === 'string' ? value.trim() : ''))
+	comment!: string;
+}
