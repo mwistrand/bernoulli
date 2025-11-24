@@ -183,4 +183,62 @@ describe(TaskService.name, () => {
 			expect(tasks).toEqual(expectedTasks);
 		});
 	});
+
+	describe('findTaskById', () => {
+		const now = new Date();
+
+		it('should throw NotFoundException when projectId is invalid', async () => {
+			await expect(service.findTaskById('      ', '   ', 'user-id')).rejects.toThrow(
+				new NotFoundException('Project not found'),
+			);
+		});
+
+		it('should throw NotFoundException when taskId is invalid', async () => {
+			await expect(service.findTaskById('project-id', '   ', 'user-id')).rejects.toThrow(
+				new NotFoundException('Task not found'),
+			);
+		});
+
+		it('should throw ForbiddenException when user is not a project member', async () => {
+			projectMemberPort.findByProjectAndUser.mockResolvedValue(null);
+
+			await expect(service.findTaskById('project-id', 'task-id', 'user-id')).rejects.toThrow(
+				new ForbiddenException('User is not a project member'),
+			);
+		});
+
+		it('should return the requested task when user is a project member', async () => {
+			projectMemberPort.findByProjectAndUser.mockResolvedValue({
+				id: 'member-id',
+				projectId: 'project-id',
+				userId: 'user-id',
+				role: ProjectRole.USER,
+				userName: 'Test User',
+				userEmail: 'test@example.com',
+				createdAt: now,
+				lastUpdatedAt: now,
+			});
+
+			const expectedTask = {
+				id: 'task-id',
+				projectId: 'project-id',
+				title: 'Title',
+				description: 'Description',
+				createdAt: now,
+				createdBy: 'user-123',
+				lastUpdatedBy: 'user-123',
+				lastUpdatedAt: now,
+			};
+
+			taskPort.findTaskById.mockResolvedValue(expectedTask);
+
+			const task = await service.findTaskById('project-id', 'task-id', 'user-id');
+
+			expect(projectMemberPort.findByProjectAndUser).toHaveBeenCalledWith(
+				'project-id',
+				'user-id',
+			);
+			expect(task).toEqual(expectedTask);
+		});
+	});
 });

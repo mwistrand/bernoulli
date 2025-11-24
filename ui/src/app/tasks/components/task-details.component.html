@@ -1,0 +1,40 @@
+<div class="task-details-container">
+  <button
+    class="back-button"
+    (click)="goBack()"
+    [attr.aria-label]="'tasks.backToProject' | translate"
+  >
+    <lucide-icon [img]="ArrowLeftIcon" size="20" class="icon" aria-hidden="true"></lucide-icon>
+    {{ 'tasks.backToProject' | translate }}
+  </button>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>{{ 'tasks.loading' | translate }}</p>
+    </div>
+  } @else if (task()) {
+    @let _task = task()!;
+    <article class="task-details-card">
+      <header>
+        <h2>{{ _task.title }}</h2>
+        @if (_task.summary) {
+          <p class="task-summary">{{ _task.summary }}</p>
+        }
+      </header>
+      <section>
+        <p class="task-description">{{ _task.description }}</p>
+      </section>
+      <footer class="task-meta">
+        <span class="meta-item">
+          <lucide-icon [img]="CalendarIcon" size="14" aria-hidden="true"></lucide-icon>
+          {{ 'tasks.card.created' | translate }} {{ _task.createdAt | date: 'MMM d, yyyy' }}
+        </span>
+      </footer>
+    </article>
+  } @else {
+    <div class="not-found">
+      <p>{{ 'tasks.notFound' | translate }}</p>
+    </div>
+  }
+</div>

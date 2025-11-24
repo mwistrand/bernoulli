@@ -63,22 +63,22 @@ export class TaskService {
 		return this.taskPort.findAllTasksByProjectId(projectId);
 	}
 
-	async updateTask(command: UpdateTaskCommand) {
-		if (!command.userId?.trim()) {
+	async findTaskById(projectId?: string, taskId?: string, userId?: string) {
+		if (!userId?.trim()) {
 			throw new UnauthorizedException(
 				this.i18n.t('auth.errors.user_not_authenticated', {
 					lang: I18nContext.current()?.lang,
 				}),
 			);
 		}
-		if (!command.projectId?.trim()) {
+		if (!projectId?.trim()) {
 			throw new NotFoundException(
 				this.i18n.t('projects.errors.not_found', {
 					lang: I18nContext.current()?.lang,
 				}),
 			);
 		}
-		if (!command.taskId?.trim()) {
+		if (!taskId?.trim()) {
 			throw new NotFoundException(
 				this.i18n.t('projects.errors.task_not_found', {
 					lang: I18nContext.current()?.lang,
@@ -87,10 +87,10 @@ export class TaskService {
 		}
 
 		// Verify user is project member
-		await this.requireProjectMember(command.projectId, command.userId);
+		await this.requireProjectMember(projectId, userId);
 
 		// Verify task exists and belongs to the project
-		const existingTask = await this.taskPort.findTaskById(command.taskId, command.projectId);
+		const existingTask = await this.taskPort.findTaskById(taskId, projectId);
 		if (!existingTask) {
 			throw new NotFoundException(
 				this.i18n.t('projects.errors.task_not_found', {
@@ -99,6 +99,12 @@ export class TaskService {
 			);
 		}
 
+		return existingTask;
+	}
+
+	async updateTask(command: UpdateTaskCommand) {
+		// Verify task exists and belongs to the project
+		await this.findTaskById(command.taskId, command.projectId, command.userId);
 		return this.taskPort.updateTask(command);
 	}
 

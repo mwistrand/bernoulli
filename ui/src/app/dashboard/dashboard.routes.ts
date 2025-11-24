@@ -8,6 +8,8 @@ import { DashboardContainerComponent } from './containers/dashboard-container.co
 import { authGuard } from '../auth/guards/auth.guard';
 import { ProjectContainerComponent } from './containers/project-container.component';
 import { ProjectMemberContainer } from './containers/project-member-container';
+import { TaskDetailsComponent } from '../tasks/components/task-details.component';
+import { TaskFormComponent } from '../tasks/components/task-form.component';
 
 export const dashboardRoutes: Routes = [
   {
@@ -25,6 +27,21 @@ export const dashboardRoutes: Routes = [
       tasks: TasksResolver,
       currentMember: CurrentMemberResolver,
     },
+  },
+  {
+    canActivate: [authGuard],
+    path: 'projects/:projectId/tasks/new',
+    component: TaskFormComponent,
+  },
+  {
+    canActivate: [authGuard],
+    path: 'projects/:projectId/tasks/:taskId/edit',
+    component: TaskFormComponent,
+  },
+  {
+    canActivate: [authGuard],
+    path: 'projects/:projectId/tasks/:taskId',
+    component: TaskDetailsComponent,
   },
   {
     canActivate: [authGuard],

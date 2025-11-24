@@ -100,6 +100,8 @@
     }
   },
   "tasks": {
+    "backToProject": "Back to Project",
+    "notFound": "Task not found.",
     "title": "Tasks",
     "newTask": "New Task",
     "createTask": "Create Task",

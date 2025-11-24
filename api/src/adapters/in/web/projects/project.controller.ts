@@ -72,6 +72,17 @@ export class ProjectController {
 		return this.taskService.findAllTasksByProjectId(projectId, userId);
 	}
 
+	@Get(':projectId/tasks/:taskId')
+	@UseGuards(AuthenticatedGuard)
+	getTaskById(
+		@Param('projectId') projectId: string,
+		@Param('taskId') taskId: string,
+		@Req() request: Request,
+	) {
+		const userId: string = (request.user! as any).id;
+		return this.taskService.getTaskById(projectId, taskId, userId);
+	}
+
 	@Patch(':projectId/tasks/:taskId')
 	@UseGuards(AuthenticatedGuard)
 	updateTask(
@@ -80,7 +91,7 @@ export class ProjectController {
 		@Req() request: Request,
 		@Body() dto: UpdateTaskDto,
 	) {
-		const userId = (request.user! as any).id;
+		const userId: string = (request.user! as any).id;
 		return this.taskService.updateTask({
 			...dto,
 			projectId,

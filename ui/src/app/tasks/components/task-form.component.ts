@@ -1,39 +1,31 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { A11yModule } from '@angular/cdk/a11y';
-import { LucideAngularModule, XIcon } from 'lucide-angular';
-import { TranslateModule } from '@ngx-translate/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LucideAngularModule, ArrowLeftIcon } from 'lucide-angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Task, TasksService } from '../services/tasks.service';
 
 @Component({
-  selector: 'bn-task-dialog',
+  selector: 'bn-task-form',
   standalone: true,
-  imports: [ReactiveFormsModule, A11yModule, LucideAngularModule, TranslateModule],
-  templateUrl: './task-dialog.component.html',
-  styleUrl: './task-dialog.component.scss',
+  imports: [ReactiveFormsModule, LucideAngularModule, TranslateModule],
+  templateUrl: './task-form.component.html',
+  styleUrl: './task-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TaskDialogComponent {
-  protected readonly XIcon = XIcon;
+export class TaskFormComponent implements OnInit {
+  protected readonly ArrowLeftIcon = ArrowLeftIcon;
 
+  readonly #route = inject(ActivatedRoute);
+  readonly #router = inject(Router);
   readonly #tasksService = inject(TasksService);
-
-  isOpen = input<boolean>(false);
-  projectId = input.required<string>();
-  task = input<Task | null>(null);
-  dialogClosed = output<void>();
-  taskSaved = output<Task>();
+  readonly #translate = inject(TranslateService);
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly projectId = signal<string>('');
+  readonly taskId = signal<string | null>(null);
+  readonly task = signal<Task | null>(null);
 
   readonly taskForm = new FormGroup({
     title: new FormControl('', [Validators.required, Validators.maxLength(300)]),
@@ -42,7 +34,7 @@ export class TaskDialogComponent {
   });
 
   constructor() {
-    // Update form when task input changes (for edit mode)
+    // Update form when task changes (for edit mode)
     effect(() => {
       const taskData = this.task();
       if (taskData) {
@@ -51,18 +43,45 @@ export class TaskDialogComponent {
           summary: taskData.summary || '',
           description: taskData.description,
         });
-      } else {
-        this.taskForm.reset();
       }
     });
   }
 
-  get isEditMode(): boolean {
-    return this.task() !== null;
+  ngOnInit(): void {
+    const projectId = this.#route.snapshot.paramMap.get('projectId');
+    const taskId = this.#route.snapshot.paramMap.get('taskId');
+
+    if (!projectId) {
+      this.#router.navigate(['/dashboard']);
+      return;
+    }
+
+    this.projectId.set(projectId);
+
+    if (taskId) {
+      // Edit mode
+      this.taskId.set(taskId);
+      this.isLoading.set(true);
+
+      this.#tasksService.fetchTaskById(projectId, taskId).subscribe({
+        next: (task) => {
+          this.isLoading.set(false);
+          this.task.set(task);
+        },
+        error: (error: Error) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(error.message);
+        },
+      });
+    }
   }
 
-  get dialogTitle(): string {
-    return this.isEditMode ? 'tasks.dialog.editTitle' : 'tasks.dialog.createTitle';
+  get isEditMode(): boolean {
+    return this.taskId() !== null;
+  }
+
+  get pageTitle(): string {
+    return this.isEditMode ? 'tasks.editTask' : 'tasks.newTask';
   }
 
   get submitButtonText(): string {
@@ -83,7 +102,7 @@ export class TaskDialogComponent {
     const { title, summary, description } = this.taskForm.value;
 
     const operation = this.isEditMode
-      ? this.#tasksService.updateTask(this.projectId(), this.task()!.id, {
+      ? this.#tasksService.updateTask(this.projectId(), this.taskId()!, {
           title: title!,
           summary: summary || null,
           description: description!,
@@ -95,11 +114,9 @@ export class TaskDialogComponent {
         });
 
     operation.subscribe({
-      next: (savedTask) => {
+      next: () => {
         this.isLoading.set(false);
-        this.taskForm.reset();
-        this.taskSaved.emit(savedTask);
-        this.closeDialog();
+        this.goBackToProject();
       },
       error: (error: Error) => {
         this.isLoading.set(false);
@@ -108,23 +125,7 @@ export class TaskDialogComponent {
     });
   }
 
-  closeDialog(): void {
-    this.taskForm.reset();
-    this.errorMessage.set(null);
-    this.dialogClosed.emit();
-  }
-
-  onBackdropClick(event: MouseEvent): void {
-    // Close dialog when clicking on the backdrop (not the dialog content)
-    if (event.target === event.currentTarget) {
-      this.closeDialog();
-    }
-  }
-
-  onKeyDown(event: KeyboardEvent): void {
-    // Close dialog on Escape key
-    if (event.key === 'Escape') {
-      this.closeDialog();
-    }
+  goBackToProject(): void {
+    this.#router.navigate(['/dashboard/projects', this.projectId()]);
   }
 }

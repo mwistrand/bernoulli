@@ -2,12 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { DebugElement } from '@angular/core';
-import { By } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectContainerComponent } from './project-container.component';
 import { TasksService } from '../../tasks/services/tasks.service';
-import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { of } from 'rxjs';
 
 interface Project {
@@ -65,7 +62,7 @@ describe(ProjectContainerComponent.name, () => {
 
   beforeEach(async () => {
     mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-    mockTaskService = jasmine.createSpyObj('TaskService', ['fetchTasksByProjectId']);
+    mockTaskService = jasmine.createSpyObj('TaskService', ['fetchTasksByProjectId', 'deleteTask']);
 
     mockActivatedRoute = {
       snapshot: {
@@ -121,47 +118,22 @@ describe(ProjectContainerComponent.name, () => {
     });
   });
 
-  describe('Task dialog management', () => {
+  describe('Task navigation', () => {
     beforeEach(() => {
       fixture.detectChanges();
     });
 
-    it('should open and close dialog', () => {
-      expect(component.isDialogOpen()).toBe(false);
-
+    it('should navigate to new task form when New Task button is clicked', () => {
       const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
       newTaskButton.click();
       fixture.detectChanges();
 
-      expect(component.isDialogOpen()).toBe(true);
-
-      const dialogDebugElement: DebugElement = fixture.debugElement.query(
-        By.directive(TaskDialogComponent),
-      );
-      const dialogComponent: TaskDialogComponent = dialogDebugElement.componentInstance;
-      dialogComponent.dialogClosed.emit();
-      fixture.detectChanges();
-
-      expect(component.isDialogOpen()).toBe(false);
-    });
-
-    it('should reload tasks when taskSaved event is emitted', () => {
-      const mockTasks = [createMockTask({ id: '1' }), createMockTask({ id: '2' })];
-      mockTaskService.fetchTasksByProjectId.and.returnValue(of(mockTasks));
-
-      const newTaskButton = fixture.nativeElement.querySelector('.tasks-header .button-primary');
-      newTaskButton.click();
-      fixture.detectChanges();
-
-      const dialogDebugElement: DebugElement = fixture.debugElement.query(
-        By.directive(TaskDialogComponent),
-      );
-      const dialogComponent: TaskDialogComponent = dialogDebugElement.componentInstance;
-      dialogComponent.taskSaved.emit(mockTasks[0]);
-      fixture.detectChanges();
-
-      expect(mockTaskService.fetchTasksByProjectId).toHaveBeenCalledWith('project-1');
-      expect(component.tasks()).toEqual(mockTasks);
+      expect(mockRouter.navigate).toHaveBeenCalledWith([
+        '/dashboard/projects',
+        'project-1',
+        'tasks',
+        'new',
+      ]);
     });
   });
 

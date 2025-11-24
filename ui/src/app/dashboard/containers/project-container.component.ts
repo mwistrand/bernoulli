@@ -8,14 +8,13 @@ import {
 } from 'lucide-angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TaskDialogComponent } from '../../tasks/components/task-dialog.component';
 import { Task, TasksService } from '../../tasks/services/tasks.service';
 import { TaskCardComponent } from '../../projects/components/task-card.component';
 
 @Component({
   selector: 'bn-project-container',
   standalone: true,
-  imports: [TaskDialogComponent, TaskCardComponent, LucideAngularModule, TranslateModule],
+  imports: [TaskCardComponent, LucideAngularModule, TranslateModule],
   templateUrl: './project-container.component.html',
   styleUrl: './project-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,10 +30,7 @@ export class ProjectContainerComponent implements OnInit {
   readonly #tasksService = inject(TasksService);
   readonly #translate = inject(TranslateService);
 
-  readonly isDialogOpen = signal<boolean>(false);
   readonly isLoading = signal<boolean>(false);
-  readonly editingTask = signal<Task | null>(null);
-  readonly deletingTask = signal<Task | null>(null);
 
   readonly projectId = signal<string>('');
   readonly project = signal<any>(null);
@@ -57,31 +53,12 @@ export class ProjectContainerComponent implements OnInit {
     }
   }
 
-  protected openDialog(): void {
-    this.editingTask.set(null);
-    this.isDialogOpen.set(true);
+  protected navigateToNewTask(): void {
+    this.#router.navigate(['/dashboard/projects', this.projectId(), 'tasks', 'new']);
   }
 
-  protected closeDialog(): void {
-    this.isDialogOpen.set(false);
-    this.editingTask.set(null);
-  }
-
-  protected onTaskSaved(task: Task): void {
-    const id = this.#route.snapshot.paramMap.get('id');
-    if (!id?.trim) {
-      return;
-    }
-
-    // Reload all tasks to ensure consistency
-    this.#tasksService.fetchTasksByProjectId(id).subscribe((tasks) => {
-      this.tasks.set(tasks);
-    });
-  }
-
-  protected onEditTask(task: Task): void {
-    this.editingTask.set(task);
-    this.isDialogOpen.set(true);
+  protected navigateToEditTask(task: Task): void {
+    this.#router.navigate(['/dashboard/projects', this.projectId(), 'tasks', task.id, 'edit']);
   }
 
   protected onDeleteTask(task: Task): void {

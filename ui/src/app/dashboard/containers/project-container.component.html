@@ -41,7 +41,7 @@
   <div class="tasks-section">
     <div class="tasks-header">
       <h2>{{ 'tasks.title' | translate }}</h2>
-      <button class="button-primary" (click)="openDialog()">
+      <button class="button-primary" (click)="navigateToNewTask()">
         <lucide-icon
           [attr.aria-hidden]="true"
           [img]="PlusIcon"
@@ -67,7 +67,7 @@
         ></lucide-icon>
         <h3>{{ 'tasks.empty.title' | translate }}</h3>
         <p>{{ 'tasks.empty.message' | translate }}</p>
-        <button class="button-primary" (click)="openDialog()">
+        <button class="button-primary" (click)="navigateToNewTask()">
           {{ 'tasks.createTask' | translate }}
         </button>
       </div>
@@ -77,7 +77,7 @@
           <li>
             <bn-task-card
               [task]="task"
-              (edit)="onEditTask($event)"
+              (edit)="navigateToEditTask($event)"
               (delete)="onDeleteTask($event)"
             ></bn-task-card>
           </li>
@@ -85,12 +85,4 @@
       </ol>
     }
   </div>
-
-  <bn-task-dialog
-    [isOpen]="isDialogOpen()"
-    [projectId]="projectId()"
-    [task]="editingTask()"
-    (dialogClosed)="closeDialog()"
-    (taskSaved)="onTaskSaved($event)"
-  ></bn-task-dialog>
 </div>

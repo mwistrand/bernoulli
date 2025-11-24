@@ -18,7 +18,6 @@ export class TaskCardComponent {
   protected readonly Trash2Icon = Trash2Icon;
 
   task = input.required<Task>();
-
   edit = output<Task>();
   delete = output<Task>();
 

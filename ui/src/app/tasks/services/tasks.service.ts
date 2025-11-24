@@ -71,6 +71,12 @@ export class TasksService {
     );
   }
 
+  fetchTaskById(projectId: string, taskId: string): Observable<Task> {
+    return this.#http
+      .get<Task>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}`)
+      .pipe(catchError(this.handleError));
+  }
+
   updateTask(projectId: string, taskId: string, request: UpdateTaskRequest): Observable<Task> {
     return this.#http
       .patch<Task>(`${this.#apiUrl}/projects/${projectId}/tasks/${taskId}`, request)
